@@ -6,7 +6,7 @@
 <title>CONTAINER WORKS ｜ バーチャル展示場 DEMO（松竹梅）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Saira+Stencil+One&family=Shippori+Mincho+B1:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root { --accent:#c0392b; --accent-soft:#d6483a; --brass:#c4c4c8; --ink:#131316; --surf:#1c1c20; --surf2:#26262c;
           --text:#f3f3f5; --muted:#9a9aa0; --line:rgba(255,255,255,.1);
@@ -30,20 +30,26 @@
   #start h1 b { color:var(--accent); font-weight:700; }
   #start .sub { margin-top:14px; font-size:13.5px; letter-spacing:.04em; color:var(--muted); line-height:1.8; }
   #cards { margin-top:42px; display:flex; gap:22px; flex-wrap:wrap; justify-content:center; max-width:960px; }
-  .card { width:272px; background:linear-gradient(180deg,#212127,#15151a); border:1px solid var(--line); border-radius:20px; padding:26px 24px; cursor:pointer;
+  .card { width:272px; background:#1b1b1f; border:1px solid #34343a; border-radius:5px; padding:30px 22px 22px; cursor:pointer;
           text-align:left; position:relative; overflow:hidden; transition:transform .28s cubic-bezier(.2,.8,.2,1), border-color .28s, box-shadow .28s; }
-  .card::before { content:""; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(242,235,224,.22),transparent); }
-  .card:hover { transform:translateY(-8px); border-color:var(--brass); box-shadow:0 24px 50px rgba(0,0,0,.55); }
-  .card .rank { font-family:var(--serif); font-size:42px; font-weight:700; line-height:1; }
+  .card > * { position:relative; z-index:1; }
+  /* コンテナの波板（縦リブ） */
+  .card::after { content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+                 background:repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 1px, rgba(0,0,0,.10) 1px 3px, transparent 3px 16px); }
+  /* 上部レール（コンテナ上桟） */
+  .card::before { content:""; position:absolute; top:0; left:0; right:0; height:9px; z-index:2;
+                  background:repeating-linear-gradient(90deg,#2b2b31 0 7px,#1d1d21 7px 13px); border-bottom:1px solid #000; }
+  .card:hover { transform:translateY(-8px); border-color:var(--accent); box-shadow:0 24px 50px rgba(0,0,0,.6); }
+  .card .rank { font-family:"Saira Stencil One",var(--sans); font-size:54px; font-weight:400; line-height:.95; letter-spacing:.02em; }
   .card.m .rank { color:#ececef; } .card.t .rank { color:#a6a6ac; } .card.u .rank { color:#c0392b; }
-  .card .grade { font-size:10px; letter-spacing:.32em; color:var(--muted); margin-top:6px; font-weight:500; }
+  .card .grade { font-family:"Oswald",var(--sans); font-size:11px; letter-spacing:.36em; color:var(--muted); margin-top:8px; font-weight:500; }
   .card .title { font-family:var(--serif); font-size:20px; font-weight:600; margin-top:16px; letter-spacing:.02em; }
   .card .spec { font-size:12px; color:var(--muted); margin-top:12px; line-height:2; }
   .card .spec b { color:var(--text); font-weight:500; }
   .card .price { margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:17px; font-weight:700; color:var(--brass); letter-spacing:.02em; }
   .card .price small { font-size:10.5px; color:var(--muted); font-weight:400; margin-left:4px; }
-  .card .go { margin-top:18px; display:block; font-size:12.5px; font-weight:700; letter-spacing:.08em; color:var(--accent-soft);
-              background:transparent; border:1px solid var(--accent); padding:11px 0; border-radius:30px; width:100%; text-align:center; transition:background .2s, color .2s; }
+  .card .go { margin-top:18px; display:block; font-family:"Oswald",var(--sans); font-size:13px; font-weight:600; letter-spacing:.12em; color:var(--accent-soft);
+              background:transparent; border:1px solid var(--accent); padding:12px 0; border-radius:3px; width:100%; text-align:center; transition:background .2s, color .2s; }
   .card:hover .go { background:var(--accent); color:#fff; }
   #start .note { margin-top:34px; font-size:10.5px; color:var(--muted); opacity:.75; max-width:540px; line-height:1.7; letter-spacing:.02em; }
 
@@ -113,21 +119,21 @@
   <div class="sub">コンテナの組み合わせで、規模もグレードも自由自在。3タイプを歩いて見比べられます。</div>
   <div id="cards">
     <div class="card m" data-tier="matsu">
-      <div class="rank">松</div><div class="grade">PREMIUM</div>
+      <div class="rank">01</div><div class="grade">PREMIUM</div>
       <div class="title">フラッグシップ</div>
       <div class="spec"><b>コンテナ3棟・2階建て</b><br>横連結＋上に直交で積む<br>ロフト＋屋上テラス＋張り出し<br>用途：カフェ＋住居/オフィス</div>
       <div class="price">¥1,500万〜2,500万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
     <div class="card t" data-tier="take">
-      <div class="rank">竹</div><div class="grade">STANDARD</div>
+      <div class="rank">02</div><div class="grade">STANDARD</div>
       <div class="title">ワイドカフェ</div>
       <div class="spec"><b>コンテナ2棟・連結</b><br>間仕切りを抜いた広い1フロア<br>前面ガラスのストアフロント<br>用途：店舗・カフェ</div>
       <div class="price">¥600万〜1,000万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
     <div class="card u" data-tier="ume">
-      <div class="rank">梅</div><div class="grade">COMPACT</div>
+      <div class="rank">03</div><div class="grade">COMPACT</div>
       <div class="title">テイクアウト</div>
       <div class="spec"><b>コンテナ1棟・最小構成</b><br>20ft 1本をそのまま改装<br>低コスト・最短で開業<br>用途：テイクアウト店</div>
       <div class="price">¥300万〜500万 <small>目安</small></div>
