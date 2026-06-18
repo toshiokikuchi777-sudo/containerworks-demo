@@ -64,6 +64,10 @@
   #chatChips { padding:12px; display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid #2c2e37; background:#1a1c23; }
   .chip { padding:9px 14px; font-size:13px; font-weight:700; color:#fff; background:#2a2d38; border:1px solid #3a3d49; border-radius:20px; cursor:pointer; }
   .chip:hover { border-color:var(--accent); background:var(--accent); }
+  .card .price { margin-top:12px; font-size:16px; font-weight:900; color:#ffd9cb; } .card .price small { font-size:11px; opacity:.55; font-weight:600; }
+  #chatInput { display:flex; gap:8px; padding:10px 12px; border-top:1px solid #2c2e37; background:#15161c; }
+  #chatText { flex:1; min-width:0; background:#23252e; border:1px solid #343742; border-radius:20px; padding:10px 14px; color:#fff; font-size:13px; outline:none; }
+  #chatText::placeholder { color:#7a7d88; } #chatSend { padding:0 16px; font-size:13px; font-weight:800; color:#fff; background:var(--accent); border:none; border-radius:20px; cursor:pointer; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -86,6 +90,7 @@
   <div class="head"><b>🤖 CONTAINER WORKS AI 見積り</b><button class="x" id="chatX">✕</button></div>
   <div id="chatBody"></div>
   <div id="chatChips"></div>
+  <div id="chatInput"><input id="chatText" type="text" placeholder="自由に入力（例：サウナを東京で）" autocomplete="off" /><button id="chatSend">送信</button></div>
 </div></div>
 <div id="hud">
   <div class="brand">CONTAINER <b>WORKS</b> ｜ バーチャル展示場 DEMO</div>
@@ -100,18 +105,21 @@
       <div class="rank">松</div><div class="grade">PREMIUM</div>
       <div class="title">フラッグシップ</div>
       <div class="spec"><b>コンテナ3棟・2階建て</b><br>横連結＋上に直交で積む<br>ロフト＋屋上テラス＋張り出し<br>用途：カフェ＋住居/オフィス</div>
+      <div class="price">¥1,500万〜2,500万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
     <div class="card t" data-tier="take">
       <div class="rank">竹</div><div class="grade">STANDARD</div>
       <div class="title">ワイドカフェ</div>
       <div class="spec"><b>コンテナ2棟・連結</b><br>間仕切りを抜いた広い1フロア<br>前面ガラスのストアフロント<br>用途：店舗・カフェ</div>
+      <div class="price">¥600万〜1,000万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
     <div class="card u" data-tier="ume">
       <div class="rank">梅</div><div class="grade">COMPACT</div>
       <div class="title">テイクアウト</div>
       <div class="spec"><b>コンテナ1棟・最小構成</b><br>20ft 1本をそのまま改装<br>低コスト・最短で開業<br>用途：テイクアウト店</div>
+      <div class="price">¥300万〜500万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
   </div>
@@ -447,9 +455,9 @@ function cBot(html,after){ cClear(); const t=document.createElement('div'); t.cl
 function openChat(){ est.tier=curTier; chatBody.innerHTML=''; cClear(); chatEl.style.display='flex';
   cBot('こんにちは！コンテナワークス AI見積りアシスタントです🤖<br>「<b>'+PLAN[curTier].name+'</b>」で検討中ですね。まず<b>ご用途</b>は？',()=>{
     cChips([{label:'カフェ',fn:()=>pickUse('cafe')},{label:'サウナ',fn:()=>pickUse('sauna')},{label:'住居',fn:()=>pickUse('house')},{label:'物販店舗',fn:()=>pickUse('shop')},{label:'オフィス',fn:()=>pickUse('office')}]); }); }
-function pickUse(u){ est.use=u; cAppend(USE[u].name,'user'); cBot('ありがとうございます。<b>設置エリア</b>はどちらですか？（輸送費の目安が変わります）',()=>{
+function pickUse(u,silent){ est.use=u; if(!silent)cAppend(USE[u].name,'user'); cBot('ありがとうございます。<b>設置エリア</b>はどちらですか？（輸送費の目安が変わります）',()=>{
   cChips([{label:'首都圏',fn:()=>pickRegion('shuto')},{label:'東海',fn:()=>pickRegion('tokai')},{label:'関西',fn:()=>pickRegion('kansai')},{label:'その他',fn:()=>pickRegion('other')}]); }); }
-function pickRegion(r){ est.region=r; cAppend(REGION[r].name,'user'); cBot('概算を計算しています…',()=>showResult()); }
+function pickRegion(r,silent){ est.region=r; if(!silent)cAppend(REGION[r].name,'user'); cBot('概算を計算しています…',()=>showResult()); }
 function showResult(){ const p=PLAN[est.tier],u=USE[est.use],rg=REGION[est.region];
   const lo=Math.round(p.base[0]*u.f+rg.add), hi=Math.round(p.base[1]*u.f+rg.add);
   cAppend('<b>概算お見積り</b><br>プラン：'+p.name+'<br>用途：'+u.name+' ／ エリア：'+rg.name+'<hr><div class="big">¥'+lo.toLocaleString()+'万 〜 '+hi.toLocaleString()+'万</div>本体＋基礎工事＋輸送目安込み<br>納期目安：'+DELIVERY[est.tier]+'<br><small>※仕様・現地条件で変動。正式見積りは現地調査後。</small>','bot');
@@ -457,6 +465,25 @@ function showResult(){ const p=PLAN[est.tier],u=USE[est.use],rg=REGION[est.regio
     cChips([{label:'🏠 来場予約',fn:()=>cDone('来場予約')},{label:'📄 正式見積り依頼',fn:()=>cDone('正式見積り依頼')},{label:'💬 LINEで相談',fn:()=>cDone('LINEで相談')}]); }); }
 function cDone(x){ cAppend(x,'user'); cClear(); cBot('承知しました！担当より追ってご連絡します。ありがとうございました🙌<br><small>（デモ表示／本番は予約・見積り・LINEに接続）</small>'); }
 document.getElementById('chatX').addEventListener('click',()=>chatEl.style.display='none');
+
+// フリー入力（キーワード解釈）
+const USEKW={'カフェ':'cafe','ｶﾌｪ':'cafe','コーヒー':'cafe','喫茶':'cafe','サウナ':'sauna','住':'house','家':'house','別荘':'house','店':'shop','物販':'shop','ショップ':'shop','売店':'shop','オフィス':'office','事務':'office'};
+const REGKW={'東京':'shuto','首都':'shuto','関東':'shuto','神奈川':'shuto','千葉':'shuto','埼玉':'shuto','東海':'tokai','名古屋':'tokai','愛知':'tokai','静岡':'tokai','岐阜':'tokai','関西':'kansai','大阪':'kansai','京都':'kansai','兵庫':'kansai'};
+function handleFree(){
+  const inp=document.getElementById('chatText'); const txt=inp.value.trim(); if(!txt) return;
+  cAppend(txt,'user'); inp.value='';
+  let u=null,r=null;
+  for(const k in USEKW) if(txt.includes(k)) u=USEKW[k];
+  for(const k in REGKW) if(txt.includes(k)) r=REGKW[k];
+  if(/納期|いつ|期間|どれくらい|何ヶ月|何ヵ月/.test(txt)){ cBot('「'+PLAN[est.tier].name+'」の納期目安は<b>'+DELIVERY[est.tier]+'</b>です（仕様で変動）。用途と設置エリアを教えていただければ概算もすぐ出します。'); return; }
+  if(u&&r){ est.use=u; est.region=r; cBot('「'+USE[u].name+'」を「'+REGION[r].name+'」ですね。概算を計算します…',()=>showResult()); return; }
+  if(u){ pickUse(u,true); return; }
+  if(r){ if(est.use){ pickRegion(r,true); } else { cBot('用途（カフェ／サウナ／住居／店舗／オフィス）も教えてください🙏'); } return; }
+  if(/価格|いくら|見積|金額|予算|費用|コスト/.test(txt)){ if(est.use&&est.region){ showResult(); } else { cBot('概算には「用途」と「設置エリア」が必要です。例：「サウナを東京で」と入力してください。'); } return; }
+  cBot('ありがとうございます。「用途（カフェ／サウナ／住居／店舗／オフィス）」と「設置エリア（首都圏／東海／関西／その他）」を教えていただければ、その場で概算をお出しします。お急ぎなら下の「LINEで相談」もどうぞ。');
+}
+document.getElementById('chatSend').addEventListener('click',handleFree);
+document.getElementById('chatText').addEventListener('keydown',e=>{ if(e.key==='Enter') handleFree(); });
 
 // ---------- controls (drag-look + WASD, no pointer-lock) ----------
 const keys={}; addEventListener('keydown',e=>{keys[e.code]=true;}); addEventListener('keyup',e=>{keys[e.code]=false;});
