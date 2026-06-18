@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>CONTAINER WORKS ｜ バーチャル展示場 DEMO（松竹梅）</title>
+<title>バーチャル展示場 DEMO ｜ Vsw.co.jp</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Saira+Stencil+One&family=Shippori+Mincho+B1:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -15,7 +15,8 @@
   html,body { height:100%; overflow:hidden; background:#8ec7ec; font-family:var(--sans); color:var(--text); -webkit-font-smoothing:antialiased; }
   #app { position:fixed; inset:0; } canvas { display:block; }
 
-  #hud { position:fixed; top:18px; left:18px; z-index:10; pointer-events:none; text-shadow:0 1px 6px rgba(0,0,0,.55); }
+  #vsw { position:fixed; top:15px; left:18px; z-index:35; font-family:"Oswald",var(--sans); font-weight:700; font-size:17px; letter-spacing:.01em; color:var(--accent); }
+  #hud { position:fixed; top:46px; left:18px; z-index:10; pointer-events:none; text-shadow:0 1px 6px rgba(0,0,0,.55); }
   #hud .brand { font-weight:700; letter-spacing:.22em; font-size:11px; opacity:.92; } #hud .brand b { color:var(--accent); }
   #status { margin-top:11px; font-size:12px; line-height:1.7; font-weight:500; background:rgba(20,16,12,.42); padding:9px 14px; border:1px solid var(--line); border-radius:10px; backdrop-filter:blur(8px); display:inline-block; }
   #status .near { color:#f3f3f5; font-weight:700; }
@@ -25,33 +26,34 @@
 
   /* selection screen */
   #start { position:fixed; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
-           background:radial-gradient(130% 120% at 50% -10%, #26262c 0%, #0d0d0f 68%); padding:32px; overflow:auto; }
-  #start h1 { font-family:var(--serif); font-size:clamp(26px,5vw,44px); font-weight:600; letter-spacing:.05em; line-height:1.4; }
+           background:radial-gradient(130% 120% at 50% -8%, #f7f7f5 0%, #e3e3e1 72%); padding:32px; overflow:auto; }
+  #start h1 { font-family:var(--serif); font-size:clamp(26px,5vw,44px); font-weight:600; letter-spacing:.05em; line-height:1.4; color:#1b1b1f; }
   #start h1 b { color:var(--accent); font-weight:700; }
-  #start .sub { margin-top:14px; font-size:13.5px; letter-spacing:.04em; color:var(--muted); line-height:1.8; }
+  #start .sub { margin-top:14px; font-size:13.5px; letter-spacing:.04em; color:#5c5c62; line-height:1.8; }
   #cards { margin-top:42px; display:flex; gap:22px; flex-wrap:wrap; justify-content:center; max-width:960px; }
-  .card { width:272px; background:#1b1b1f; border:1px solid #34343a; border-radius:5px; padding:30px 22px 22px; cursor:pointer;
+  .card { width:272px; background:#c0392b; border:1px solid #9c2c20; border-radius:5px; padding:30px 22px 22px; cursor:pointer;
           text-align:left; position:relative; overflow:hidden; transition:transform .28s cubic-bezier(.2,.8,.2,1), border-color .28s, box-shadow .28s; }
   .card > * { position:relative; z-index:1; }
   /* コンテナの波板（縦リブ） */
   .card::after { content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
-                 background:repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 1px, rgba(0,0,0,.10) 1px 3px, transparent 3px 16px); }
+                 background:repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 1px, rgba(0,0,0,.12) 1px 3px, transparent 3px 16px); }
   /* 上部レール（コンテナ上桟） */
   .card::before { content:""; position:absolute; top:0; left:0; right:0; height:9px; z-index:2;
-                  background:repeating-linear-gradient(90deg,#2b2b31 0 7px,#1d1d21 7px 13px); border-bottom:1px solid #000; }
-  .card:hover { transform:translateY(-8px); border-color:var(--accent); box-shadow:0 24px 50px rgba(0,0,0,.6); }
-  .card .rank { font-family:"Saira Stencil One",var(--sans); font-size:54px; font-weight:400; line-height:.95; letter-spacing:.02em; }
-  .card.m .rank { color:#ececef; } .card.t .rank { color:#a6a6ac; } .card.u .rank { color:#c0392b; }
-  .card .grade { font-family:"Oswald",var(--sans); font-size:11px; letter-spacing:.36em; color:var(--muted); margin-top:8px; font-weight:500; }
+                  background:repeating-linear-gradient(90deg,#a8311f 0 7px,#8c281a 7px 13px); border-bottom:1px solid rgba(0,0,0,.45); }
+  .card:hover { transform:translateY(-8px); border-color:#fff; box-shadow:0 24px 54px rgba(150,30,20,.45); }
+  .card .rank { font-family:"Saira Stencil One",var(--sans); font-size:54px; font-weight:400; line-height:.95; letter-spacing:.02em; color:#fdeeec; }
+  .card.m .rank, .card.t .rank, .card.u .rank { color:#fdeeec; }
+  .card .grade { font-family:"Oswald",var(--sans); font-size:11px; letter-spacing:.36em; color:rgba(255,255,255,.72); margin-top:8px; font-weight:500; }
   .card .title { font-family:var(--serif); font-size:20px; font-weight:600; margin-top:16px; letter-spacing:.02em; }
-  .card .spec { font-size:12px; color:var(--muted); margin-top:12px; line-height:2; }
-  .card .spec b { color:var(--text); font-weight:500; }
-  .card .price { margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:17px; font-weight:700; color:var(--brass); letter-spacing:.02em; }
-  .card .price small { font-size:10.5px; color:var(--muted); font-weight:400; margin-left:4px; }
-  .card .go { margin-top:18px; display:block; font-family:"Oswald",var(--sans); font-size:13px; font-weight:600; letter-spacing:.12em; color:var(--accent-soft);
-              background:transparent; border:1px solid var(--accent); padding:12px 0; border-radius:3px; width:100%; text-align:center; transition:background .2s, color .2s; }
-  .card:hover .go { background:var(--accent); color:#fff; }
-  #start .note { margin-top:34px; font-size:10.5px; color:var(--muted); opacity:.75; max-width:540px; line-height:1.7; letter-spacing:.02em; }
+  .card .title { color:#fff; }
+  .card .spec { font-size:12px; color:rgba(255,255,255,.85); margin-top:12px; line-height:2; }
+  .card .spec b { color:#fff; font-weight:600; }
+  .card .price { margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,.28); font-size:17px; font-weight:700; color:#fff; letter-spacing:.02em; }
+  .card .price small { font-size:10.5px; color:rgba(255,255,255,.66); font-weight:400; margin-left:4px; }
+  .card .go { margin-top:18px; display:block; font-family:"Oswald",var(--sans); font-size:13px; font-weight:600; letter-spacing:.12em; color:#fff;
+              background:transparent; border:1px solid rgba(255,255,255,.85); padding:12px 0; border-radius:3px; width:100%; text-align:center; transition:background .2s, color .2s; }
+  .card:hover .go { background:#fff; color:#c0392b; }
+  #start .note { margin-top:34px; font-size:10.5px; color:#7c7c80; max-width:540px; line-height:1.7; letter-spacing:.02em; }
 
   #cross { position:fixed; top:50%; left:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:rgba(255,255,255,.6); z-index:9; display:none; pointer-events:none; }
   #mobile { position:fixed; inset:0; z-index:20; display:none; pointer-events:none; }
@@ -104,13 +106,13 @@
   <button class="close" id="mClose">閉じる</button>
 </div></div>
 <div id="chat"><div class="win">
-  <div class="head"><b>🤖 CONTAINER WORKS AI 見積り</b><button class="x" id="chatX">✕</button></div>
+  <div class="head"><b>🤖 Vsw.co.jp AI 見積り</b><button class="x" id="chatX">✕</button></div>
   <div id="chatBody"></div>
   <div id="chatChips"></div>
   <div id="chatInput"><input id="chatText" type="text" placeholder="自由に入力（例：サウナを東京で）" autocomplete="off" /><button id="chatSend">送信</button></div>
 </div></div>
+<div id="vsw">Vsw.co.jp</div>
 <div id="hud">
-  <div class="brand">CONTAINER <b>WORKS</b> ｜ バーチャル展示場 DEMO</div>
   <div id="status"></div>
 </div>
 
@@ -155,11 +157,11 @@ const scene=new THREE.Scene();
 // 夕暮れのグラデーション空（上＝澄んだ青／下＝暖かいクリーム）
 const _sky=(function(){const c=document.createElement('canvas');c.width=4;c.height=320;const x=c.getContext('2d');
   const g=x.createLinearGradient(0,0,0,320);
-  g.addColorStop(0,'#c2cad1'); g.addColorStop(0.55,'#d7dadc'); g.addColorStop(1,'#eeedeb');
+  g.addColorStop(0,'#dbe3e9'); g.addColorStop(0.55,'#ededee'); g.addColorStop(1,'#f8f7f5');
   x.fillStyle=g; x.fillRect(0,0,4,320);
   const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;})();
 scene.background=_sky;
-scene.fog=new THREE.Fog(0xe4e6e4,54,170);
+scene.fog=new THREE.Fog(0xf0f1ef,58,180);
 const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.05,400);
 camera.position.set(0,1.6,9);
 const renderer=new THREE.WebGLRenderer({antialias:true});
@@ -183,14 +185,14 @@ const fill=new THREE.DirectionalLight(0xcdd6de,0.3); fill.position.set(-14,10,-1
 
 // ground (persistent)
 const _grad=(function(s){const a=new Uint8Array(s);for(let i=0;i<s;i++)a[i]=Math.round(255*(i/(s-1)));const t=new THREE.DataTexture(a,s,1,THREE.RedFormat);t.needsUpdate=true;t.minFilter=THREE.NearestFilter;t.magFilter=THREE.NearestFilter;t.generateMipmaps=false;return t;})(3);
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshToonMaterial({color:0xbcbcb8,gradientMap:_grad}));
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshToonMaterial({color:0xcececa,gradientMap:_grad}));
 ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
-const grid=new THREE.GridHelper(240,120,0xa8a8a4,0xb2b2ae); grid.position.y=0.01; grid.material.transparent=true; grid.material.opacity=0.4; scene.add(grid);
+const grid=new THREE.GridHelper(240,120,0xbcbcb8,0xc6c6c2); grid.position.y=0.01; grid.material.transparent=true; grid.material.opacity=0.35; scene.add(grid);
 
 // ---------- materials ----------
 // 赤×黒×白×グレー（赤は差し色）
-const mRed=new THREE.MeshStandardMaterial({color:0xb5302a}),  mBlue=new THREE.MeshStandardMaterial({color:0x34343c});   // 差し色赤 / チャコール
-const mGreen=new THREE.MeshStandardMaterial({color:0xd4d4d8}), mCast=new THREE.MeshStandardMaterial({color:0x131316}); // ライトグレー / 黒金具
+const mRed=new THREE.MeshStandardMaterial({color:0xc0392b}),  mBlue=new THREE.MeshStandardMaterial({color:0x9a2f24});   // 赤コンテナ（前）/ 赤コンテナ（後・濃）
+const mGreen=new THREE.MeshStandardMaterial({color:0xbb342b}), mCast=new THREE.MeshStandardMaterial({color:0x131316}); // 赤コンテナ（上・色味違い）/ 黒金具
 const mSteel=new THREE.MeshStandardMaterial({color:0x1f1f24}), mWood=new THREE.MeshStandardMaterial({color:0xb4b1aa});  // 黒鉄 / グレー床
 const mWhite=new THREE.MeshStandardMaterial({color:0xeeeef0}), mDark=new THREE.MeshStandardMaterial({color:0x222228});
 const mGlass=new THREE.MeshPhysicalMaterial({color:0xccd2d5,roughness:.05,transmission:.9,transparent:true,opacity:.34,metalness:0});
@@ -289,7 +291,7 @@ function interiorLiner(X0,X1,Z0,Z1,top){ // white inner walls + low ceiling
   box(X1-X0-0.1,0.06,Z1-Z0,mWood,(X0+X1)/2,0.05,(Z0+Z1)/2); }
 function plight(x,y,z){const l=new THREE.PointLight(0xffe9cf,4.5,7,2);l.position.set(x,y,z);G.add(l);}
 
-// ---- 梅 : 1 container takeout café ----
+// ---- 03 : 1 container takeout café ----
 function buildUme(){
   const X0=-3.03,X1=3.03,Z0=-1.22,Z1=1.22;
   interiorLiner(X0,X1,Z0,Z1,2.42);
@@ -310,10 +312,10 @@ function buildUme(){
   potPlant(X1-0.7,Z0+0.5,0.7);
   terraceFront(Z1+2.0); tree(-5.5,-1,1); tree(5.5,0.5,1.1); tree(-6,3.5,0.9); tree(5.2,4.5,1); tree(-2,-5.5,1.1); tree(2.5,-5.5,0.95);
   const sg=sign('CAFE',0x1d1d22,2.6); sg.position.set(0,H+0.45,Z1+0.2);
-  spawnZ=5.5; statusText='梅：コンテナ1棟・テイクアウトカフェ（天井高 約2.4m＝実寸）';
+  spawnZ=5.5; statusText='03：コンテナ1棟・テイクアウトカフェ（天井高 約2.4m＝実寸）';
 }
 
-// ---- 竹 : 2 containers joined, wide café ----
+// ---- 02 : 2 containers joined, wide café ----
 function buildTake(){
   const X0=-3.03,X1=3.03,Z0=-2.44,Z1=2.44;
   interiorLiner(X0,X1,Z0,Z1,2.42);
@@ -341,11 +343,11 @@ function buildTake(){
   npcWalk(-1.3,-1.2,1.5,-1.2,0xd9d9dd,0x2c2c32,0.5); // 店内を歩く客
   potPlant(X1-0.7,Z0+0.6,0.8); potPlant(X0+0.7,Z1-0.6,0.7);
   terraceFront(Z1+2.0); tree(-6,-1,1); tree(6,0.5,1.1); tree(-6.5,4.5,0.95); tree(5.5,5.5,1); tree(-2,-6.5,1.1); tree(2.5,-6.5,0.95);
-  const sg=sign('CONTAINER CAFE',0x1d1d22,3.4); sg.position.set(0,H+0.5,Z1+0.25);
-  spawnZ=7; statusText='竹：コンテナ2棟連結・ワイドカフェ（天井高 約2.4m＝実寸）';
+  const sg=sign('CAFE',0x1d1d22,3.4); sg.position.set(0,H+0.5,Z1+0.25);
+  spawnZ=7; statusText='02：コンテナ2棟連結・ワイドカフェ（天井高 約2.4m＝実寸）';
 }
 
-// ---- 松 : 3 containers, 2-story flagship ----
+// ---- 01 : 3 containers, 2-story flagship ----
 function buildMatsu(){
   const AX0=-3.03,AX1=3.03, fZ1=2.44, bZ0=-2.44; const UP=2.70;
   // slabs
@@ -411,8 +413,8 @@ function buildMatsu(){
   npcWalk(-1.6,7.0,1.6,7.0,0xd9d9dd,0x2c2c32,0.55); // 店前を歩く通行人
   potPlant(AX0+1.6,fZ1-0.5,0.8); potPlant(AX1-0.7,bZ0+0.7,0.75);
   terraceFront(fZ1+2.4); tree(-6,-1,1.1); tree(-6.5,4.5,0.95); tree(-2,-7,1.1); tree(2.5,-7,1); tree(6.5,6,1); tree(7,-1,1.05);
-  const sg=sign('CONTAINER CAFE',0x1d1d22,4.2); sg.position.set(0,H+0.55,fZ1+0.3);
-  spawnZ=8; statusText='松：コンテナ3棟・2階建て（右の外階段で屋上＆ロフトへ ▲）';
+  const sg=sign('CAFE',0x1d1d22,4.2); sg.position.set(0,H+0.55,fZ1+0.3);
+  spawnZ=8; statusText='01：コンテナ3棟・2階建て（右の外階段で屋上＆ロフトへ ▲）';
 }
 
 const BUILDERS={ ume:buildUme, take:buildTake, matsu:buildMatsu };
@@ -457,7 +459,7 @@ document.getElementById('back').addEventListener('click',backToMenu);
 
 // CV導線（相談・資料請求モーダル）
 let curTier='';
-const LABELS={matsu:'松：フラッグシップ',take:'竹：ワイドカフェ',ume:'梅：テイクアウト'};
+const LABELS={matsu:'01：フラッグシップ',take:'02：ワイドカフェ',ume:'03：テイクアウト'};
 const modalEl=document.getElementById('modal');
 function openModal(){ document.getElementById('mTitle').textContent=(LABELS[curTier]||'')+' のご相談';
   document.getElementById('mDesc').textContent='このプランについて、ご希望はどれですか？';
@@ -471,7 +473,7 @@ document.querySelectorAll('#modal .opt').forEach(b=>b.addEventListener('click',(
   document.querySelectorAll('#modal .opt').forEach(x=>x.style.display='none'); }));
 
 // ===== AI見積りチャット（デモ）=====
-const PLAN={ matsu:{name:'松 フラッグシップ（3棟・2階建て）',base:[1500,2500]}, take:{name:'竹 ワイドカフェ（2棟連結）',base:[600,1000]}, ume:{name:'梅 テイクアウト（1棟）',base:[300,500]} };
+const PLAN={ matsu:{name:'01 フラッグシップ（3棟・2階建て）',base:[1500,2500]}, take:{name:'02 ワイドカフェ（2棟連結）',base:[600,1000]}, ume:{name:'03 テイクアウト（1棟）',base:[300,500]} };
 const DELIVERY={ matsu:'約3〜5ヶ月', take:'約2〜3ヶ月', ume:'約1〜2ヶ月' };
 const USE={ cafe:{name:'カフェ',f:1.0}, sauna:{name:'サウナ',f:1.25}, house:{name:'住居',f:1.1}, shop:{name:'物販店舗',f:1.0}, office:{name:'オフィス',f:1.05} };
 const REGION={ shuto:{name:'首都圏',add:0}, tokai:{name:'東海',add:20}, kansai:{name:'関西',add:40}, other:{name:'その他',add:60} };
@@ -482,7 +484,7 @@ function cChips(items){ chatChips.innerHTML=''; items.forEach(it=>{ const c=docu
 function cClear(){ chatChips.innerHTML=''; }
 function cBot(html,after){ cClear(); const t=document.createElement('div'); t.className='msg bot typing'; t.textContent='● ● ●'; chatBody.appendChild(t); chatBody.scrollTop=chatBody.scrollHeight; setTimeout(()=>{ t.remove(); cAppend(html,'bot'); if(after)after(); },650); }
 function openChat(){ est.tier=curTier; chatBody.innerHTML=''; cClear(); chatEl.style.display='flex';
-  cBot('こんにちは！コンテナワークス AI見積りアシスタントです🤖<br>「<b>'+PLAN[curTier].name+'</b>」で検討中ですね。まず<b>ご用途</b>は？',()=>{
+  cBot('こんにちは！AI見積りアシスタントです🤖<br>「<b>'+PLAN[curTier].name+'</b>」で検討中ですね。まず<b>ご用途</b>は？',()=>{
     cChips([{label:'カフェ',fn:()=>pickUse('cafe')},{label:'サウナ',fn:()=>pickUse('sauna')},{label:'住居',fn:()=>pickUse('house')},{label:'物販店舗',fn:()=>pickUse('shop')},{label:'オフィス',fn:()=>pickUse('office')}]); }); }
 function pickUse(u,silent){ est.use=u; if(!silent)cAppend(USE[u].name,'user'); cBot('ありがとうございます。<b>設置エリア</b>はどちらですか？（輸送費の目安が変わります）',()=>{
   cChips([{label:'首都圏',fn:()=>pickRegion('shuto')},{label:'東海',fn:()=>pickRegion('tokai')},{label:'関西',fn:()=>pickRegion('kansai')},{label:'その他',fn:()=>pickRegion('other')}]); }); }
