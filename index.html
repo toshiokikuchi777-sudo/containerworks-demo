@@ -120,6 +120,8 @@ const mGreen=new THREE.MeshStandardMaterial({color:0x5f7d3f}), mCast=new THREE.M
 const mSteel=new THREE.MeshStandardMaterial({color:0x3c4046}), mWood=new THREE.MeshStandardMaterial({color:0xab6f37});
 const mWhite=new THREE.MeshStandardMaterial({color:0xefede7}), mDark=new THREE.MeshStandardMaterial({color:0x2b2b30});
 const mGlass=new THREE.MeshPhysicalMaterial({color:0xbfe3ea,roughness:.04,transmission:.92,transparent:true,opacity:.38,metalness:0});
+const mLeaf=new THREE.MeshStandardMaterial({color:0x4f8a3f}), mLeaf2=new THREE.MeshStandardMaterial({color:0x6aa84e});
+const mTrunk=new THREE.MeshStandardMaterial({color:0x6b4a2c}), mParasol=new THREE.MeshStandardMaterial({color:0xe0935a}), mPot=new THREE.MeshStandardMaterial({color:0x8a847c});
 const _outline=new THREE.MeshBasicMaterial({color:0x101018,side:THREE.BackSide});
 const _hsl={};
 
@@ -177,6 +179,17 @@ function person(x,z,rotY,top,bot,skin){
 function npcIdle(x,z,rot,top,bot){ const pg=person(x,z,rot,top,bot); npcs.push({pg,kind:'idle',ph:Math.abs(x*7+z*13)%6}); }
 function npcWalk(ax,az,bx,bz,top,bot,spd){ const pg=person(ax,az,0,top,bot); npcs.push({pg,kind:'walk',ax,az,bx,bz,spd:spd||0.5,t:Math.abs(ax+az)%6}); }
 
+// ---------- 植栽・テラス（環境）----------
+function blob(r,mat,x,y,z){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;G.add(m);return m;}
+function tree(x,z,s){s=s||1; box(0.24*s,1.4*s,0.24*s,mTrunk,x,0.7*s,z);
+  blob(0.95*s,mLeaf,x,1.7*s,z); blob(0.72*s,mLeaf2,x+0.35*s,2.1*s,z-0.1*s); blob(0.66*s,mLeaf,x-0.3*s,2.15*s,z+0.18*s); }
+function potPlant(x,z,s){s=s||1; box(0.42*s,0.46*s,0.42*s,mPot,x,0.23*s,z); blob(0.44*s,mLeaf,x,0.78*s,z); blob(0.32*s,mLeaf2,x+0.13*s,1.05*s,z); }
+function outdoorSet(x,z){ box(0.82,0.05,0.82,mWood,x,0.72,z); box(0.07,0.72,0.07,mDark,x,0.36,z);
+  for(const dx of [-0.62,0.62]){ box(0.32,0.05,0.32,mDark,x+dx,0.45,z); box(0.06,0.45,0.06,mDark,x+dx,0.22,z); }
+  box(0.06,2.15,0.06,mDark,x,1.07,z); const um=new THREE.Mesh(new THREE.ConeGeometry(1.05,0.55,8),mParasol); um.position.set(x,2.3,z); um.castShadow=true; G.add(um); }
+function terraceFront(cz){ box(5.6,0.1,3.0,mWood,0,0.05,cz); outdoorSet(-1.35,cz); outdoorSet(1.35,cz);
+  potPlant(-2.5,cz+1.2,0.85); potPlant(2.5,cz+1.2,0.85); }
+
 // ---------- toon/outline pass on a group ----------
 function toonify(group){
   const outs=[];
@@ -185,8 +198,8 @@ function toonify(group){
     if(o.material.transparent&&o.material.opacity<0.6) return; // glass
     const c=o.material.color.clone(); c.getHSL(_hsl); c.setHSL(_hsl.h,Math.min(1,_hsl.s*1.6+0.1),Math.min(0.92,_hsl.l*1.07+0.05));
     o.material=new THREE.MeshToonMaterial({color:c,gradientMap:_grad});
-    if(o.geometry&&o.geometry.type==='BoxGeometry'&&!o.userData.noOutline){ o.geometry.computeBoundingBox(); const sz=new THREE.Vector3(); o.geometry.boundingBox.getSize(sz);
-      const md=Math.max(sz.x,sz.y,sz.z); if(md>0.45&&md<40){const m=new THREE.Mesh(o.geometry,_outline);m.position.copy(o.position);m.quaternion.copy(o.quaternion);m.scale.copy(o.scale).multiplyScalar(1.06);outs.push(m);} }
+    if(o.geometry&&(o.geometry.type==='BoxGeometry'||o.geometry.type==='IcosahedronGeometry')&&!o.userData.noOutline){ o.geometry.computeBoundingBox(); const sz=new THREE.Vector3(); o.geometry.boundingBox.getSize(sz);
+      const md=Math.max(sz.x,sz.y,sz.z); if(md>0.4&&md<40){const m=new THREE.Mesh(o.geometry,_outline);m.position.copy(o.position);m.quaternion.copy(o.quaternion);m.scale.copy(o.scale).multiplyScalar(1.06);outs.push(m);} }
   });
   outs.forEach(m=>group.add(m));
 }
@@ -220,6 +233,8 @@ function buildUme(){
   plight(0,2.3,0);
   npcIdle(X0+1.0,0.0,0,0x335f8a,0x33373e);   // 店員（カウンター内）
   npcIdle(0.5,0.4,Math.PI,0xc6553f,0x4a4a52); // お客さん
+  potPlant(X1-0.7,Z0+0.5,0.7);
+  terraceFront(Z1+2.0); tree(-5.5,-1,1); tree(5.5,0.5,1.1); tree(-6,3.5,0.9); tree(5.2,4.5,1); tree(-2,-5.5,1.1); tree(2.5,-5.5,0.95);
   const sg=sign('CAFE',0x1d1d22,2.6); sg.position.set(0,H+0.45,Z1+0.2);
   spawnZ=5.5; statusText='梅：コンテナ1棟・テイクアウトカフェ（天井高 約2.4m＝実寸）';
 }
@@ -250,6 +265,8 @@ function buildTake(){
   npcIdle(X0+1.1,0.3,0,0x335f8a,0x33373e);    // 店員
   npcIdle(1.0,1.3,Math.PI,0xc6553f,0x4a4a52);  // 客（ソファ付近）
   npcWalk(-1.3,-1.2,1.5,-1.2,0x3a7d5a,0x33373e,0.5); // 店内を歩く客
+  potPlant(X1-0.7,Z0+0.6,0.8); potPlant(X0+0.7,Z1-0.6,0.7);
+  terraceFront(Z1+2.0); tree(-6,-1,1); tree(6,0.5,1.1); tree(-6.5,4.5,0.95); tree(5.5,5.5,1); tree(-2,-6.5,1.1); tree(2.5,-6.5,0.95);
   const sg=sign('CONTAINER CAFE',0x1d1d22,3.4); sg.position.set(0,H+0.5,Z1+0.25);
   spawnZ=7; statusText='竹：コンテナ2棟連結・ワイドカフェ（天井高 約2.4m＝実寸）';
 }
@@ -317,7 +334,9 @@ function buildMatsu(){
   surfaces.push({ramp:1,axis:'z',xMin:SX0,xMax:SX1,zMin:SzTop,zMax:SzBot,c0:SzBot,y0:0,c1:SzTop,y1:UP});
   npcIdle(AX0+1.1,0.4,0,0x335f8a,0x33373e);    // 店員
   npcIdle(1.2,-1.0,Math.PI,0xc6553f,0x4a4a52);  // 客（ダイニング）
-  npcWalk(-1.6,5.4,1.6,5.4,0x3a7d5a,0x33373e,0.55); // 店前を歩く通行人
+  npcWalk(-1.6,7.0,1.6,7.0,0x3a7d5a,0x33373e,0.55); // 店前を歩く通行人
+  potPlant(AX0+1.6,fZ1-0.5,0.8); potPlant(AX1-0.7,bZ0+0.7,0.75);
+  terraceFront(fZ1+2.4); tree(-6,-1,1.1); tree(-6.5,4.5,0.95); tree(-2,-7,1.1); tree(2.5,-7,1); tree(6.5,6,1); tree(7,-1,1.05);
   const sg=sign('CONTAINER CAFE',0x1d1d22,4.2); sg.position.set(0,H+0.55,fZ1+0.3);
   spawnZ=8; statusText='松：コンテナ3棟・2階建て（右の外階段で屋上＆ロフトへ ▲）';
 }
