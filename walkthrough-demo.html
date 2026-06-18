@@ -146,29 +146,40 @@ const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
 // ---------- renderer / scene ----------
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x8ec7ec);
-scene.fog=new THREE.Fog(0x8ec7ec,46,130);
-const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.05,400);
+// 夕暮れのグラデーション空（上＝澄んだ青／下＝暖かいクリーム）
+const _sky=(function(){const c=document.createElement('canvas');c.width=4;c.height=320;const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,320);
+  g.addColorStop(0,'#8fb6dd'); g.addColorStop(0.45,'#bcd2da'); g.addColorStop(0.78,'#ecdcc4'); g.addColorStop(1,'#f6e3c8');
+  x.fillStyle=g; x.fillRect(0,0,4,320);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;})();
+scene.background=_sky;
+scene.fog=new THREE.Fog(0xeaddc6,54,165);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.05,400);
 camera.position.set(0,1.6,9);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.12;
 document.getElementById('app').appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xcfe4f2,0x55604f,0.9));
-scene.add(new THREE.AmbientLight(0xffffff,0.6));
-const sun=new THREE.DirectionalLight(0xfff4e2,1.0);
-sun.position.set(14,22,16); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
-sun.shadow.camera.near=1; sun.shadow.camera.far=90;
-sun.shadow.camera.left=-26;sun.shadow.camera.right=26;sun.shadow.camera.top=26;sun.shadow.camera.bottom=-26;
+// 夕方の柔らかな光
+scene.add(new THREE.HemisphereLight(0xfff1dd,0x6e5c46,0.6));
+scene.add(new THREE.AmbientLight(0xfff0e0,0.3));
+const sun=new THREE.DirectionalLight(0xffd49c,1.6);
+sun.position.set(22,15,12); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.near=1; sun.shadow.camera.far=110;
+sun.shadow.camera.left=-30;sun.shadow.camera.right=30;sun.shadow.camera.top=30;sun.shadow.camera.bottom=-30;
+sun.shadow.bias=-0.0004; sun.shadow.radius=3;
 scene.add(sun);
+// 反対側からの淡いフィルライト（影を柔らかく）
+const fill=new THREE.DirectionalLight(0xbcd0e6,0.35); fill.position.set(-14,10,-10); scene.add(fill);
 
 // ground (persistent)
 const _grad=(function(s){const a=new Uint8Array(s);for(let i=0;i<s;i++)a[i]=Math.round(255*(i/(s-1)));const t=new THREE.DataTexture(a,s,1,THREE.RedFormat);t.needsUpdate=true;t.minFilter=THREE.NearestFilter;t.magFilter=THREE.NearestFilter;t.generateMipmaps=false;return t;})(3);
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(220,220),new THREE.MeshToonMaterial({color:0x9bb36e,gradientMap:_grad}));
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshToonMaterial({color:0x97a06a,gradientMap:_grad}));
 ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
-const grid=new THREE.GridHelper(220,110,0x86a05e,0x8fae66); grid.position.y=0.01; scene.add(grid);
+const grid=new THREE.GridHelper(240,120,0x8b9663,0x96a06d); grid.position.y=0.01; grid.material.transparent=true; grid.material.opacity=0.45; scene.add(grid);
 
 // ---------- materials ----------
 const mRed=new THREE.MeshStandardMaterial({color:0xb8412e}),  mBlue=new THREE.MeshStandardMaterial({color:0x2f6e92});
