@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --accent:#cf6b43; --accent-soft:#e0935a; --brass:#c8a574; --ink:#16110c; --surf:#1f1913; --surf2:#26201a;
-          --text:#f2ebe0; --muted:#a89c8c; --line:rgba(242,235,224,.1);
+  :root { --accent:#c0392b; --accent-soft:#d6483a; --brass:#c4c4c8; --ink:#131316; --surf:#1c1c20; --surf2:#26262c;
+          --text:#f3f3f5; --muted:#9a9aa0; --line:rgba(255,255,255,.1);
           --serif:"Shippori Mincho B1",serif; --sans:"Zen Kaku Gothic New",-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; }
   * { margin:0; padding:0; box-sizing:border-box; }
   html,body { height:100%; overflow:hidden; background:#8ec7ec; font-family:var(--sans); color:var(--text); -webkit-font-smoothing:antialiased; }
@@ -18,24 +18,24 @@
   #hud { position:fixed; top:18px; left:18px; z-index:10; pointer-events:none; text-shadow:0 1px 6px rgba(0,0,0,.55); }
   #hud .brand { font-weight:700; letter-spacing:.22em; font-size:11px; opacity:.92; } #hud .brand b { color:var(--accent); }
   #status { margin-top:11px; font-size:12px; line-height:1.7; font-weight:500; background:rgba(20,16,12,.42); padding:9px 14px; border:1px solid var(--line); border-radius:10px; backdrop-filter:blur(8px); display:inline-block; }
-  #status .near { color:#edc9a6; font-weight:700; }
+  #status .near { color:#f3f3f5; font-weight:700; }
   #back { position:fixed; top:18px; right:18px; z-index:22; display:none; padding:10px 18px; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--text);
           background:rgba(20,16,12,.5); border:1px solid var(--line); border-radius:30px; cursor:pointer; backdrop-filter:blur(8px); transition:border-color .2s; }
   #back:hover { border-color:var(--brass); }
 
   /* selection screen */
   #start { position:fixed; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
-           background:radial-gradient(130% 120% at 50% -10%, #2c241a 0%, #14100b 68%); padding:32px; overflow:auto; }
+           background:radial-gradient(130% 120% at 50% -10%, #26262c 0%, #0d0d0f 68%); padding:32px; overflow:auto; }
   #start h1 { font-family:var(--serif); font-size:clamp(26px,5vw,44px); font-weight:600; letter-spacing:.05em; line-height:1.4; }
   #start h1 b { color:var(--accent); font-weight:700; }
   #start .sub { margin-top:14px; font-size:13.5px; letter-spacing:.04em; color:var(--muted); line-height:1.8; }
   #cards { margin-top:42px; display:flex; gap:22px; flex-wrap:wrap; justify-content:center; max-width:960px; }
-  .card { width:272px; background:linear-gradient(180deg,#221b14,#1a140e); border:1px solid var(--line); border-radius:20px; padding:26px 24px; cursor:pointer;
+  .card { width:272px; background:linear-gradient(180deg,#212127,#15151a); border:1px solid var(--line); border-radius:20px; padding:26px 24px; cursor:pointer;
           text-align:left; position:relative; overflow:hidden; transition:transform .28s cubic-bezier(.2,.8,.2,1), border-color .28s, box-shadow .28s; }
   .card::before { content:""; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(242,235,224,.22),transparent); }
   .card:hover { transform:translateY(-8px); border-color:var(--brass); box-shadow:0 24px 50px rgba(0,0,0,.55); }
   .card .rank { font-family:var(--serif); font-size:42px; font-weight:700; line-height:1; }
-  .card.m .rank { color:#d9b15a; } .card.t .rank { color:#8fb89a; } .card.u .rank { color:#cf8a5f; }
+  .card.m .rank { color:#ececef; } .card.t .rank { color:#a6a6ac; } .card.u .rank { color:#c0392b; }
   .card .grade { font-size:10px; letter-spacing:.32em; color:var(--muted); margin-top:6px; font-weight:500; }
   .card .title { font-family:var(--serif); font-size:20px; font-weight:600; margin-top:16px; letter-spacing:.02em; }
   .card .spec { font-size:12px; color:var(--muted); margin-top:12px; line-height:2; }
@@ -56,14 +56,14 @@
   #cta { position:fixed; right:18px; bottom:54px; z-index:22; display:none; padding:14px 22px; font-size:13px; font-weight:700; letter-spacing:.04em; color:#fff; background:var(--accent); border:1px solid rgba(255,255,255,.12); border-radius:30px; cursor:pointer; box-shadow:0 10px 30px rgba(207,107,67,.45); transition:transform .15s; }
   #cta:hover { transform:translateY(-2px); }
   #modal { position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; background:rgba(12,9,6,.66); backdrop-filter:blur(6px); padding:20px; }
-  #modal .panel { width:360px; max-width:92vw; background:linear-gradient(180deg,#221b14,#1a140e); border:1px solid var(--line); border-radius:20px; padding:28px; text-align:center; box-shadow:0 30px 60px rgba(0,0,0,.6); }
+  #modal .panel { width:360px; max-width:92vw; background:linear-gradient(180deg,#212127,#15151a); border:1px solid var(--line); border-radius:20px; padding:28px; text-align:center; box-shadow:0 30px 60px rgba(0,0,0,.6); }
   #modal h3 { font-family:var(--serif); font-size:20px; font-weight:600; letter-spacing:.02em; } #modal .mt { font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.8; }
   #modal .opt { display:block; width:100%; margin-top:11px; padding:14px; font-size:13.5px; font-weight:500; color:var(--text); background:var(--surf2); border:1px solid var(--line); border-radius:13px; cursor:pointer; transition:border-color .2s, background .2s; }
-  #modal .opt:hover { border-color:var(--brass); background:#2c241c; } #modal .opt.go { background:var(--accent); border-color:transparent; color:#fff; font-weight:700; } #modal .opt.go:hover { background:var(--accent-soft); }
+  #modal .opt:hover { border-color:var(--brass); background:#2c2c33; } #modal .opt.go { background:var(--accent); border-color:transparent; color:#fff; font-weight:700; } #modal .opt.go:hover { background:var(--accent-soft); }
   #modal .demo { margin-top:16px; font-size:10px; color:var(--muted); opacity:.7; line-height:1.6; }
   #modal .close { margin-top:8px; font-size:12px; color:var(--muted); background:none; border:none; cursor:pointer; }
   #chat { position:fixed; inset:0; z-index:41; display:none; align-items:center; justify-content:center; background:rgba(12,9,6,.66); backdrop-filter:blur(6px); padding:16px; }
-  #chat .win { width:390px; max-width:94vw; height:580px; max-height:88vh; background:linear-gradient(180deg,#1f1913,#171109); border:1px solid var(--line); border-radius:20px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,.6); }
+  #chat .win { width:390px; max-width:94vw; height:580px; max-height:88vh; background:linear-gradient(180deg,#1d1d22,#141418); border:1px solid var(--line); border-radius:20px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,.6); }
   #chat .head { padding:16px 18px; background:rgba(255,255,255,.03); border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; }
   #chat .head b { font-size:13px; font-weight:700; letter-spacing:.06em; } #chat .head .x { background:none; border:none; color:var(--text); opacity:.55; font-size:16px; cursor:pointer; }
   #chatBody { flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:11px; }
@@ -77,7 +77,7 @@
   .chip:hover { border-color:transparent; background:var(--accent); color:#fff; }
   #chatInput { display:flex; gap:8px; padding:12px; border-top:1px solid var(--line); }
   #chatText { flex:1; min-width:0; background:var(--surf2); border:1px solid var(--line); border-radius:22px; padding:11px 16px; color:var(--text); font-size:13px; outline:none; font-family:var(--sans); }
-  #chatText::placeholder { color:#7c7163; } #chatText:focus { border-color:var(--brass); }
+  #chatText::placeholder { color:#74747c; } #chatText:focus { border-color:var(--brass); }
   #chatSend { padding:0 18px; font-size:13px; font-weight:700; color:#fff; background:var(--accent); border:none; border-radius:22px; cursor:pointer; white-space:nowrap; }
 </style>
 </head>
@@ -149,11 +149,11 @@ const scene=new THREE.Scene();
 // 夕暮れのグラデーション空（上＝澄んだ青／下＝暖かいクリーム）
 const _sky=(function(){const c=document.createElement('canvas');c.width=4;c.height=320;const x=c.getContext('2d');
   const g=x.createLinearGradient(0,0,0,320);
-  g.addColorStop(0,'#8fb6dd'); g.addColorStop(0.45,'#bcd2da'); g.addColorStop(0.78,'#ecdcc4'); g.addColorStop(1,'#f6e3c8');
+  g.addColorStop(0,'#c2cad1'); g.addColorStop(0.55,'#d7dadc'); g.addColorStop(1,'#eeedeb');
   x.fillStyle=g; x.fillRect(0,0,4,320);
   const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;})();
 scene.background=_sky;
-scene.fog=new THREE.Fog(0xeaddc6,54,165);
+scene.fog=new THREE.Fog(0xe4e6e4,54,170);
 const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.05,400);
 camera.position.set(0,1.6,9);
 const renderer=new THREE.WebGLRenderer({antialias:true});
@@ -164,31 +164,32 @@ renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1
 document.getElementById('app').appendChild(renderer.domElement);
 
 // 夕方の柔らかな光
-scene.add(new THREE.HemisphereLight(0xfff1dd,0x6e5c46,0.6));
-scene.add(new THREE.AmbientLight(0xfff0e0,0.3));
-const sun=new THREE.DirectionalLight(0xffd49c,1.6);
-sun.position.set(22,15,12); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
+scene.add(new THREE.HemisphereLight(0xeef1f4,0x595960,0.55));
+scene.add(new THREE.AmbientLight(0xffffff,0.36));
+const sun=new THREE.DirectionalLight(0xffffff,1.4);
+sun.position.set(22,18,12); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
 sun.shadow.camera.near=1; sun.shadow.camera.far=110;
 sun.shadow.camera.left=-30;sun.shadow.camera.right=30;sun.shadow.camera.top=30;sun.shadow.camera.bottom=-30;
 sun.shadow.bias=-0.0004; sun.shadow.radius=3;
 scene.add(sun);
 // 反対側からの淡いフィルライト（影を柔らかく）
-const fill=new THREE.DirectionalLight(0xbcd0e6,0.35); fill.position.set(-14,10,-10); scene.add(fill);
+const fill=new THREE.DirectionalLight(0xcdd6de,0.3); fill.position.set(-14,10,-10); scene.add(fill);
 
 // ground (persistent)
 const _grad=(function(s){const a=new Uint8Array(s);for(let i=0;i<s;i++)a[i]=Math.round(255*(i/(s-1)));const t=new THREE.DataTexture(a,s,1,THREE.RedFormat);t.needsUpdate=true;t.minFilter=THREE.NearestFilter;t.magFilter=THREE.NearestFilter;t.generateMipmaps=false;return t;})(3);
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshToonMaterial({color:0x97a06a,gradientMap:_grad}));
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshToonMaterial({color:0xbcbcb8,gradientMap:_grad}));
 ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
-const grid=new THREE.GridHelper(240,120,0x8b9663,0x96a06d); grid.position.y=0.01; grid.material.transparent=true; grid.material.opacity=0.45; scene.add(grid);
+const grid=new THREE.GridHelper(240,120,0xa8a8a4,0xb2b2ae); grid.position.y=0.01; grid.material.transparent=true; grid.material.opacity=0.4; scene.add(grid);
 
 // ---------- materials ----------
-const mRed=new THREE.MeshStandardMaterial({color:0xb8412e}),  mBlue=new THREE.MeshStandardMaterial({color:0x2f6e92});
-const mGreen=new THREE.MeshStandardMaterial({color:0x5f7d3f}), mCast=new THREE.MeshStandardMaterial({color:0x23262b});
-const mSteel=new THREE.MeshStandardMaterial({color:0x3c4046}), mWood=new THREE.MeshStandardMaterial({color:0xab6f37});
-const mWhite=new THREE.MeshStandardMaterial({color:0xefede7}), mDark=new THREE.MeshStandardMaterial({color:0x2b2b30});
-const mGlass=new THREE.MeshPhysicalMaterial({color:0xbfe3ea,roughness:.04,transmission:.92,transparent:true,opacity:.38,metalness:0});
-const mLeaf=new THREE.MeshStandardMaterial({color:0x4f8a3f}), mLeaf2=new THREE.MeshStandardMaterial({color:0x6aa84e});
-const mTrunk=new THREE.MeshStandardMaterial({color:0x6b4a2c}), mParasol=new THREE.MeshStandardMaterial({color:0xe0935a}), mPot=new THREE.MeshStandardMaterial({color:0x8a847c});
+// 赤×黒×白×グレー（赤は差し色）
+const mRed=new THREE.MeshStandardMaterial({color:0xb5302a}),  mBlue=new THREE.MeshStandardMaterial({color:0x34343c});   // 差し色赤 / チャコール
+const mGreen=new THREE.MeshStandardMaterial({color:0xd4d4d8}), mCast=new THREE.MeshStandardMaterial({color:0x131316}); // ライトグレー / 黒金具
+const mSteel=new THREE.MeshStandardMaterial({color:0x1f1f24}), mWood=new THREE.MeshStandardMaterial({color:0xb4b1aa});  // 黒鉄 / グレー床
+const mWhite=new THREE.MeshStandardMaterial({color:0xeeeef0}), mDark=new THREE.MeshStandardMaterial({color:0x222228});
+const mGlass=new THREE.MeshPhysicalMaterial({color:0xccd2d5,roughness:.05,transmission:.9,transparent:true,opacity:.34,metalness:0});
+const mLeaf=new THREE.MeshStandardMaterial({color:0x6e776c}), mLeaf2=new THREE.MeshStandardMaterial({color:0x808a7c}); // 抑えたグレーグリーン
+const mTrunk=new THREE.MeshStandardMaterial({color:0x4e4a45}), mParasol=new THREE.MeshStandardMaterial({color:0xe6e3dc}), mPot=new THREE.MeshStandardMaterial({color:0x8a8884});
 const _outline=new THREE.MeshBasicMaterial({color:0x101018,side:THREE.BackSide});
 const _hsl={};
 
@@ -233,7 +234,7 @@ function sign(t,bg,w){const c=document.createElement('canvas');c.width=512;c.hei
 function person(x,z,rotY,top,bot,skin){
   const pg=new THREE.Group(); pg.position.set(x,0,z); pg.rotation.y=rotY||0;
   const Tm=new THREE.MeshStandardMaterial({color:top}), Bm=new THREE.MeshStandardMaterial({color:bot}),
-        Sm=new THREE.MeshStandardMaterial({color:skin||0xe8b894}), Hm=new THREE.MeshStandardMaterial({color:0x2c2620});
+        Sm=new THREE.MeshStandardMaterial({color:skin||0xd6d6da}), Hm=new THREE.MeshStandardMaterial({color:0x26262c});
   const mk=(g,m,py,px)=>{const me=new THREE.Mesh(g,m);me.position.set(px||0,py,0);me.castShadow=true;me.userData.noOutline=true;pg.add(me);};
   mk(new THREE.BoxGeometry(0.42,0.9,0.3),Bm,0.45);             // 脚
   mk(new THREE.BoxGeometry(0.46,0.62,0.3),Tm,1.18);           // 胴
@@ -263,7 +264,7 @@ function toonify(group){
   group.traverse(o=>{
     if(!o.isMesh||!o.material||!o.material.color) return;
     if(o.material.transparent&&o.material.opacity<0.6) return; // glass
-    const c=o.material.color.clone(); c.getHSL(_hsl); c.setHSL(_hsl.h,Math.min(1,_hsl.s*1.6+0.1),Math.min(0.92,_hsl.l*1.07+0.05));
+    const c=o.material.color.clone(); c.getHSL(_hsl); c.setHSL(_hsl.h,_hsl.s*0.9,Math.min(0.95,_hsl.l*1.04+0.03));
     o.material=new THREE.MeshToonMaterial({color:c,gradientMap:_grad});
     if(o.geometry&&(o.geometry.type==='BoxGeometry'||o.geometry.type==='IcosahedronGeometry')&&!o.userData.noOutline){ o.geometry.computeBoundingBox(); const sz=new THREE.Vector3(); o.geometry.boundingBox.getSize(sz);
       const md=Math.max(sz.x,sz.y,sz.z); if(md>0.4&&md<40){const m=new THREE.Mesh(o.geometry,_outline);m.position.copy(o.position);m.quaternion.copy(o.quaternion);m.scale.copy(o.scale).multiplyScalar(1.06);outs.push(m);} }
@@ -298,8 +299,8 @@ function buildUme(){
   for(let i=0;i<3;i++){box(0.34,0.04,0.34,mDark,X0+1.5,0.74,-0.8+i*0.8);box(0.05,0.74,0.05,mDark,X0+1.5,0.37,-0.8+i*0.8);}
   box(X1-X0-0.6,0.05,0.28,mWood,0,1.7,Z0+0.3);
   plight(0,2.3,0);
-  npcIdle(X0+1.0,0.0,0,0x335f8a,0x33373e);   // 店員（カウンター内）
-  npcIdle(0.5,0.4,Math.PI,0xc6553f,0x4a4a52); // お客さん
+  npcIdle(X0+1.0,0.0,0,0xb5302a,0x2c2c32);   // 店員（カウンター内）
+  npcIdle(0.5,0.4,Math.PI,0x8c8c92,0x33333a); // お客さん
   potPlant(X1-0.7,Z0+0.5,0.7);
   terraceFront(Z1+2.0); tree(-5.5,-1,1); tree(5.5,0.5,1.1); tree(-6,3.5,0.9); tree(5.2,4.5,1); tree(-2,-5.5,1.1); tree(2.5,-5.5,0.95);
   const sg=sign('CAFE',0x1d1d22,2.6); sg.position.set(0,H+0.45,Z1+0.2);
@@ -323,15 +324,15 @@ function buildTake(){
   // interior fit-out
   box(0.6,1.05,3.2,mWood,X0+0.5,0.55,0.3); box(0.66,0.06,3.3,mDark,X0+0.5,1.08,0.3);
   for(let i=0;i<3;i++){box(0.34,0.04,0.34,mDark,X0+1.4,0.74,-0.6+i*1.0);box(0.05,0.74,0.05,mDark,X0+1.4,0.37,-0.6+i*1.0);}
-  box(2.0,0.5,0.7,new THREE.MeshStandardMaterial({color:0x7c8a93}),1.3,0.3,1.6);
+  box(2.0,0.5,0.7,new THREE.MeshStandardMaterial({color:0x7e7e86}),1.3,0.3,1.6);
   box(0.9,0.04,0.55,mWood,1.3,0.42,0.9);
   box(1.2,0.04,0.8,mWood,1.2,0.72,-1.5); for(const sx of[-0.5,0.5])for(const sz of[-0.3,0.3])box(0.05,0.72,0.05,mDark,1.2+sx,0.36,-1.5+sz);
   box(X1-X0-0.6,0.05,0.28,mWood,0,1.7,Z0+0.3); box(X1-X0-0.6,0.05,0.28,mWood,0,1.3,Z0+0.3);
-  box(0.5,0.9,0.5,new THREE.MeshStandardMaterial({color:0x4f7a43}),X1-0.6,0.9,1.7);
+  box(0.5,0.9,0.5,new THREE.MeshStandardMaterial({color:0x6e776c}),X1-0.6,0.9,1.7);
   plight(-1,2.3,0.4); plight(1.2,2.3,-1.1);
-  npcIdle(X0+1.1,0.3,0,0x335f8a,0x33373e);    // 店員
-  npcIdle(1.0,1.3,Math.PI,0xc6553f,0x4a4a52);  // 客（ソファ付近）
-  npcWalk(-1.3,-1.2,1.5,-1.2,0x3a7d5a,0x33373e,0.5); // 店内を歩く客
+  npcIdle(X0+1.1,0.3,0,0xb5302a,0x2c2c32);    // 店員
+  npcIdle(1.0,1.3,Math.PI,0x8c8c92,0x33333a);  // 客（ソファ付近）
+  npcWalk(-1.3,-1.2,1.5,-1.2,0xd9d9dd,0x2c2c32,0.5); // 店内を歩く客
   potPlant(X1-0.7,Z0+0.6,0.8); potPlant(X0+0.7,Z1-0.6,0.7);
   terraceFront(Z1+2.0); tree(-6,-1,1); tree(6,0.5,1.1); tree(-6.5,4.5,0.95); tree(5.5,5.5,1); tree(-2,-6.5,1.1); tree(2.5,-6.5,0.95);
   const sg=sign('CONTAINER CAFE',0x1d1d22,3.4); sg.position.set(0,H+0.5,Z1+0.25);
@@ -385,23 +386,23 @@ function buildMatsu(){
   box(AX1-AX0-0.1,2.4,0.05,mWhite,0,1.2,bZ0+0.12);
   box(0.6,1.05,3.2,mWood,AX0+0.5,0.55,0.4); box(0.66,0.06,3.3,mDark,AX0+0.5,1.08,0.4);
   for(let i=0;i<3;i++){box(0.34,0.04,0.34,mDark,AX0+1.5,0.74,-0.5+i*1.0);box(0.05,0.74,0.05,mDark,AX0+1.5,0.37,-0.5+i*1.0);}
-  box(2.0,0.5,0.7,new THREE.MeshStandardMaterial({color:0x7c8a93}),1.3,0.3,1.7); box(0.9,0.04,0.55,mWood,1.3,0.42,1.0);
+  box(2.0,0.5,0.7,new THREE.MeshStandardMaterial({color:0x7e7e86}),1.3,0.3,1.7); box(0.9,0.04,0.55,mWood,1.3,0.42,1.0);
   box(1.2,0.04,0.8,mWood,1.2,0.72,-1.5); for(const sx of[-0.5,0.5])for(const sz of[-0.3,0.3])box(0.05,0.72,0.05,mDark,1.2+sx,0.36,-1.5+sz);
   box(AX1-AX0-0.6,0.05,0.28,mWood,0,1.7,bZ0+0.3); box(AX1-AX0-0.6,0.05,0.28,mWood,0,1.3,bZ0+0.3);
-  box(0.5,0.9,0.5,new THREE.MeshStandardMaterial({color:0x4f7a43}),AX1-0.6,0.9,1.8);
+  box(0.5,0.9,0.5,new THREE.MeshStandardMaterial({color:0x6e776c}),AX1-0.6,0.9,1.8);
   plight(-1,2.3,0.5); plight(1.3,2.3,-1.2);
   // loft interior
   box(CX1-CX0-0.1,0.04,CZ1-CZ0-0.1,mWhite,(CX0+CX1)/2,CY1-0.12,(CZ0+CZ1)/2);
-  box(1.2,0.35,1.9,new THREE.MeshStandardMaterial({color:0xb9c2cc}),(CX0+CX1)/2,UP+0.18,CZ1-1.4);
+  box(1.2,0.35,1.9,new THREE.MeshStandardMaterial({color:0xc0c0c6}),(CX0+CX1)/2,UP+0.18,CZ1-1.4);
   box(1.4,0.04,0.6,mWood,(CX0+CX1)/2,UP+0.4,CZ0+1.2);
   const lp=new THREE.PointLight(0xffe9cf,4.5,7,2);lp.position.set((CX0+CX1)/2,CY1-0.4,0.5);G.add(lp);
   // surfaces for walking up
   surfaces.push({xMin:CX0,xMax:CX1,zMin:CZ0,zMax:CZ1,y:UP});
   surfaces.push({xMin:TX0,xMax:TX1,zMin:TZ0,zMax:TZ1,y:UP});
   surfaces.push({ramp:1,axis:'z',xMin:SX0,xMax:SX1,zMin:SzTop,zMax:SzBot,c0:SzBot,y0:0,c1:SzTop,y1:UP});
-  npcIdle(AX0+1.1,0.4,0,0x335f8a,0x33373e);    // 店員
-  npcIdle(1.2,-1.0,Math.PI,0xc6553f,0x4a4a52);  // 客（ダイニング）
-  npcWalk(-1.6,7.0,1.6,7.0,0x3a7d5a,0x33373e,0.55); // 店前を歩く通行人
+  npcIdle(AX0+1.1,0.4,0,0xb5302a,0x2c2c32);    // 店員
+  npcIdle(1.2,-1.0,Math.PI,0x8c8c92,0x33333a);  // 客（ダイニング）
+  npcWalk(-1.6,7.0,1.6,7.0,0xd9d9dd,0x2c2c32,0.55); // 店前を歩く通行人
   potPlant(AX0+1.6,fZ1-0.5,0.8); potPlant(AX1-0.7,bZ0+0.7,0.75);
   terraceFront(fZ1+2.4); tree(-6,-1,1.1); tree(-6.5,4.5,0.95); tree(-2,-7,1.1); tree(2.5,-7,1); tree(6.5,6,1); tree(7,-1,1.05);
   const sg=sign('CONTAINER CAFE',0x1d1d22,4.2); sg.position.set(0,H+0.55,fZ1+0.3);
