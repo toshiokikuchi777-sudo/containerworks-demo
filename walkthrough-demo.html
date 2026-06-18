@@ -43,6 +43,14 @@
   #knob { position:absolute; left:35px; top:35px; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,.55); }
   #lookpad { position:absolute; right:0; top:0; width:55%; height:100%; pointer-events:auto; touch-action:none; }
   #hint { position:fixed; bottom:12px; left:50%; transform:translateX(-50%); z-index:9; color:#fff; font-size:11px; opacity:.6; background:rgba(0,0,0,.34); padding:6px 14px; border-radius:20px; display:none; }
+  #cta { position:fixed; right:14px; bottom:52px; z-index:12; display:none; padding:13px 20px; font-size:13px; font-weight:800; color:#fff; background:var(--accent); border:none; border-radius:30px; cursor:pointer; box-shadow:0 8px 24px rgba(232,98,61,.5); }
+  #modal { position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; background:rgba(8,8,12,.62); backdrop-filter:blur(3px); padding:20px; }
+  #modal .panel { width:350px; max-width:92vw; background:#16171d; border:1px solid #2c2e37; border-radius:18px; padding:24px; color:#fff; text-align:center; }
+  #modal h3 { font-size:18px; font-weight:800; } #modal .mt { font-size:12.5px; opacity:.72; margin-top:8px; line-height:1.7; }
+  #modal .opt { display:block; width:100%; margin-top:10px; padding:13px; font-size:13.5px; font-weight:700; color:#fff; background:#23252e; border:1px solid #343742; border-radius:12px; cursor:pointer; }
+  #modal .opt:hover { border-color:var(--accent); } #modal .opt.go { background:var(--accent); border-color:var(--accent); }
+  #modal .demo { margin-top:14px; font-size:10px; opacity:.42; line-height:1.5; }
+  #modal .close { margin-top:6px; font-size:12px; opacity:.6; background:none; border:none; color:#fff; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -50,6 +58,17 @@
 <div id="mobile"><div id="joy"><div id="knob"></div></div><div id="lookpad"></div></div>
 <div id="hint">スティックで移動・右側ドラッグで見回す</div>
 <button id="back">← 別の棟を選ぶ</button>
+<button id="cta">📋 このコンテナを相談・資料請求</button>
+<div id="modal"><div class="panel">
+  <h3 id="mTitle">ご相談・お見積り</h3>
+  <div class="mt" id="mDesc">このプランについて、ご希望はどれですか？</div>
+  <button class="opt go" data-a="estimate">⚡ AIで概算見積りを出す</button>
+  <button class="opt" data-a="visit">🏠 駒沢の展示場に来場予約</button>
+  <button class="opt" data-a="doc">📄 資料・CADデータを請求</button>
+  <button class="opt" data-a="line">💬 LINEで相談（友だち追加）</button>
+  <div class="demo">※デモです。本番はAIチャット／予約フォーム／LINE公式に接続します。</div>
+  <button class="close" id="mClose">閉じる</button>
+</div></div>
 <div id="hud">
   <div class="brand">CONTAINER <b>WORKS</b> ｜ バーチャル展示場 DEMO</div>
   <div id="status"></div>
@@ -364,6 +383,7 @@ function select(tier){
   const h=document.getElementById('hint'); h.style.display='block';
   h.textContent=isTouch?'スティックで移動・右側ドラッグで見回す':'ドラッグで見回す・WASD / 矢印で移動';
   if(isTouch) document.getElementById('mobile').style.display='block';
+  curTier=tier; document.getElementById('cta').style.display='block';
   document.getElementById('status').innerHTML='<span class="near">'+statusText+'</span>';
 }
 function backToMenu(){
@@ -373,9 +393,25 @@ function backToMenu(){
   document.getElementById('back').style.display='none';
   document.getElementById('hint').style.display='none';
   document.getElementById('mobile').style.display='none';
+  document.getElementById('cta').style.display='none';
+  document.getElementById('modal').style.display='none';
 }
 document.querySelectorAll('.card').forEach(c=> c.addEventListener('click',()=>select(c.dataset.tier)) );
 document.getElementById('back').addEventListener('click',backToMenu);
+
+// CV導線（相談・資料請求モーダル）
+let curTier='';
+const LABELS={matsu:'松：フラッグシップ',take:'竹：ワイドカフェ',ume:'梅：テイクアウト'};
+const modalEl=document.getElementById('modal');
+function openModal(){ document.getElementById('mTitle').textContent=(LABELS[curTier]||'')+' のご相談';
+  document.getElementById('mDesc').textContent='このプランについて、ご希望はどれですか？';
+  document.querySelectorAll('#modal .opt').forEach(x=>x.style.display='block'); modalEl.style.display='flex'; }
+document.getElementById('cta').addEventListener('click',openModal);
+document.getElementById('mClose').addEventListener('click',()=>modalEl.style.display='none');
+modalEl.addEventListener('click',e=>{ if(e.target===modalEl) modalEl.style.display='none'; });
+document.querySelectorAll('#modal .opt').forEach(b=>b.addEventListener('click',()=>{
+  document.getElementById('mDesc').innerHTML='✅ ありがとうございます！担当より追ってご連絡します。<br>（デモ表示）';
+  document.querySelectorAll('#modal .opt').forEach(x=>x.style.display='none'); }));
 
 // ---------- controls (drag-look + WASD, no pointer-lock) ----------
 const keys={}; addEventListener('keydown',e=>{keys[e.code]=true;}); addEventListener('keyup',e=>{keys[e.code]=false;});
