@@ -131,6 +131,7 @@ let G=scene;                 // current build target
 let currentBuilding=null;
 const colliders=[];          // {minX,maxX,minZ,maxZ,minY,maxY}
 const surfaces=[];           // flat {xMin,xMax,zMin,zMax,y} | ramp {ramp:1,xMin,xMax,zMin,zMax,c0,y0,c1,y1,axis}
+const npcs=[]; let _T=0;     // NPC（人物）アニメ
 
 function box(w,h,d,mat,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;G.add(m);return m;}
 function col(a,b,c,d,e,f){colliders.push({minX:a,maxX:b,minZ:c,maxZ:d,minY:e,maxY:f});}
@@ -159,6 +160,23 @@ function sign(t,bg,w){const c=document.createElement('canvas');c.width=512;c.hei
   x.fillStyle=bg;x.beginPath();x.roundRect(4,4,504,88,16);x.fill();x.fillStyle='#fff';x.font='bold 44px -apple-system,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(t,256,50);
   const tex=new THREE.CanvasTexture(c);tex.anisotropy=4;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true}));s.scale.set(w,w*0.18,1);s.position.set(0,0,0);G.add(s);return s;}
 
+// ---------- NPC（人物）----------
+function person(x,z,rotY,top,bot,skin){
+  const pg=new THREE.Group(); pg.position.set(x,0,z); pg.rotation.y=rotY||0;
+  const Tm=new THREE.MeshStandardMaterial({color:top}), Bm=new THREE.MeshStandardMaterial({color:bot}),
+        Sm=new THREE.MeshStandardMaterial({color:skin||0xe8b894}), Hm=new THREE.MeshStandardMaterial({color:0x2c2620});
+  const mk=(g,m,py,px)=>{const me=new THREE.Mesh(g,m);me.position.set(px||0,py,0);me.castShadow=true;me.userData.noOutline=true;pg.add(me);};
+  mk(new THREE.BoxGeometry(0.42,0.9,0.3),Bm,0.45);             // 脚
+  mk(new THREE.BoxGeometry(0.46,0.62,0.3),Tm,1.18);           // 胴
+  mk(new THREE.BoxGeometry(0.11,0.55,0.16),Tm,1.15,-0.29);    // 腕
+  mk(new THREE.BoxGeometry(0.11,0.55,0.16),Tm,1.15,0.29);
+  mk(new THREE.SphereGeometry(0.14,14,12),Sm,1.62);           // 頭
+  mk(new THREE.BoxGeometry(0.32,0.17,0.34),Hm,1.72);          // 髪
+  G.add(pg); return pg;
+}
+function npcIdle(x,z,rot,top,bot){ const pg=person(x,z,rot,top,bot); npcs.push({pg,kind:'idle',ph:Math.abs(x*7+z*13)%6}); }
+function npcWalk(ax,az,bx,bz,top,bot,spd){ const pg=person(ax,az,0,top,bot); npcs.push({pg,kind:'walk',ax,az,bx,bz,spd:spd||0.5,t:Math.abs(ax+az)%6}); }
+
 // ---------- toon/outline pass on a group ----------
 function toonify(group){
   const outs=[];
@@ -167,7 +185,7 @@ function toonify(group){
     if(o.material.transparent&&o.material.opacity<0.6) return; // glass
     const c=o.material.color.clone(); c.getHSL(_hsl); c.setHSL(_hsl.h,Math.min(1,_hsl.s*1.6+0.1),Math.min(0.92,_hsl.l*1.07+0.05));
     o.material=new THREE.MeshToonMaterial({color:c,gradientMap:_grad});
-    if(o.geometry&&o.geometry.type==='BoxGeometry'){ o.geometry.computeBoundingBox(); const sz=new THREE.Vector3(); o.geometry.boundingBox.getSize(sz);
+    if(o.geometry&&o.geometry.type==='BoxGeometry'&&!o.userData.noOutline){ o.geometry.computeBoundingBox(); const sz=new THREE.Vector3(); o.geometry.boundingBox.getSize(sz);
       const md=Math.max(sz.x,sz.y,sz.z); if(md>0.45&&md<40){const m=new THREE.Mesh(o.geometry,_outline);m.position.copy(o.position);m.quaternion.copy(o.quaternion);m.scale.copy(o.scale).multiplyScalar(1.06);outs.push(m);} }
   });
   outs.forEach(m=>group.add(m));
@@ -200,6 +218,8 @@ function buildUme(){
   for(let i=0;i<3;i++){box(0.34,0.04,0.34,mDark,X0+1.5,0.74,-0.8+i*0.8);box(0.05,0.74,0.05,mDark,X0+1.5,0.37,-0.8+i*0.8);}
   box(X1-X0-0.6,0.05,0.28,mWood,0,1.7,Z0+0.3);
   plight(0,2.3,0);
+  npcIdle(X0+1.0,0.0,0,0x335f8a,0x33373e);   // 店員（カウンター内）
+  npcIdle(0.5,0.4,Math.PI,0xc6553f,0x4a4a52); // お客さん
   const sg=sign('CAFE',0x1d1d22,2.6); sg.position.set(0,H+0.45,Z1+0.2);
   spawnZ=5.5; statusText='梅：コンテナ1棟・テイクアウトカフェ（天井高 約2.4m＝実寸）';
 }
@@ -227,6 +247,9 @@ function buildTake(){
   box(X1-X0-0.6,0.05,0.28,mWood,0,1.7,Z0+0.3); box(X1-X0-0.6,0.05,0.28,mWood,0,1.3,Z0+0.3);
   box(0.5,0.9,0.5,new THREE.MeshStandardMaterial({color:0x4f7a43}),X1-0.6,0.9,1.7);
   plight(-1,2.3,0.4); plight(1.2,2.3,-1.1);
+  npcIdle(X0+1.1,0.3,0,0x335f8a,0x33373e);    // 店員
+  npcIdle(1.0,1.3,Math.PI,0xc6553f,0x4a4a52);  // 客（ソファ付近）
+  npcWalk(-1.3,-1.2,1.5,-1.2,0x3a7d5a,0x33373e,0.5); // 店内を歩く客
   const sg=sign('CONTAINER CAFE',0x1d1d22,3.4); sg.position.set(0,H+0.5,Z1+0.25);
   spawnZ=7; statusText='竹：コンテナ2棟連結・ワイドカフェ（天井高 約2.4m＝実寸）';
 }
@@ -292,6 +315,9 @@ function buildMatsu(){
   surfaces.push({xMin:CX0,xMax:CX1,zMin:CZ0,zMax:CZ1,y:UP});
   surfaces.push({xMin:TX0,xMax:TX1,zMin:TZ0,zMax:TZ1,y:UP});
   surfaces.push({ramp:1,axis:'z',xMin:SX0,xMax:SX1,zMin:SzTop,zMax:SzBot,c0:SzBot,y0:0,c1:SzTop,y1:UP});
+  npcIdle(AX0+1.1,0.4,0,0x335f8a,0x33373e);    // 店員
+  npcIdle(1.2,-1.0,Math.PI,0xc6553f,0x4a4a52);  // 客（ダイニング）
+  npcWalk(-1.6,5.4,1.6,5.4,0x3a7d5a,0x33373e,0.55); // 店前を歩く通行人
   const sg=sign('CONTAINER CAFE',0x1d1d22,4.2); sg.position.set(0,H+0.55,fZ1+0.3);
   spawnZ=8; statusText='松：コンテナ3棟・2階建て（右の外階段で屋上＆ロフトへ ▲）';
 }
@@ -303,7 +329,7 @@ let started=false, yaw=0, pitch=0, feetY=0;
 function clearBuilding(){
   if(currentBuilding){ scene.remove(currentBuilding);
     currentBuilding.traverse(o=>{ if(o.geometry)o.geometry.dispose&&o.geometry.dispose(); }); }
-  colliders.length=0; surfaces.length=0; currentBuilding=null;
+  colliders.length=0; surfaces.length=0; npcs.length=0; currentBuilding=null;
 }
 function select(tier){
   clearBuilding();
@@ -391,6 +417,14 @@ function animate(){requestAnimationFrame(animate);
     const target=floorAt(camera.position.x,camera.position.z,feetY);
     if(target>feetY)feetY=target; else feetY+=(target-feetY)*Math.min(1,dt*12);
     camera.position.y=feetY+1.6;
+    _T+=dt;
+    for(const n of npcs){
+      if(n.kind==='idle'){ n.pg.position.y=Math.sin(_T*2+n.ph)*0.02; }
+      else { n.t+=dt*n.spd; const k=Math.sin(n.t)*0.5+0.5;
+        n.pg.position.x=n.ax+(n.bx-n.ax)*k; n.pg.position.z=n.az+(n.bz-n.az)*k;
+        n.pg.position.y=Math.abs(Math.sin(_T*7))*0.03;
+        n.pg.rotation.y=Math.atan2(n.bx-n.ax,n.bz-n.az)+(Math.cos(n.t)<0?Math.PI:0); }
+    }
   }
   renderer.render(scene,camera);
 }
