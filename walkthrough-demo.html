@@ -157,11 +157,11 @@ const scene=new THREE.Scene();
 // 夕暮れのグラデーション空（上＝澄んだ青／下＝暖かいクリーム）
 const _sky=(function(){const c=document.createElement('canvas');c.width=4;c.height=320;const x=c.getContext('2d');
   const g=x.createLinearGradient(0,0,0,320);
-  g.addColorStop(0,'#dbe3e9'); g.addColorStop(0.55,'#ededee'); g.addColorStop(1,'#f8f7f5');
+  g.addColorStop(0,'#5b9bd6'); g.addColorStop(0.5,'#9cc6e6'); g.addColorStop(1,'#e7f1f7');
   x.fillStyle=g; x.fillRect(0,0,4,320);
   const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;})();
 scene.background=_sky;
-scene.fog=new THREE.Fog(0xf0f1ef,58,180);
+scene.fog=new THREE.Fog(0xe7f1f7,60,185);
 const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.05,400);
 camera.position.set(0,1.6,9);
 const renderer=new THREE.WebGLRenderer({antialias:true});
