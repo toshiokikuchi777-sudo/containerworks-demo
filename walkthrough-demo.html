@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>CONTAINER WORKS ｜ 3コンテナ・カフェ ウォークスルー DEMO</title>
+<style>
+  :root { --accent:#e8623d; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; overflow:hidden; background:#aecbe0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; }
+  #app { position:fixed; inset:0; } canvas { display:block; }
+  #hud { position:fixed; top:14px; left:14px; z-index:10; color:#fff; pointer-events:none; text-shadow:0 1px 4px rgba(0,0,0,.45); }
+  #hud .brand { font-weight:800; letter-spacing:.13em; font-size:13px; } #hud .brand b { color:var(--accent); }
+  #status { margin-top:10px; font-size:12px; line-height:1.7; background:rgba(0,0,0,.34); padding:8px 12px; border-radius:8px; backdrop-filter:blur(4px); display:inline-block; }
+  #status .near { color:#ffd9cb; font-weight:700; }
+  #start { position:fixed; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+           background:radial-gradient(120% 120% at 50% 25%, #20222b 0%, #0a0a0c 72%); color:#fff; }
+  #start h1 { font-size:clamp(22px,5vw,38px); font-weight:800; letter-spacing:.03em; line-height:1.3; } #start h1 b { color:var(--accent); }
+  #start p { margin-top:11px; font-size:13px; opacity:.66; }
+  #start .keys { margin-top:22px; font-size:12px; opacity:.82; line-height:2; }
+  #start .keys kbd { background:#222; border:1px solid #3a3a3a; border-bottom-width:2px; border-radius:6px; padding:2px 8px; font-family:inherit; font-weight:700; }
+  #enter { margin-top:26px; padding:15px 42px; font-size:15px; font-weight:800; letter-spacing:.06em; color:#fff;
+           background:var(--accent); border:none; border-radius:40px; cursor:pointer; box-shadow:0 8px 30px rgba(232,98,61,.45); transition:transform .15s; } #enter:active { transform:scale(.96); }
+  #start .note { margin-top:20px; font-size:10.5px; opacity:.4; max-width:340px; line-height:1.6; }
+  #cross { position:fixed; top:50%; left:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:rgba(255,255,255,.6); z-index:9; display:none; pointer-events:none; }
+  #mobile { position:fixed; inset:0; z-index:20; display:none; pointer-events:none; }
+  #joy { position:absolute; left:22px; bottom:30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.28); pointer-events:auto; touch-action:none; }
+  #knob { position:absolute; left:35px; top:35px; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,.55); }
+  #lookpad { position:absolute; right:0; top:0; width:55%; height:100%; pointer-events:auto; touch-action:none; }
+  #hint { position:fixed; bottom:12px; left:50%; transform:translateX(-50%); z-index:9; color:#fff; font-size:11px; opacity:.6; background:rgba(0,0,0,.34); padding:6px 14px; border-radius:20px; display:none; }
+</style>
+</head>
+<body>
+<div id="app"></div><div id="cross"></div>
+<div id="mobile"><div id="joy"><div id="knob"></div></div><div id="lookpad"></div></div>
+<div id="hint">スティックで移動・右側ドラッグで見回す</div>
+<div id="hud">
+  <div class="brand">CONTAINER <b>WORKS</b> ｜ 3コンテナ・カフェ DEMO</div>
+  <div id="status">前面ガラスのドアから中へ ▶　右の外階段で屋上＆ロフトへ ▲</div>
+</div>
+<div id="start">
+  <h1>コンテナ3つで作った<br><b>カフェ</b>を歩いてみる</h1>
+  <p>20ftコンテナ（6.06×2.44×2.59m）実寸。横に連結＋上に直交で積む。</p>
+  <p style="opacity:.45;font-size:11px;margin-top:6px;">※ 仮モデル。本番は御社の設計データ（CAD / BIM）に差し替えます。</p>
+  <div class="keys"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>/矢印＝移動　画面ドラッグ＝見回す　<kbd>Shift</kbd>＝速く　外階段は歩くだけで上がれます</span></div>
+  <button id="enter">中に入る ▶</button>
+  <div class="note">「中に入る」を押すと開始。画面をドラッグして見回し、WASD / 矢印キーで歩けます。スマホは左下スティック＋右側ドラッグ。</div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xaecbe0);
+scene.fog=new THREE.Fog(0xaecbe0,32,90);
+const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.05,400);
+camera.position.set(0,1.6,7.5);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+document.getElementById('app').appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xcfe4f2,0x55604f,0.9));
+const sun=new THREE.DirectionalLight(0xfff4e2,1.8);
+sun.position.set(12,22,16); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.near=1; sun.shadow.camera.far=80;
+sun.shadow.camera.left=-22;sun.shadow.camera.right=22;sun.shadow.camera.top=22;sun.shadow.camera.bottom=-22;
+scene.add(sun);
+
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:0x99a09a,roughness:1}));
+ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+const grid=new THREE.GridHelper(200,100,0x7d847e,0x868d86); grid.position.y=0.01; scene.add(grid);
+const deck=new THREE.Mesh(new THREE.PlaneGeometry(8,4),new THREE.MeshStandardMaterial({color:0x8a7a5e,roughness:.9}));
+deck.rotation.x=-Math.PI/2; deck.position.set(0,0.02,4.2); deck.receiveShadow=true; scene.add(deck);
+
+// ---- materials ----
+const mRed=new THREE.MeshStandardMaterial({color:0xa83f30,roughness:.62,metalness:.25});
+const mBlue=new THREE.MeshStandardMaterial({color:0x2f5e7a,roughness:.62,metalness:.25});
+const mGreen=new THREE.MeshStandardMaterial({color:0x5f6f49,roughness:.62,metalness:.25});
+const mCast=new THREE.MeshStandardMaterial({color:0x23262b,roughness:.5,metalness:.6});
+const mSteel=new THREE.MeshStandardMaterial({color:0x3c4046,roughness:.5,metalness:.5});
+const mGlass=new THREE.MeshPhysicalMaterial({color:0xbfe3ea,roughness:.04,transmission:.92,transparent:true,opacity:.38,metalness:0});
+const mWood=new THREE.MeshStandardMaterial({color:0x9c6b3f,roughness:.6});
+const mWhite=new THREE.MeshStandardMaterial({color:0xefede7,roughness:.93});
+const mDark=new THREE.MeshStandardMaterial({color:0x2b2b30,roughness:.7});
+
+function box(w,h,d,mat,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;}
+
+// ---- container scale (20ft ISO) ----
+const L=6.06, W=2.44, H=2.59;
+
+// corrugated wall. axis 'x'(normal X, spans Z) | 'z'(normal Z, spans X)
+function corr(axis,fixed,aMin,aMax,yMin,yMax,mat){
+  const h=yMax-yMin,yC=(yMin+yMax)/2,len=aMax-aMin,n=Math.max(2,Math.round(len/0.28));
+  if(axis==='x'){ box(0.06,h,len,mat,fixed,yC,(aMin+aMax)/2);
+    for(let i=0;i<=n;i++) box(0.10,h*0.96,0.07,mat,fixed,yC,aMin+i*(len/n)); }
+  else { box(len,h,0.06,mat,(aMin+aMax)/2,yC,fixed);
+    for(let i=0;i<=n;i++) box(0.07,h*0.96,0.10,mat,aMin+i*(len/n),yC,fixed); }
+}
+function castings(xMin,xMax,zMin,zMax,yMin,yMax){const s=0.17;
+  for(const X of[xMin,xMax])for(const Z of[zMin,zMax])for(const Y of[yMin+s/2,yMax-s/2]) box(s,s,s,mCast,X,Y,Z);}
+function frame(xMin,xMax,zMin,zMax,y){box(xMax-xMin+0.1,0.12,0.12,mSteel,(xMin+xMax)/2,y,zMin);box(xMax-xMin+0.1,0.12,0.12,mSteel,(xMin+xMax)/2,y,zMax);
+  box(0.12,0.12,zMax-zMin,mSteel,xMin,y,(zMin+zMax)/2);box(0.12,0.12,zMax-zMin,mSteel,xMax,y,(zMin+zMax)/2);}
+
+// collision (AABB + y-range)
+const colliders=[]; function col(a,b,c,d,e,f){colliders.push({minX:a,maxX:b,minZ:c,maxZ:d,minY:e,maxY:f});}
+
+// ============================================================
+//  FOOTPRINT  (café = container A[red,front] + B[blue,back], joined)
+//  A: X[-3.03,3.03] Z[0,2.44]   B: X[-3.03,3.03] Z[-2.44,0]
+//  C[green]: on top, perpendicular  X[-1.92,0.52] Z[-2.43,3.63] y[2.59,5.18]
+// ============================================================
+const AX0=-3.03,AX1=3.03, fZ0=0.0,fZ1=2.44, bZ0=-2.44,bZ1=0.0;
+const UP=2.70; // upper deck / loft floor
+
+// ---------- floor slabs ----------
+box(AX1-AX0,0.1,fZ1-bZ0, mDark, 0,0.0,(fZ1+bZ0)/2);              // base under-slab
+box(AX1-AX0,0.06,fZ1-bZ0, mWood, 0,0.05,(fZ1+bZ0)/2);            // café wood floor
+box(AX1-AX0,0.16,fZ1-bZ0, mSteel,0,H,(fZ1+bZ0)/2);              // mid steel deck (top of 1F)
+
+// ===== Container A (red, front) =====
+// front long side is CUT OPEN for the storefront (glass) — no solid wall here.
+// small solid corrugated strips only at the two front corners:
+corr('z', fZ1, AX0,AX0+0.35, 0,H, mRed);
+corr('z', fZ1, AX1-0.35,AX1, 0,H, mRed);
+corr('x', AX0, fZ0,fZ1, 0,H, mRed);     // left end
+// right end = CARGO DOORS (kept)
+(function cargoDoors(){ const x=AX1;
+  for(const zc of [fZ0+ (fZ1-fZ0)*0.27, fZ0+(fZ1-fZ0)*0.73]){ box(0.08,H-0.1,(fZ1-fZ0)/2-0.04,mRed,x,H/2,zc); }
+  for(const z of [fZ0+0.18,fZ0+1.0,fZ1-1.0,fZ1-0.18]) box(0.09,H-0.3,0.06,mDark,x+0.05,H/2,z); // locking rods
+  for(const z of [fZ0+0.5,fZ1-0.5]) box(0.12,0.18,0.1,mCast,x+0.07,1.05,z);                    // handles
+})();
+col(AX1-0.06,AX1+0.06, fZ0,fZ1, 0,H);   // right wall collide
+
+// ===== Container B (blue, back) =====
+corr('z', bZ0, AX0,AX1, 0,H, mBlue);    // back long side
+corr('x', AX0, bZ0,bZ1, 0,H, mBlue);    // left end
+corr('x', AX1, bZ0,bZ1, 0,H, mBlue);    // right end
+col(AX0-0.06,AX0+0.06, bZ0,fZ1, 0,H);   // whole left wall collide (A+B)
+col(AX0-0.06,AX1+0.06, bZ0-0.06,bZ0+0.06, 0,H); // back wall collide
+// side windows (cut openings, renovated glass)
+[ -1.4, 1.4 ].forEach(z=> box(0.06,1.2,1.4,mGlass,AX0+0.02,1.45,z<0?z:z) );  // left windows (over A/B)
+box(0.06,1.2,1.6,mGlass,AX1-0.02,1.45,bZ0+1.1);                              // right window (B)
+box(1.6,1.2,0.06,mGlass,1.4,1.45,bZ0+0.02);                                  // back window
+
+// ----- FRONT STOREFRONT (renovation: glass + entry door, on A front z=fZ1) -----
+const DW=1.5;
+function storefront(x0,x1){ box(x1-x0,H-0.2,0.05,mGlass,(x0+x1)/2,(H-0.2)/2,fZ1+0.04);
+  for(let y=0.9;y<H;y+=0.9) box(x1-x0,0.06,0.08,mDark,(x0+x1)/2,y,fZ1+0.05);
+  box(0.07,H-0.2,0.07,mDark,x0,(H-0.2)/2,fZ1+0.05); box(0.07,H-0.2,0.07,mDark,x1,(H-0.2)/2,fZ1+0.05);
+  col(x0,x1,fZ1-0.06,fZ1+0.06,0,H); }
+storefront(AX0+0.2,-DW/2);
+storefront(DW/2,AX1-0.2);
+// OPEN doorway: side posts + lintel only (no panel)
+box(0.08,2.15,0.1,mDark,-DW/2,1.07,fZ1+0.05);
+box(0.08,2.15,0.1,mDark, DW/2,1.07,fZ1+0.05);
+box(DW+0.18,0.1,0.1,mDark,0,2.15,fZ1+0.05);
+col(-DW/2,DW/2, fZ1-0.06,fZ1+0.06, 2.15,H);               // glass above door (head clearance below)
+frame(AX0,AX1,bZ0,fZ1,0.06); frame(AX0,AX1,bZ0,fZ1,H);    // top/bottom rails 1F
+castings(AX0,AX1,bZ0,fZ1,0,H);
+
+// ===== Container C (green, on top, perpendicular / 縦) =====
+const CX0=-1.92,CX1=0.52, CZ0=-2.43,CZ1=3.63, CY0=H, CY1=H+H; // 2.59..5.18
+box(CX1-CX0,0.12,CZ1-CZ0,mSteel,(CX0+CX1)/2,CY0+0.06,(CZ0+CZ1)/2);   // C floor slab
+box(CX1-CX0,0.12,CZ1-CZ0,mWhite,(CX0+CX1)/2,CY1-0.06,(CZ0+CZ1)/2);   // C roof
+corr('z',CZ1,CX0,CX1,CY0,CY1,mGreen);     // front end (cantilever tip)
+corr('z',CZ0,CX0,CX1,CY0,CY1,mGreen);     // back end
+corr('x',CX0,CZ0,CZ1,CY0,CY1,mGreen);     // left side
+// right side (x=CX1) with DOOR to roof terrace (gap z[-0.5,0.5])
+corr('x',CX1,CZ0,-0.5,CY0,CY1,mGreen);
+corr('x',CX1, 0.5,CZ1,CY0,CY1,mGreen);
+box(1.0,2.1,0.06,mDark,CX1,CY0+1.05,0);   // door frame
+frame(CX0,CX1,CZ0,CZ1,CY0); frame(CX0,CX1,CZ0,CZ1,CY1);
+castings(CX0,CX1,CZ0,CZ1,CY0,CY1);
+// C windows (cut openings)
+box(1.4,1.1,0.06,mGlass,(CX0+CX1)/2,CY0+1.3,CZ1-0.03);    // front window (cantilever)
+box(0.06,1.1,2.2,mGlass,CX0+0.02,CY0+1.3,1.2);            // left window
+// C wall colliders (y range upper)
+col(CX0-0.06,CX0+0.06,CZ0,CZ1,CY0,CY1);
+col(CX0,CX1,CZ0-0.06,CZ0+0.06,CY0,CY1);
+col(CX0,CX1,CZ1-0.06,CZ1+0.06,CY0,CY1);
+col(CX1-0.06,CX1+0.06,CZ0,-0.5,CY0,CY1);
+col(CX1-0.06,CX1+0.06,0.5,CZ1,CY0,CY1);
+// canopy underside over entrance (cantilever shades the door)
+box(CX1-CX0,0.1,1.2,mSteel,(CX0+CX1)/2,CY0-0.05,fZ1+0.6);
+
+// ===== ROOF TERRACE (right, open) + railings =====
+const TX0=0.52,TX1=3.03,TZ0=-2.44,TZ1=2.44;
+box(TX1-TX0,0.08,TZ1-TZ0,mWood,(TX0+TX1)/2,UP+0.02,(TZ0+TZ1)/2); // terrace deck surface
+function rail(x0,x1,z0,z1){ const horiz=(x1-x0)>(z1-z0);
+  box((x1-x0)||0.06,0.9,(z1-z0)||0.06,mSteel,(x0+x1)/2,UP+0.5,(z0+z1)/2);
+  col(Math.min(x0,x1)-0.05,Math.max(x0,x1)+0.05,Math.min(z0,z1)-0.05,Math.max(z0,z1)+0.05,UP,UP+0.95); }
+rail(TX0,TX1,TZ1,TZ1);                 // front rail
+rail(TX0,TX1,TZ0,TZ0);                 // back rail
+rail(TX1,TX1,TZ0,-0.6); rail(TX1,TX1,0.6,TZ1);   // right rail (gap for stairs z[-0.6,0.6])
+
+// ===== EXTERIOR STAIR (right side, ground -> terrace) =====
+const SX0=3.08,SX1=4.25, SzTop=0.0,SzBot=2.44;
+const STN=11;
+for(let i=0;i<STN;i++){const t=i/(STN-1);const z=SzBot+(SzTop-SzBot)*t;const y=UP*t;
+  box(SX1-SX0,0.12,(SzBot-SzTop)/STN+0.05,mSteel,(SX0+SX1)/2,y+0.06,z);}
+box(0.1,0.6,(SzBot-SzTop),mDark,SX0,UP/2,(SzTop+SzBot)/2);
+box(0.1,0.9,(SzBot-SzTop),mSteel,SX1,UP/2+0.3,(SzTop+SzBot)/2); // outer railing
+
+// ---------- interior renovation liner (café) ----------
+box(AX1-AX0-0.1,0.04,fZ1-bZ0-0.1,mWhite,0,2.44,(fZ1+bZ0)/2);   // white ceiling (low, scale-true)
+box(0.05,2.4,fZ1-bZ0-0.1,mWhite,AX0+0.12,1.2,(fZ1+bZ0)/2);     // left liner
+box(0.05,2.4,fZ1-bZ0-0.1,mWhite,AX1-0.12,1.2,(fZ1+bZ0)/2);     // right liner
+box(AX1-AX0-0.1,2.4,0.05,mWhite,0,1.2,bZ0+0.12);               // back liner
+
+// café fit-out
+box(0.65,1.05,3.2,mWood,AX0+0.55,0.55,0.4); box(0.72,0.06,3.3,mDark,AX0+0.55,1.08,0.4); // counter
+for(let i=0;i<3;i++){box(0.34,0.04,0.34,mDark,AX0+1.5,0.74,-0.5+i*1.0);box(0.05,0.74,0.05,mDark,AX0+1.5,0.37,-0.5+i*1.0);}
+box(2.0,0.5,0.7,new THREE.MeshStandardMaterial({color:0x7c8a93,roughness:.85}),1.3,0.3,1.7); // sofa bench
+box(0.9,0.04,0.55,mWood,1.3,0.42,1.0);                          // table
+box(1.2,0.04,0.8,mWood,1.2,0.72,-1.5); for(const sx of[-0.5,0.5])for(const sz of[-0.3,0.3])box(0.05,0.72,0.05,mDark,1.2+sx,0.36,-1.5+sz);
+box(AX1-AX0-0.6,0.05,0.28,mWood,0,1.7,bZ0+0.3); box(AX1-AX0-0.6,0.05,0.28,mWood,0,1.3,bZ0+0.3); // shelves
+box(0.4,0.4,0.4,mDark,AX1-0.6,0.2,1.8); box(0.5,0.9,0.5,new THREE.MeshStandardMaterial({color:0x4f7a43,roughness:.8}),AX1-0.6,0.9,1.8);
+const c1=new THREE.PointLight(0xffe9cf,5,7,2);c1.position.set(-1,2.3,0.5);scene.add(c1);
+const c2=new THREE.PointLight(0xffe9cf,5,7,2);c2.position.set(1.3,2.3,-1.2);scene.add(c2);
+
+// ---------- loft (C interior) ----------
+box(CX1-CX0-0.1,0.04,CZ1-CZ0-0.1,mWhite,(CX0+CX1)/2,CY1-0.12,(CZ0+CZ1)/2);  // ceiling liner
+box(1.2,0.35,1.9,new THREE.MeshStandardMaterial({color:0xb9c2cc,roughness:.8}),(CX0+CX1)/2,UP+0.18,CZ1-1.4); // lounge bed
+box(1.4,0.04,0.6,mWood,(CX0+CX1)/2,UP+0.4,CZ0+1.2); // low table
+[0xd86b4a,0x4a7bd8].forEach((c,i)=>box(0.6,0.45,0.04,new THREE.MeshStandardMaterial({color:c,roughness:.6}),CX0+0.1,UP+1.3,CZ0+1.0+i*1.2));
+const c3=new THREE.PointLight(0xffe9cf,5,7,2);c3.position.set((CX0+CX1)/2,CY1-0.4,0.5);scene.add(c3);
+
+// signage
+function sign(t,bg,w){const c=document.createElement('canvas');c.width=512;c.height=96;const x=c.getContext('2d');
+  x.fillStyle=bg;x.beginPath();x.roundRect(4,4,504,88,16);x.fill();x.fillStyle='#fff';x.font='bold 44px -apple-system,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(t,256,50);
+  const tex=new THREE.CanvasTexture(c);tex.anisotropy=4;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true}));s.scale.set(w,w*0.18,1);return s;}
+const sg=sign('CONTAINER  CAFE',0x1d1d22,4.2); sg.position.set(0,H+0.55,fZ1+0.3); scene.add(sg);
+
+// ===== アニメ調（セルシェード）：強めトゥーン塗り＋太い黒インク輪郭線 =====
+scene.background=new THREE.Color(0x8ec7ec); scene.fog=new THREE.Fog(0x8ec7ec,42,120);
+sun.intensity=1.0; scene.add(new THREE.AmbientLight(0xffffff,0.6));
+const _grad=(function(s){const a=new Uint8Array(s);for(let i=0;i<s;i++)a[i]=Math.round(255*(i/(s-1)));const t=new THREE.DataTexture(a,s,1,THREE.RedFormat);t.needsUpdate=true;t.minFilter=THREE.NearestFilter;t.magFilter=THREE.NearestFilter;t.generateMipmaps=false;return t;})(3);
+const _outline=new THREE.MeshBasicMaterial({color:0x101018,side:THREE.BackSide});
+const _hsl={}, _outs=[];
+scene.traverse(o=>{
+  if(!o.isMesh||!o.material||!o.material.color) return;
+  const isGlass=o.material.transparent&&o.material.opacity<0.6;
+  if(isGlass) return;
+  const c=o.material.color.clone(); c.getHSL(_hsl); c.setHSL(_hsl.h, Math.min(1,_hsl.s*1.7+0.1), Math.min(0.92,_hsl.l*1.08+0.05));
+  o.material=new THREE.MeshToonMaterial({color:c,gradientMap:_grad});
+  if(o.geometry&&o.geometry.type==='BoxGeometry'){
+    o.geometry.computeBoundingBox();
+    const sz=new THREE.Vector3(); o.geometry.boundingBox.getSize(sz);
+    const md=Math.max(sz.x,sz.y,sz.z);
+    if(md>0.45&&md<40){const m=new THREE.Mesh(o.geometry,_outline);m.position.copy(o.position);m.quaternion.copy(o.quaternion);m.scale.copy(o.scale).multiplyScalar(1.06);_outs.push(m);}
+  }
+});
+_outs.forEach(m=>scene.add(m));
+
+// ============ controls (pointer-lock-free; works in any frame) ============
+const startEl=document.getElementById('start'),crossEl=document.getElementById('cross'),enterBtn=document.getElementById('enter'),statusEl=document.getElementById('status');
+const keys={}; addEventListener('keydown',e=>{keys[e.code]=true;}); addEventListener('keyup',e=>{keys[e.code]=false;});
+let started=false, yaw=0, pitch=0; const move={x:0,z:0};
+function begin(){ started=true; startEl.style.display='none'; crossEl.style.display='block';
+  const h=document.getElementById('hint'); h.style.display='block';
+  h.textContent = isTouch ? 'スティックで移動・右側ドラッグで見回す' : 'ドラッグで見回す・WASD / 矢印で移動';
+  if(isTouch) document.getElementById('mobile').style.display='block'; }
+enterBtn.addEventListener('click',begin);
+// desktop: drag to look
+let dragging=false,dpx=0,dpy=0;
+renderer.domElement.addEventListener('mousedown',e=>{ if(!started||isTouch) return; dragging=true; dpx=e.clientX; dpy=e.clientY; });
+addEventListener('mouseup',()=>dragging=false);
+addEventListener('mousemove',e=>{ if(!dragging) return; yaw-=(e.clientX-dpx)*0.004; pitch-=(e.clientY-dpy)*0.004; pitch=Math.max(-1.2,Math.min(1.2,pitch)); dpx=e.clientX; dpy=e.clientY; });
+if(isTouch){
+  const joy=document.getElementById('joy'),knob=document.getElementById('knob');let jid=null,cx=0,cy=0;
+  joy.addEventListener('touchstart',e=>{const t=e.changedTouches[0];jid=t.identifier;const r=joy.getBoundingClientRect();cx=r.left+r.width/2;cy=r.top+r.height/2;e.preventDefault();},{passive:false});
+  joy.addEventListener('touchmove',e=>{for(const t of e.changedTouches){if(t.identifier===jid){let dx=t.clientX-cx,dy=t.clientY-cy;const max=45,d=Math.hypot(dx,dy);if(d>max){dx*=max/d;dy*=max/d;}knob.style.transform=`translate(${dx}px,${dy}px)`;move.x=dx/max;move.z=dy/max;}}e.preventDefault();},{passive:false});
+  const ej=e=>{for(const t of e.changedTouches){if(t.identifier===jid){jid=null;move.x=0;move.z=0;knob.style.transform='translate(0,0)';}}};
+  joy.addEventListener('touchend',ej);joy.addEventListener('touchcancel',ej);
+  const pad=document.getElementById('lookpad');let lid=null,lx=0,ly=0;
+  pad.addEventListener('touchstart',e=>{const t=e.changedTouches[0];lid=t.identifier;lx=t.clientX;ly=t.clientY;e.preventDefault();},{passive:false});
+  pad.addEventListener('touchmove',e=>{for(const t of e.changedTouches){if(t.identifier===lid){yaw-=(t.clientX-lx)*0.005;pitch-=(t.clientY-ly)*0.005;pitch=Math.max(-1.2,Math.min(1.2,pitch));lx=t.clientX;ly=t.clientY;}}e.preventDefault();},{passive:false});
+  const el=e=>{for(const t of e.changedTouches){if(t.identifier===lid)lid=null;}};
+  pad.addEventListener('touchend',el);pad.addEventListener('touchcancel',el);
+  camera.rotation.order='YXZ';camera.rotation.y=yaw;
+}
+
+// ============ collision + height field ============
+const R=0.3;
+function resolve(px,pz,feetY){const headY=feetY+1.7;
+  for(const c of colliders){ if(headY<c.minY||feetY>c.maxY) continue;
+    const qx=Math.max(c.minX,Math.min(px,c.maxX)),qz=Math.max(c.minZ,Math.min(pz,c.maxZ));
+    const dx=px-qx,dz=pz-qz,d2=dx*dx+dz*dz;
+    if(d2<R*R){ if(d2>1e-6){const d=Math.sqrt(d2),pu=R-d;px+=dx/d*pu;pz+=dz/d*pu;}
+      else{const l=px-c.minX,r=c.maxX-px,t=pz-c.minZ,b=c.maxZ-pz,m=Math.min(l,r,t,b);
+        if(m===l)px=c.minX-R;else if(m===r)px=c.maxX+R;else if(m===t)pz=c.minZ-R;else pz=c.maxZ+R;} }
+  }
+  px=Math.max(-28,Math.min(28,px)); pz=Math.max(-24,Math.min(24,pz)); return [px,pz];
+}
+function floorAt(x,z,feetY){ let best=0;
+  const onLoft=(x>CX0-0.02&&x<CX1+0.02&&z>CZ0-0.02&&z<CZ1+0.02);
+  const onTerr=(x>TX0-0.02&&x<TX1+0.02&&z>TZ0-0.02&&z<TZ1+0.02);
+  if((onLoft||onTerr)&&UP<=feetY+0.55&&UP>best)best=UP;
+  if(x>SX0-0.05&&x<SX1+0.05&&z>SzTop-0.05&&z<SzBot+0.05){
+    const ry=UP*((SzBot-z)/(SzBot-SzTop));const r=Math.max(0,Math.min(UP,ry));
+    if(r<=feetY+0.55&&r>best)best=r; }
+  return best;
+}
+let feetY=0;
+function updateStatus(){const p=camera.position;
+  if(feetY>UP-0.4){ if(p.x>CX0&&p.x<CX1&&p.z>CZ0&&p.z<CZ1) statusEl.innerHTML=`<span class="near">ロフト</span>（上の緑コンテナ）─ 前へ張り出したラウンジ`;
+    else statusEl.innerHTML=`<span class="near">ルーフテラス</span> ─ 屋上。ロフトのドアから中へ ▶`; }
+  else if(p.x>AX0&&p.x<AX1&&p.z>bZ0&&p.z<fZ1) statusEl.innerHTML=`<span class="near">1階カフェ</span>（赤＋青の2本を横連結）天井高 約2.4m＝コンテナ実寸`;
+  else statusEl.innerHTML='前面ガラスのドアから中へ ▶　右の外階段で屋上＆ロフトへ ▲';
+}
+
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),0.05); const speed=(keys['ShiftLeft']||keys['ShiftRight'])?5:2.8;
+  camera.rotation.order='YXZ'; camera.rotation.y=yaw; camera.rotation.x=pitch;
+  if(started){
+    let mx=0,mz=0;
+    if(isTouch){ mx=move.x; mz=-move.z; }
+    else { if(keys['KeyW']||keys['ArrowUp'])mz+=1; if(keys['KeyS']||keys['ArrowDown'])mz-=1; if(keys['KeyA']||keys['ArrowLeft'])mx-=1; if(keys['KeyD']||keys['ArrowRight'])mx+=1; }
+    if(mx||mz){ const l=Math.hypot(mx,mz)||1; mx/=l; mz/=l;
+      const fwd=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)), rgt=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+      camera.position.addScaledVector(fwd,mz*speed*dt); camera.position.addScaledVector(rgt,mx*speed*dt);
+      const [nx,nz]=resolve(camera.position.x,camera.position.z,feetY); camera.position.x=nx; camera.position.z=nz; }
+  }
+  const target=floorAt(camera.position.x,camera.position.z,feetY);
+  if(target>feetY)feetY=target; else feetY+=(target-feetY)*Math.min(1,dt*12);
+  camera.position.y=feetY+1.6; updateStatus(); renderer.render(scene,camera);
+}
+animate();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+</script>
+</body>
+</html>
