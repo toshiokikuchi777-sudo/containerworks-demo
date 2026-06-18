@@ -141,6 +141,27 @@
       <div class="price">¥300万〜500万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
+    <div class="card" data-tier="sauna">
+      <div class="rank">04</div><div class="grade">SAUNA</div>
+      <div class="title">コンテナサウナ</div>
+      <div class="spec"><b>コンテナ1棟・駐車場1台分</b><br>2段ベンチ＋ストーブ<br>外を望むビューウィンドウ<br>用途：サウナ</div>
+      <div class="price">¥250万〜450万 <small>目安</small></div>
+      <div class="go">この建物に入る ▶</div>
+    </div>
+    <div class="card" data-tier="gallery">
+      <div class="rank">05</div><div class="grade">GALLERY</div>
+      <div class="title">ギャラリー / ショップ</div>
+      <div class="spec"><b>コンテナ2棟・連結</b><br>白基調＋大開口ガラス<br>展示壁・什器レイアウト<br>用途：ギャラリー・物販</div>
+      <div class="price">¥600万〜1,000万 <small>目安</small></div>
+      <div class="go">この建物に入る ▶</div>
+    </div>
+    <div class="card" data-tier="villa">
+      <div class="rank">06</div><div class="grade">VILLA</div>
+      <div class="title">コンテナ別荘</div>
+      <div class="spec"><b>コンテナ連結・テラス付き</b><br>寝室・リビング・キッチン<br>大きな前面テラス<br>用途：別荘・宿泊</div>
+      <div class="price">¥1,500万〜2,500万 <small>目安</small></div>
+      <div class="go">この建物に入る ▶</div>
+    </div>
   </div>
   <div class="note">いずれも20ftコンテナ実寸（6.06×2.44×2.59m）。仮モデルです。本番は御社の設計データ（CAD / BIM）に差し替え。<br>操作：WASD / 矢印＝移動、画面ドラッグ＝見回す。スマホは左下スティック＋右側ドラッグ。</div>
 </div>
@@ -417,7 +438,70 @@ function buildMatsu(){
   spawnZ=8; statusText='01：コンテナ3棟・2階建て（右の外階段で屋上＆ロフトへ ▲）';
 }
 
-const BUILDERS={ ume:buildUme, take:buildTake, matsu:buildMatsu };
+// ---- 04 SAUNA : コンテナサウナ（1棟・駐車場1台分）----
+function buildSauna(){
+  const X0=-3.03,X1=3.03,Z0=-1.22,Z1=1.22;
+  box(X1-X0,0.06,Z1-Z0,mWood,0,0.05,0);
+  box(X1-X0-0.1,0.04,Z1-Z0-0.1,mWhite,0,2.42,0);
+  corr('z',Z0,X0,X1,0,H,mRed); corr('x',X0,Z0,Z1,0,H,mRed); cargoEnd(X1,Z0,Z1,mRed);
+  corr('z',Z1,X0,-0.6,0,H,mRed); corr('z',Z1,0.6,X1,0,H,mRed);
+  col(X0-.06,X0+.06,Z0,Z1,0,H); col(X1-.06,X1+.06,Z0,Z1,0,H); col(X0,X1,Z0-.06,Z0+.06,0,H);
+  col(X0,-0.6,Z1-.06,Z1+.06,0,H); col(0.6,X1,Z1-.06,Z1+.06,0,H);
+  doorway(Z1,1.0); box(1.3,1.1,0.05,mGlass,-1.6,1.45,Z1);
+  frameRing(X0,X1,Z0,Z1,0.06); frameRing(X0,X1,Z0,Z1,H); castings(X0,X1,Z0,Z1,0,H);
+  const mW=new THREE.MeshStandardMaterial({color:0x6b5640});
+  box(0.05,2.3,Z1-Z0-0.1,mW,X0+0.12,1.15,0); box(0.05,2.3,Z1-Z0-0.1,mW,X1-0.12,1.15,0); box(X1-X0-0.1,2.3,0.05,mW,0,1.15,Z0+0.12);
+  box(X1-X0-0.4,0.42,0.55,mWood,0,0.5,Z0+0.42); box(X1-X0-0.4,0.42,0.55,mWood,0,0.88,Z0+0.95);
+  box(0.5,0.75,0.5,mDark,X1-0.65,0.38,Z0+0.55);
+  plight(0,2.15,0);
+  const sg=sign('SAUNA',0x1d1d22,2.4); sg.position.set(0,H+0.45,Z1+0.2);
+  npcIdle(-0.7,0.3,0,0x8c8c92,0x33333a);
+  terraceFront(Z1+2.0); tree(-5.5,-1,1); tree(5.5,0.6,1.1); tree(-2,-5,1);
+  spawnZ=5.5; statusText='04 SAUNA：コンテナサウナ（駐車場1台分・1棟）';
+}
+// ---- 05 GALLERY : ギャラリー/ショップ（2棟連結・白基調・大開口）----
+function buildGallery(){
+  const X0=-3.03,X1=3.03,Z0=-2.44,Z1=2.44;
+  interiorLiner(X0,X1,Z0,Z1,2.42);
+  corr('z',Z1,X0,X0+0.4,0,H,mRed); corr('z',Z1,X1-0.4,X1,0,H,mRed);
+  corr('x',X0,Z0,Z1,0,H,mRed); cargoEnd(X1,Z0,Z1,mRed); corr('z',Z0,X0,X1,0,H,mRed);
+  col(X0-.06,X0+.06,Z0,Z1,0,H); col(X1-.06,X1+.06,Z0,Z1,0,H); col(X0,X1,Z0-.06,Z0+.06,0,H);
+  const DW=1.6; storefront(X0+0.4,-DW/2,Z1); storefront(DW/2,X1-0.4,Z1); doorway(Z1,DW);
+  frameRing(X0,X1,Z0,Z1,0.06); frameRing(X0,X1,Z0,Z1,H); castings(X0,X1,Z0,Z1,0,H);
+  [0x222228,0xb5302a,0xeeeef0,0x8c8c92].forEach((c,i)=>{ box(0.05,0.85,1.0,new THREE.MeshStandardMaterial({color:c}),X0+0.14,1.55,Z0+0.95+i*0.95); box(0.05,0.85,1.0,new THREE.MeshStandardMaterial({color:c}),X1-0.14,1.55,Z0+0.95+i*0.95); });
+  box(0.5,0.95,0.5,mWhite,-0.9,0.47,0.2); box(0.4,0.45,0.4,mDark,-0.9,1.15,0.2);
+  box(0.5,0.95,0.5,mWhite,0.9,0.47,-0.9); box(0.35,0.55,0.35,mRed,0.9,1.2,-0.9);
+  plight(-1,2.3,0.2); plight(1.2,2.3,-0.9);
+  const sg=sign('GALLERY',0x1d1d22,3.0); sg.position.set(0,H+0.5,Z1+0.25);
+  npcIdle(-1.2,1.2,Math.PI,0x8c8c92,0x33333a); npcWalk(-1.0,-0.4,1.2,-0.4,0xd9d9dd,0x33333a,0.45);
+  terraceFront(Z1+2.0); tree(-6,-1,1); tree(6,0.6,1.1); tree(-2,-6,1); tree(2.5,-6,0.95);
+  spawnZ=7; statusText='05 GALLERY：コンテナ2棟・ギャラリー/ショップ';
+}
+// ---- 06 VILLA : コンテナ別荘（連結・テラス・住居）----
+function buildVilla(){
+  const X0=-3.03,X1=3.03,Z0=-2.44,Z1=2.44;
+  interiorLiner(X0,X1,Z0,Z1,2.42);
+  corr('z',Z1,X0,X0+0.4,0,H,mRed); corr('z',Z1,X1-0.4,X1,0,H,mRed);
+  corr('x',X0,0,Z1,0,H,mRed); cargoEnd(X1,0,Z1,mRed);
+  corr('z',Z0,X0,X1,0,H,mBlue); corr('x',X0,Z0,0,0,H,mBlue); corr('x',X1,Z0,0,0,H,mBlue);
+  col(X0-.06,X0+.06,Z0,Z1,0,H); col(X1-.06,X1+.06,Z0,Z1,0,H); col(X0,X1,Z0-.06,Z0+.06,0,H);
+  const DW=1.6; storefront(X0+0.4,-DW/2,Z1); storefront(DW/2,X1-0.4,Z1); doorway(Z1,DW);
+  [-1.3,1.3].forEach(z=>{ box(0.05,1.2,1.4,mGlass,X0+0.02,1.45,z); box(0.05,1.2,1.4,mGlass,X1-0.02,1.45,z); });
+  frameRing(X0,X1,Z0,Z1,0.06); frameRing(X0,X1,Z0,Z1,H); castings(X0,X1,Z0,Z1,0,H);
+  box(1.7,0.4,2.0,new THREE.MeshStandardMaterial({color:0xc0c0c6}),X0+1.0,0.3,Z0+1.2);
+  box(1.7,0.3,0.4,mWhite,X0+1.0,0.6,Z0+0.35);
+  box(2.0,0.5,0.8,new THREE.MeshStandardMaterial({color:0x7e7e86}),1.3,0.3,1.5);
+  box(0.9,0.04,0.55,mWood,1.3,0.42,0.8);
+  box(2.2,0.9,0.55,mWood,1.0,0.45,Z0+0.38); box(2.2,0.06,0.58,mDark,1.0,0.92,Z0+0.38);
+  box(1.2,0.04,0.8,mWood,-1.4,0.72,1.4); for(const sx of[-0.5,0.5])for(const sz of[-0.3,0.3])box(0.05,0.72,0.05,mDark,-1.4+sx,0.36,1.4+sz);
+  potPlant(X1-0.7,Z0+0.6,0.8);
+  plight(-1,2.3,0.4); plight(1.2,2.3,-1.0);
+  const sg=sign('VILLA',0x1d1d22,2.8); sg.position.set(0,H+0.5,Z1+0.25);
+  npcIdle(1.2,1.4,Math.PI,0x8c8c92,0x33333a); npcIdle(-1.2,0.6,0,0xd9d9dd,0x33333a);
+  terraceFront(Z1+2.2); tree(-6,-1,1.1); tree(6,0.6,1); tree(-2,-6.5,1.1); tree(2.5,-6.5,0.95); tree(6.5,5,1);
+  spawnZ=7; statusText='06 VILLA：コンテナ別荘（連結・テラス／住居・宿泊）';
+}
+const BUILDERS={ ume:buildUme, take:buildTake, matsu:buildMatsu, sauna:buildSauna, gallery:buildGallery, villa:buildVilla };
 
 // ---------- select / clear ----------
 let started=false, yaw=0, pitch=0, feetY=0;
@@ -459,7 +543,7 @@ document.getElementById('back').addEventListener('click',backToMenu);
 
 // CV導線（相談・資料請求モーダル）
 let curTier='';
-const LABELS={matsu:'01：フラッグシップ',take:'02：ワイドカフェ',ume:'03：テイクアウト'};
+const LABELS={matsu:'01：フラッグシップ',take:'02：ワイドカフェ',ume:'03：テイクアウト',sauna:'04：コンテナサウナ',gallery:'05：ギャラリー/ショップ',villa:'06：コンテナ別荘'};
 const modalEl=document.getElementById('modal');
 function openModal(){ document.getElementById('mTitle').textContent=(LABELS[curTier]||'')+' のご相談';
   document.getElementById('mDesc').textContent='このプランについて、ご希望はどれですか？';
@@ -473,8 +557,9 @@ document.querySelectorAll('#modal .opt').forEach(b=>b.addEventListener('click',(
   document.querySelectorAll('#modal .opt').forEach(x=>x.style.display='none'); }));
 
 // ===== AI見積りチャット（デモ）=====
-const PLAN={ matsu:{name:'01 フラッグシップ（3棟・2階建て）',base:[1500,2500]}, take:{name:'02 ワイドカフェ（2棟連結）',base:[600,1000]}, ume:{name:'03 テイクアウト（1棟）',base:[300,500]} };
-const DELIVERY={ matsu:'約3〜5ヶ月', take:'約2〜3ヶ月', ume:'約1〜2ヶ月' };
+const PLAN={ matsu:{name:'01 フラッグシップ（3棟・2階建て）',base:[1500,2500]}, take:{name:'02 ワイドカフェ（2棟連結）',base:[600,1000]}, ume:{name:'03 テイクアウト（1棟）',base:[300,500]},
+  sauna:{name:'04 コンテナサウナ（1棟）',base:[250,450]}, gallery:{name:'05 ギャラリー/ショップ（2棟）',base:[600,1000]}, villa:{name:'06 コンテナ別荘（連結）',base:[1500,2500]} };
+const DELIVERY={ matsu:'約3〜5ヶ月', take:'約2〜3ヶ月', ume:'約1〜2ヶ月', sauna:'約1〜2ヶ月', gallery:'約2〜3ヶ月', villa:'約3〜5ヶ月' };
 const USE={ cafe:{name:'カフェ',f:1.0}, sauna:{name:'サウナ',f:1.25}, house:{name:'住居',f:1.1}, shop:{name:'物販店舗',f:1.0}, office:{name:'オフィス',f:1.05} };
 const REGION={ shuto:{name:'首都圏',add:0}, tokai:{name:'東海',add:20}, kansai:{name:'関西',add:40}, other:{name:'その他',add:60} };
 const est={};
