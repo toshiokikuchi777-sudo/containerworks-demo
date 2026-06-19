@@ -243,7 +243,7 @@ scene.environment=_pmrem.fromScene(new RoomEnvironment(),0.04).texture;
 let avatar=null, avatarMixer=null, walkAction=null;
 let playerX=0, playerZ=9, heading=Math.PI, camDist=4.6, thirdPerson=true;
 const AV_FWD=0; // モデルの正面補正（必要なら Math.PI）
-new FBXLoader().load('Walk.fbx', function(obj){
+new FBXLoader().load('Walking.fbx', function(obj){
   obj.scale.setScalar(0.01);
   obj.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.frustumCulled=false; if(o.material&&'envMapIntensity' in o.material) o.material.envMapIntensity=0.5; } });
   avatar=obj; avatar.visible=false; scene.add(avatar);
