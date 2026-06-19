@@ -126,14 +126,14 @@
     <div class="card m" data-tier="matsu">
       <div class="rank">01</div><div class="grade">PREMIUM</div>
       <div class="title">フラッグシップ</div>
-      <div class="spec"><b>コンテナ3棟・2階建て</b><br>横連結＋上に直交で積む<br>ロフト＋屋上テラス＋張り出し<br>用途：カフェ＋住居/オフィス</div>
+      <div class="spec"><b>40ft＋20ftを積む・2階建て</b><br>1階40ft／上に20ftを積む<br>ロフト＋屋上テラス<br>用途：カフェ＋住居/オフィス</div>
       <div class="price">¥1,500万〜2,500万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
     <div class="card t" data-tier="take">
       <div class="rank">02</div><div class="grade">STANDARD</div>
-      <div class="title">ワイドカフェ</div>
-      <div class="spec"><b>コンテナ2棟・連結</b><br>間仕切りを抜いた広い1フロア<br>前面ガラスのストアフロント<br>用途：店舗・カフェ</div>
+      <div class="title">ロングカフェ</div>
+      <div class="spec"><b>40ftコンテナ1棟</b><br>細長い箱のまま広い1室<br>窓・ドアをくり抜いた前面<br>用途：店舗・カフェ</div>
       <div class="price">¥600万〜1,000万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
@@ -154,14 +154,14 @@
     <div class="card" data-tier="gallery">
       <div class="rank">05</div><div class="grade">GALLERY</div>
       <div class="title">ギャラリー / ショップ</div>
-      <div class="spec"><b>コンテナ2棟・連結</b><br>白基調＋大開口ガラス<br>展示壁・什器レイアウト<br>用途：ギャラリー・物販</div>
+      <div class="spec"><b>40ftコンテナ1棟</b><br>白基調＋くり抜き開口<br>長い展示壁・什器<br>用途：ギャラリー・物販</div>
       <div class="price">¥600万〜1,000万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
     <div class="card" data-tier="villa">
       <div class="rank">06</div><div class="grade">VILLA</div>
       <div class="title">コンテナ別荘</div>
-      <div class="spec"><b>コンテナ連結・テラス付き</b><br>寝室・リビング・キッチン<br>大きな前面テラス<br>用途：別荘・宿泊</div>
+      <div class="spec"><b>40ftコンテナ1棟・テラス付き</b><br>寝室・居間・キッチンを長手に<br>大きな前面テラス<br>用途：別荘・宿泊</div>
       <div class="price">¥1,500万〜2,500万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
@@ -369,104 +369,74 @@ function buildUme(){
 
 // ---- 02 : 2 containers joined, wide café ----
 function buildTake(){
-  const X0=-3.03,X1=3.03,Z0=-2.44,Z1=2.44;
-  interiorLiner(X0,X1,Z0,Z1,2.42);
-  corr('z',Z1, X0,X0+0.4,0,H,mRed); corr('z',Z1, X1-0.4,X1,0,H,mRed);   // front corners (red)
-  corr('x',X0, 0,Z1,0,H,mRed);  cargoEnd(X1,0,Z1,mRed);                   // A (front) ends
-  corr('z',Z0, X0,X1,0,H,mBlue);                                          // B back (blue)
-  corr('x',X0, Z0,0,0,H,mBlue); corr('x',X1, Z0,0,0,H,mBlue);             // B ends
+  const X0=-6.1,X1=6.1,Z0=-1.22,Z1=1.22;   // 40ftコンテナ1棟（細長い箱を保つ）
+  box(X1-X0,0.06,Z1-Z0,mWood,0,0.05,0); box(X1-X0-0.1,0.04,Z1-Z0-0.1,mWhite,0,2.42,0);
+  box(0.05,2.4,Z1-Z0-0.1,mWhite,X0+0.12,1.2,0); box(0.05,2.4,Z1-Z0-0.1,mWhite,X1-0.12,1.2,0); box(X1-X0-0.1,2.4,0.05,mWhite,0,1.2,Z0+0.12);
+  corr('z',Z0,X0,X1,0,H,mRed); corr('x',X0,Z0,Z1,0,H,mRed); cargoEnd(X1,Z0,Z1,mRed);
+  for(const x of [-4,0,4]) box(1.4,1.2,0.05,mGlass,x,1.5,Z0+0.02);   // 背面（長辺）のくり抜き窓
+  storefront(X0+0.3,-0.9,Z1); storefront(0.9,X1-0.3,Z1); doorway(Z1,1.6);
   col(X0-.06,X0+.06,Z0,Z1,0,H); col(X1-.06,X1+.06,Z0,Z1,0,H); col(X0,X1,Z0-.06,Z0+.06,0,H);
-  const DW=1.5; storefront(X0+0.4,-DW/2,Z1); storefront(DW/2,X1-0.4,Z1); doorway(Z1,DW);
   frameRing(X0,X1,Z0,Z1,0.06); frameRing(X0,X1,Z0,Z1,H); castings(X0,X1,Z0,Z1,0,H);
-  // side windows
-  [-1.3,1.3].forEach(z=>{ box(0.05,1.2,1.4,mGlass,X0+0.02,1.45,z); box(0.05,1.2,1.4,mGlass,X1-0.02,1.45,z); });
-  box(1.6,1.2,0.05,mGlass,0,1.45,Z0+0.03);
-  // interior fit-out
-  box(0.6,1.05,3.2,mWood,X0+0.5,0.55,0.3); box(0.66,0.06,3.3,mDark,X0+0.5,1.08,0.3);
-  for(let i=0;i<3;i++){box(0.34,0.04,0.34,mDark,X0+1.4,0.74,-0.6+i*1.0);box(0.05,0.74,0.05,mDark,X0+1.4,0.37,-0.6+i*1.0);}
-  box(2.0,0.5,0.7,new THREE.MeshStandardMaterial({color:0x7e7e86}),1.3,0.3,1.6);
-  box(0.9,0.04,0.55,mWood,1.3,0.42,0.9);
-  box(1.2,0.04,0.8,mWood,1.2,0.72,-1.5); for(const sx of[-0.5,0.5])for(const sz of[-0.3,0.3])box(0.05,0.72,0.05,mDark,1.2+sx,0.36,-1.5+sz);
-  box(X1-X0-0.6,0.05,0.28,mWood,0,1.7,Z0+0.3); box(X1-X0-0.6,0.05,0.28,mWood,0,1.3,Z0+0.3);
-  box(0.5,0.9,0.5,new THREE.MeshStandardMaterial({color:0x6e776c}),X1-0.6,0.9,1.7);
-  plight(-1,2.3,0.4); plight(1.2,2.3,-1.1);
-  npcIdle(X0+1.1,0.3,0,0xb5302a,0x2c2c32);    // 店員
-  npcIdle(1.0,1.3,Math.PI,0x8c8c92,0x33333a);  // 客（ソファ付近）
-  npcWalk(-1.3,-1.2,1.5,-1.2,0xd9d9dd,0x2c2c32,0.5); // 店内を歩く客
-  potPlant(X1-0.7,Z0+0.6,0.8); potPlant(X0+0.7,Z1-0.6,0.7);
-  terraceFront(Z1+2.0); tree(-6,-1,1); tree(6,0.5,1.1); tree(-6.5,4.5,0.95); tree(5.5,5.5,1); tree(-2,-6.5,1.1); tree(2.5,-6.5,0.95);
-  const sg=sign('CAFE',0x1d1d22,3.4); sg.position.set(0,H+0.5,Z1+0.25);
-  spawnZ=7; statusText='02：コンテナ2棟連結・ワイドカフェ（天井高 約2.4m＝実寸）';
+  box(4.0,0.9,0.55,mWood,-2.0,0.45,Z0+0.4); box(4.0,0.06,0.58,mDark,-2.0,0.92,Z0+0.4);  // ロングカウンター
+  for(let x=-3.5;x<=-0.5;x+=1.0){ box(0.34,0.04,0.34,mDark,x,0.74,Z0+1.0); box(0.05,0.74,0.05,mDark,x,0.37,Z0+1.0); }
+  for(let x=1.0;x<=4.5;x+=1.7) box(0.8,0.04,0.7,mWood,x,0.72,0.2);
+  box(X1-X0-3,0.05,0.28,mWood,0,1.7,Z0+0.28);
+  box(0.5,0.9,0.5,new THREE.MeshStandardMaterial({color:0x6e776c}),X1-0.6,0.9,Z1-0.5);
+  for(let x=-4;x<=4;x+=4) plight(x,2.3,0);
+  npcIdle(-3,0.2,0,0xb5302a,0x2c2c32); npcWalk(0,0.6,3.5,0.6,0xd9d9dd,0x33333a,0.5);
+  const sg=sign('CAFE',0x1d1d22,3.6); sg.position.set(0,H+0.55,Z1+0.3);
+  terraceFront(Z1+2.0); tree(-7,-1,1); tree(7,0.6,1.1); tree(-2,-5,1); tree(3,-5,0.95);
+  spawnZ=8; statusText='02：40ftコンテナ1棟・ロングカフェ（実寸 約12m・細長い1室）';
 }
 
 // ---- 01 : 3 containers, 2-story flagship ----
 function buildMatsu(){
-  const AX0=-3.03,AX1=3.03, fZ1=2.44, bZ0=-2.44; const UP=2.70;
-  // slabs
-  box(AX1-AX0,0.06,fZ1-bZ0,mWood,0,0.05,(fZ1+bZ0)/2);
-  box(AX1-AX0,0.16,fZ1-bZ0,mSteel,0,H,(fZ1+bZ0)/2);
-  // container A (red, front)
-  corr('z',fZ1,AX0,AX0+0.35,0,H,mRed); corr('z',fZ1,AX1-0.35,AX1,0,H,mRed);
-  corr('x',AX0,0,fZ1,0,H,mRed); cargoEnd(AX1,0,fZ1,mRed);
-  col(AX1-0.06,AX1+0.06,0,fZ1,0,H);
-  // container B (blue, back)
-  corr('z',bZ0,AX0,AX1,0,H,mBlue); corr('x',AX0,bZ0,0,0,H,mBlue); corr('x',AX1,bZ0,0,0,H,mBlue);
-  col(AX0-0.06,AX0+0.06,bZ0,fZ1,0,H); col(AX0-0.06,AX1+0.06,bZ0-0.06,bZ0+0.06,0,H);
-  [-1.4,1.4].forEach(z=> box(0.06,1.2,1.4,mGlass,AX0+0.02,1.45,z) );
-  box(1.6,1.2,0.06,mGlass,1.4,1.45,bZ0+0.02);
-  // front storefront + door
-  const DW=1.5; storefront(AX0+0.4,-DW/2,fZ1); storefront(DW/2,AX1-0.4,fZ1); doorway(fZ1,DW);
-  frameRing(AX0,AX1,bZ0,fZ1,0.06); frameRing(AX0,AX1,bZ0,fZ1,H); castings(AX0,AX1,bZ0,fZ1,0,H);
-  // container C (green, on top, perpendicular)
-  const CX0=-1.92,CX1=0.52,CZ0=-2.43,CZ1=3.63,CY0=H,CY1=H+H;
-  box(CX1-CX0,0.12,CZ1-CZ0,mSteel,(CX0+CX1)/2,CY0+0.06,(CZ0+CZ1)/2);
-  box(CX1-CX0,0.12,CZ1-CZ0,mWhite,(CX0+CX1)/2,CY1-0.06,(CZ0+CZ1)/2);
-  corr('z',CZ1,CX0,CX1,CY0,CY1,mGreen); corr('z',CZ0,CX0,CX1,CY0,CY1,mGreen); corr('x',CX0,CZ0,CZ1,CY0,CY1,mGreen);
-  corr('x',CX1,CZ0,-0.5,CY0,CY1,mGreen); corr('x',CX1,0.5,CZ1,CY0,CY1,mGreen);
-  box(1.0,2.1,0.06,mDark,CX1,CY0+1.05,0);
-  frameRing(CX0,CX1,CZ0,CZ1,CY0); frameRing(CX0,CX1,CZ0,CZ1,CY1); castings(CX0,CX1,CZ0,CZ1,CY0,CY1);
-  box(1.4,1.1,0.06,mGlass,(CX0+CX1)/2,CY0+1.3,CZ1-0.03); box(0.06,1.1,2.2,mGlass,CX0+0.02,CY0+1.3,1.2);
-  col(CX0-0.06,CX0+0.06,CZ0,CZ1,CY0,CY1); col(CX0,CX1,CZ0-0.06,CZ0+0.06,CY0,CY1); col(CX0,CX1,CZ1-0.06,CZ1+0.06,CY0,CY1);
-  col(CX1-0.06,CX1+0.06,CZ0,-0.5,CY0,CY1); col(CX1-0.06,CX1+0.06,0.5,CZ1,CY0,CY1);
-  box(CX1-CX0,0.1,1.2,mSteel,(CX0+CX1)/2,CY0-0.05,fZ1+0.6);   // canopy
-  box(CX1-CX0,2.5,0,mGreen,(CX0+CX1)/2,CY0+1.25,CZ1);          // (tip filler)
-  // roof terrace + rail
-  const TX0=0.52,TX1=3.03,TZ0=-2.44,TZ1=2.44;
-  box(TX1-TX0,0.08,TZ1-TZ0,mWood,(TX0+TX1)/2,UP+0.02,(TZ0+TZ1)/2);
-  function rail(x0,x1,z0,z1){ box((x1-x0)||0.06,0.9,(z1-z0)||0.06,mSteel,(x0+x1)/2,UP+0.5,(z0+z1)/2);
-    col(Math.min(x0,x1)-0.05,Math.max(x0,x1)+0.05,Math.min(z0,z1)-0.05,Math.max(z0,z1)+0.05,UP,UP+0.95); }
-  rail(TX0,TX1,TZ1,TZ1); rail(TX0,TX1,TZ0,TZ0); rail(TX1,TX1,TZ0,-0.6); rail(TX1,TX1,0.6,TZ1);
-  // exterior stair (right)
-  const SX0=3.08,SX1=4.25,SzTop=0.0,SzBot=2.44,STN=11;
+  // 1階＝40ftコンテナ1棟（細長い箱）／その上に20ftコンテナを積んでロフト＋屋上テラス
+  const GX0=-6.1,GX1=6.1,GZ0=-1.22,GZ1=1.22, UP=2.70;
+  box(GX1-GX0,0.06,GZ1-GZ0,mWood,0,0.05,0);
+  box(GX1-GX0,0.16,GZ1-GZ0,mSteel,0,H,0);
+  box(0.05,2.4,GZ1-GZ0-0.1,mWhite,GX0+0.12,1.2,0); box(0.05,2.4,GZ1-GZ0-0.1,mWhite,GX1-0.12,1.2,0); box(GX1-GX0-0.1,2.4,0.05,mWhite,0,1.2,GZ0+0.12);
+  box(GX1-GX0-0.1,0.04,GZ1-GZ0-0.1,mWhite,0,2.44,0);
+  corr('z',GZ0,GX0,GX1,0,H,mRed); corr('x',GX0,GZ0,GZ1,0,H,mRed); cargoEnd(GX1,GZ0,GZ1,mRed);
+  for(const x of [-4,4]) box(1.4,1.2,0.05,mGlass,x,1.5,GZ0+0.02);
+  storefront(GX0+0.3,-0.9,GZ1); storefront(0.9,GX1-0.3,GZ1); doorway(GZ1,1.6);
+  col(GX0-.06,GX0+.06,GZ0,GZ1,0,H); col(GX1-.06,GX1+.06,GZ0,GZ1,0,H); col(GX0,GX1,GZ0-.06,GZ0+.06,0,H);
+  frameRing(GX0,GX1,GZ0,GZ1,0.06); frameRing(GX0,GX1,GZ0,GZ1,H); castings(GX0,GX1,GZ0,GZ1,0,H);
+  box(4.0,0.9,0.55,mWood,-2.0,0.45,GZ0+0.4); box(4.0,0.06,0.58,mDark,-2.0,0.92,GZ0+0.4);
+  for(let x=-3.5;x<=-0.5;x+=1.0){ box(0.34,0.04,0.34,mDark,x,0.74,GZ0+1.0); box(0.05,0.74,0.05,mDark,x,0.37,GZ0+1.0); }
+  for(let x=1.0;x<=4.5;x+=1.7) box(0.8,0.04,0.7,mWood,x,0.72,0.2);
+  for(let x=-4;x<=4;x+=4) plight(x,2.2,0);
+  // 上に積む20ftコンテナ（ロフト・左半分・色味違いの赤）
+  const LX0=-6.1,LX1=-0.05,LZ0=-1.22,LZ1=1.22,LY0=H,LY1=H+2.45;
+  box(LX1-LX0,0.12,LZ1-LZ0,mSteel,(LX0+LX1)/2,LY0+0.06,0);
+  box(LX1-LX0,0.12,LZ1-LZ0,mWhite,(LX0+LX1)/2,LY1-0.06,0);
+  corr('z',LZ0,LX0,LX1,LY0,LY1,mGreen); corr('z',LZ1,LX0,LX1,LY0,LY1,mGreen); corr('x',LX0,LZ0,LZ1,LY0,LY1,mGreen);
+  corr('x',LX1,LZ0,-0.5,LY0,LY1,mGreen); corr('x',LX1,0.5,LZ1,LY0,LY1,mGreen);
+  box(1.0,2.05,0.06,mDark,LX1,LY0+1.0,0);
+  box(1.6,1.0,0.05,mGlass,(LX0+LX1)/2,LY0+1.25,LZ1-0.03);
+  frameRing(LX0,LX1,LZ0,LZ1,LY0); frameRing(LX0,LX1,LZ0,LZ1,LY1); castings(LX0,LX1,LZ0,LZ1,LY0,LY1);
+  col(LX0-.06,LX0+.06,LZ0,LZ1,LY0,LY1); col(LX0,LX1,LZ0-.06,LZ0+.06,LY0,LY1); col(LX0,LX1,LZ1-.06,LZ1+.06,LY0,LY1);
+  col(LX1-.06,LX1+.06,LZ0,-0.5,LY0,LY1); col(LX1-.06,LX1+.06,0.5,LZ1,LY0,LY1);
+  box(LX1-LX0-0.1,0.04,LZ1-LZ0-0.1,mWhite,(LX0+LX1)/2,LY1-0.12,0);
+  box(1.6,0.35,1.9,new THREE.MeshStandardMaterial({color:0xc0c0c6}),LX0+1.3,UP+0.18,0);
+  box(1.2,0.04,0.6,mWood,LX0+3.2,UP+0.4,0);
+  const lp=new THREE.PointLight(0xffe9cf,4.5,7,2);lp.position.set(LX0+2,LY1-0.4,0);G.add(lp);
+  // 屋上テラス（右半分）＋手すり
+  const TX0=0.0,TX1=6.1,TZ0=-1.22,TZ1=1.22;
+  box(TX1-TX0,0.08,TZ1-TZ0,mWood,(TX0+TX1)/2,UP+0.02,0);
+  function rail(x0,x1,z0,z1){ box((x1-x0)||0.06,0.9,(z1-z0)||0.06,mSteel,(x0+x1)/2,UP+0.5,(z0+z1)/2); col(Math.min(x0,x1)-.05,Math.max(x0,x1)+.05,Math.min(z0,z1)-.05,Math.max(z0,z1)+.05,UP,UP+0.95); }
+  rail(TX0,TX1,TZ1,TZ1); rail(TX0,TX1,TZ0,TZ0); rail(TX1,TX1,TZ0,-0.5); rail(TX1,TX1,0.5,TZ1);
+  // 外階段（右端）
+  const SX0=6.15,SX1=7.4,SzTop=0.0,SzBot=3.0,STN=12;
   for(let i=0;i<STN;i++){const t=i/(STN-1),z=SzBot+(SzTop-SzBot)*t,y=UP*t; box(SX1-SX0,0.12,(SzBot-SzTop)/STN+0.05,mSteel,(SX0+SX1)/2,y+0.06,z);}
-  box(0.1,0.6,(SzBot-SzTop),mDark,SX0,UP/2,(SzTop+SzBot)/2); box(0.1,0.9,(SzBot-SzTop),mSteel,SX1,UP/2+0.3,(SzTop+SzBot)/2);
-  // interior café
-  box(AX1-AX0-0.1,0.04,fZ1-bZ0-0.1,mWhite,0,2.44,(fZ1+bZ0)/2);
-  box(0.05,2.4,fZ1-bZ0-0.1,mWhite,AX0+0.12,1.2,(fZ1+bZ0)/2); box(0.05,2.4,fZ1-bZ0-0.1,mWhite,AX1-0.12,1.2,(fZ1+bZ0)/2);
-  box(AX1-AX0-0.1,2.4,0.05,mWhite,0,1.2,bZ0+0.12);
-  box(0.6,1.05,3.2,mWood,AX0+0.5,0.55,0.4); box(0.66,0.06,3.3,mDark,AX0+0.5,1.08,0.4);
-  for(let i=0;i<3;i++){box(0.34,0.04,0.34,mDark,AX0+1.5,0.74,-0.5+i*1.0);box(0.05,0.74,0.05,mDark,AX0+1.5,0.37,-0.5+i*1.0);}
-  box(2.0,0.5,0.7,new THREE.MeshStandardMaterial({color:0x7e7e86}),1.3,0.3,1.7); box(0.9,0.04,0.55,mWood,1.3,0.42,1.0);
-  box(1.2,0.04,0.8,mWood,1.2,0.72,-1.5); for(const sx of[-0.5,0.5])for(const sz of[-0.3,0.3])box(0.05,0.72,0.05,mDark,1.2+sx,0.36,-1.5+sz);
-  box(AX1-AX0-0.6,0.05,0.28,mWood,0,1.7,bZ0+0.3); box(AX1-AX0-0.6,0.05,0.28,mWood,0,1.3,bZ0+0.3);
-  box(0.5,0.9,0.5,new THREE.MeshStandardMaterial({color:0x6e776c}),AX1-0.6,0.9,1.8);
-  plight(-1,2.3,0.5); plight(1.3,2.3,-1.2);
-  // loft interior
-  box(CX1-CX0-0.1,0.04,CZ1-CZ0-0.1,mWhite,(CX0+CX1)/2,CY1-0.12,(CZ0+CZ1)/2);
-  box(1.2,0.35,1.9,new THREE.MeshStandardMaterial({color:0xc0c0c6}),(CX0+CX1)/2,UP+0.18,CZ1-1.4);
-  box(1.4,0.04,0.6,mWood,(CX0+CX1)/2,UP+0.4,CZ0+1.2);
-  const lp=new THREE.PointLight(0xffe9cf,4.5,7,2);lp.position.set((CX0+CX1)/2,CY1-0.4,0.5);G.add(lp);
-  // surfaces for walking up
-  surfaces.push({xMin:CX0,xMax:CX1,zMin:CZ0,zMax:CZ1,y:UP});
+  box(0.1,0.9,(SzBot-SzTop),mSteel,SX1,UP/2+0.3,(SzTop+SzBot)/2);
+  surfaces.push({xMin:LX0,xMax:LX1,zMin:LZ0,zMax:LZ1,y:UP});
   surfaces.push({xMin:TX0,xMax:TX1,zMin:TZ0,zMax:TZ1,y:UP});
   surfaces.push({ramp:1,axis:'z',xMin:SX0,xMax:SX1,zMin:SzTop,zMax:SzBot,c0:SzBot,y0:0,c1:SzTop,y1:UP});
-  npcIdle(AX0+1.1,0.4,0,0xb5302a,0x2c2c32);    // 店員
-  npcIdle(1.2,-1.0,Math.PI,0x8c8c92,0x33333a);  // 客（ダイニング）
-  npcWalk(-1.6,7.0,1.6,7.0,0xd9d9dd,0x2c2c32,0.55); // 店前を歩く通行人
-  potPlant(AX0+1.6,fZ1-0.5,0.8); potPlant(AX1-0.7,bZ0+0.7,0.75);
-  terraceFront(fZ1+2.4); tree(-6,-1,1.1); tree(-6.5,4.5,0.95); tree(-2,-7,1.1); tree(2.5,-7,1); tree(6.5,6,1); tree(7,-1,1.05);
-  const sg=sign('CAFE',0x1d1d22,4.2); sg.position.set(0,H+0.55,fZ1+0.3);
-  spawnZ=8; statusText='01：コンテナ3棟・2階建て（右の外階段で屋上＆ロフトへ ▲）';
+  npcIdle(-3,0.2,0,0xb5302a,0x2c2c32); npcWalk(0,0.5,3.5,0.5,0xd9d9dd,0x33333a,0.55);
+  const sg=sign('CAFE',0x1d1d22,3.6); sg.position.set(0,H+0.55,GZ1+0.3);
+  terraceFront(GZ1+2.2); tree(-7,-1,1.1); tree(7,3.5,0.95); tree(-2,-6,1.1); tree(3,-6,1);
+  spawnZ=9; statusText='01：40ft＋20ftを積んだ2階建て（右の外階段で屋上テラス＆ロフトへ ▲）';
 }
 
 // ---- 04 SAUNA : コンテナサウナ（1棟・駐車場1台分）----
@@ -492,45 +462,43 @@ function buildSauna(){
 }
 // ---- 05 GALLERY : ギャラリー/ショップ（2棟連結・白基調・大開口）----
 function buildGallery(){
-  const X0=-3.03,X1=3.03,Z0=-2.44,Z1=2.44;
-  interiorLiner(X0,X1,Z0,Z1,2.42);
-  corr('z',Z1,X0,X0+0.4,0,H,mRed); corr('z',Z1,X1-0.4,X1,0,H,mRed);
-  corr('x',X0,Z0,Z1,0,H,mRed); cargoEnd(X1,Z0,Z1,mRed); corr('z',Z0,X0,X1,0,H,mRed);
+  const X0=-6.1,X1=6.1,Z0=-1.22,Z1=1.22;   // 40ftコンテナ1棟
+  box(X1-X0,0.06,Z1-Z0,mWood,0,0.05,0); box(X1-X0-0.1,0.04,Z1-Z0-0.1,mWhite,0,2.42,0);
+  box(0.05,2.4,Z1-Z0-0.1,mWhite,X0+0.12,1.2,0); box(0.05,2.4,Z1-Z0-0.1,mWhite,X1-0.12,1.2,0); box(X1-X0-0.1,2.4,0.05,mWhite,0,1.2,Z0+0.12);
+  corr('z',Z0,X0,X1,0,H,mRed); corr('x',X0,Z0,Z1,0,H,mRed); cargoEnd(X1,Z0,Z1,mRed);
+  storefront(X0+0.3,-0.8,Z1); storefront(0.8,X1-0.3,Z1); doorway(Z1,1.6);
   col(X0-.06,X0+.06,Z0,Z1,0,H); col(X1-.06,X1+.06,Z0,Z1,0,H); col(X0,X1,Z0-.06,Z0+.06,0,H);
-  const DW=1.6; storefront(X0+0.4,-DW/2,Z1); storefront(DW/2,X1-0.4,Z1); doorway(Z1,DW);
   frameRing(X0,X1,Z0,Z1,0.06); frameRing(X0,X1,Z0,Z1,H); castings(X0,X1,Z0,Z1,0,H);
-  [0x222228,0xb5302a,0xeeeef0,0x8c8c92].forEach((c,i)=>{ box(0.05,0.85,1.0,new THREE.MeshStandardMaterial({color:c}),X0+0.14,1.55,Z0+0.95+i*0.95); box(0.05,0.85,1.0,new THREE.MeshStandardMaterial({color:c}),X1-0.14,1.55,Z0+0.95+i*0.95); });
-  box(0.5,0.95,0.5,mWhite,-0.9,0.47,0.2); box(0.4,0.45,0.4,mDark,-0.9,1.15,0.2);
-  box(0.5,0.95,0.5,mWhite,0.9,0.47,-0.9); box(0.35,0.55,0.35,mRed,0.9,1.2,-0.9);
-  plight(-1,2.3,0.2); plight(1.2,2.3,-0.9);
-  const sg=sign('GALLERY',0x1d1d22,3.0); sg.position.set(0,H+0.5,Z1+0.25);
-  npcIdle(-1.2,1.2,Math.PI,0x8c8c92,0x33333a); npcWalk(-1.0,-0.4,1.2,-0.4,0xd9d9dd,0x33333a,0.45);
-  terraceFront(Z1+2.0); tree(-6,-1,1); tree(6,0.6,1.1); tree(-2,-6,1); tree(2.5,-6,0.95);
-  spawnZ=7; statusText='05 GALLERY：コンテナ2棟・ギャラリー/ショップ';
+  [0x222228,0xb5302a,0xeeeef0,0x8c8c92,0x222228,0xb5302a].forEach((c,i)=>{ box(0.9,0.9,0.05,new THREE.MeshStandardMaterial({color:c}),-4.6+i*1.85,1.55,Z0+0.1); });
+  box(0.5,0.95,0.5,mWhite,-2.5,0.47,0.2); box(0.4,0.45,0.4,mDark,-2.5,1.15,0.2);
+  box(0.5,0.95,0.5,mWhite,1.5,0.47,0.2); box(0.35,0.55,0.35,mRed,1.5,1.2,0.2);
+  for(let x=-4;x<=4;x+=4) plight(x,2.3,0);
+  const sg=sign('GALLERY',0x1d1d22,3.4); sg.position.set(0,H+0.55,Z1+0.3);
+  npcIdle(-2,0.3,Math.PI,0x8c8c92,0x33333a); npcWalk(-1,0.4,3,0.4,0xd9d9dd,0x33333a,0.45);
+  terraceFront(Z1+2.0); tree(-7,-1,1); tree(7,0.6,1.1); tree(-2,-5,1); tree(3,-5,0.95);
+  spawnZ=8; statusText='05 GALLERY：40ftコンテナ1棟・ギャラリー/ショップ（実寸 約12m）';
 }
 // ---- 06 VILLA : コンテナ別荘（連結・テラス・住居）----
 function buildVilla(){
-  const X0=-3.03,X1=3.03,Z0=-2.44,Z1=2.44;
-  interiorLiner(X0,X1,Z0,Z1,2.42);
-  corr('z',Z1,X0,X0+0.4,0,H,mRed); corr('z',Z1,X1-0.4,X1,0,H,mRed);
-  corr('x',X0,0,Z1,0,H,mRed); cargoEnd(X1,0,Z1,mRed);
-  corr('z',Z0,X0,X1,0,H,mBlue); corr('x',X0,Z0,0,0,H,mBlue); corr('x',X1,Z0,0,0,H,mBlue);
+  const X0=-6.1,X1=6.1,Z0=-1.22,Z1=1.22;   // 40ftコンテナ1棟
+  box(X1-X0,0.06,Z1-Z0,mWood,0,0.05,0); box(X1-X0-0.1,0.04,Z1-Z0-0.1,mWhite,0,2.42,0);
+  box(0.05,2.4,Z1-Z0-0.1,mWhite,X0+0.12,1.2,0); box(0.05,2.4,Z1-Z0-0.1,mWhite,X1-0.12,1.2,0); box(X1-X0-0.1,2.4,0.05,mWhite,0,1.2,Z0+0.12);
+  corr('z',Z0,X0,X1,0,H,mRed); corr('x',X0,Z0,Z1,0,H,mRed); cargoEnd(X1,Z0,Z1,mRed);
+  for(const x of [-4.2,4.2]) box(1.4,1.2,0.05,mGlass,x,1.5,Z0+0.02);
+  storefront(X0+0.3,-0.9,Z1); storefront(0.9,X1-0.3,Z1); doorway(Z1,1.6);
   col(X0-.06,X0+.06,Z0,Z1,0,H); col(X1-.06,X1+.06,Z0,Z1,0,H); col(X0,X1,Z0-.06,Z0+.06,0,H);
-  const DW=1.6; storefront(X0+0.4,-DW/2,Z1); storefront(DW/2,X1-0.4,Z1); doorway(Z1,DW);
-  [-1.3,1.3].forEach(z=>{ box(0.05,1.2,1.4,mGlass,X0+0.02,1.45,z); box(0.05,1.2,1.4,mGlass,X1-0.02,1.45,z); });
   frameRing(X0,X1,Z0,Z1,0.06); frameRing(X0,X1,Z0,Z1,H); castings(X0,X1,Z0,Z1,0,H);
-  box(1.7,0.4,2.0,new THREE.MeshStandardMaterial({color:0xc0c0c6}),X0+1.0,0.3,Z0+1.2);
-  box(1.7,0.3,0.4,mWhite,X0+1.0,0.6,Z0+0.35);
-  box(2.0,0.5,0.8,new THREE.MeshStandardMaterial({color:0x7e7e86}),1.3,0.3,1.5);
-  box(0.9,0.04,0.55,mWood,1.3,0.42,0.8);
-  box(2.2,0.9,0.55,mWood,1.0,0.45,Z0+0.38); box(2.2,0.06,0.58,mDark,1.0,0.92,Z0+0.38);
-  box(1.2,0.04,0.8,mWood,-1.4,0.72,1.4); for(const sx of[-0.5,0.5])for(const sz of[-0.3,0.3])box(0.05,0.72,0.05,mDark,-1.4+sx,0.36,1.4+sz);
-  potPlant(X1-0.7,Z0+0.6,0.8);
-  plight(-1,2.3,0.4); plight(1.2,2.3,-1.0);
-  const sg=sign('VILLA',0x1d1d22,2.8); sg.position.set(0,H+0.5,Z1+0.25);
-  npcIdle(1.2,1.4,Math.PI,0x8c8c92,0x33333a); npcIdle(-1.2,0.6,0,0xd9d9dd,0x33333a);
-  terraceFront(Z1+2.2); tree(-6,-1,1.1); tree(6,0.6,1); tree(-2,-6.5,1.1); tree(2.5,-6.5,0.95); tree(6.5,5,1);
-  spawnZ=7; statusText='06 VILLA：コンテナ別荘（連結・テラス／住居・宿泊）';
+  // 長手に：寝室（左）→居間（中）→キッチン（右）
+  box(1.9,0.4,1.9,new THREE.MeshStandardMaterial({color:0xc0c0c6}),X0+1.2,0.3,0); box(1.9,0.3,0.3,mWhite,X0+1.2,0.6,Z0+0.25);
+  box(1.8,0.5,0.8,new THREE.MeshStandardMaterial({color:0x7e7e86}),0.3,0.3,Z1-0.7); box(0.9,0.04,0.55,mWood,0.3,0.42,0);
+  box(1.2,0.04,0.8,mWood,-1.4,0.72,Z1-0.6); for(const sx of[-0.5,0.5])box(0.05,0.72,0.05,mDark,-1.4+sx,0.36,Z1-0.6);
+  box(2.6,0.9,0.55,mWood,X1-2.0,0.45,Z0+0.4); box(2.6,0.06,0.58,mDark,X1-2.0,0.92,Z0+0.4);
+  potPlant(X1-0.7,Z1-0.5,0.8);
+  for(let x=-4;x<=4;x+=4) plight(x,2.3,0);
+  const sg=sign('VILLA',0x1d1d22,3.0); sg.position.set(0,H+0.55,Z1+0.3);
+  npcIdle(2,0.4,Math.PI,0x8c8c92,0x33333a); npcIdle(X0+1.4,0.4,0,0xd9d9dd,0x33333a);
+  terraceFront(Z1+2.2); tree(-7,-1,1.1); tree(7,0.6,1); tree(-2,-5.5,1.1); tree(3,-5.5,0.95);
+  spawnZ=8; statusText='06 VILLA：40ftコンテナ1棟・別荘（実寸 約12m／寝室・居間・キッチン）';
 }
 // ---- 07 LONG CAFE : 横連結の長いカフェ（5棟）----
 function buildLongCafe(){
@@ -650,7 +618,7 @@ document.getElementById('back').addEventListener('click',backToMenu);
 
 // CV導線（相談・資料請求モーダル）
 let curTier='';
-const LABELS={matsu:'01：フラッグシップ',take:'02：ワイドカフェ',ume:'03：テイクアウト',sauna:'04：コンテナサウナ',gallery:'05：ギャラリー/ショップ',villa:'06：コンテナ別荘',long:'07：ロングカフェ',camp:'08：グランピング',tower:'09：縦使いタワー'};
+const LABELS={matsu:'01：フラッグシップ',take:'02：ロングカフェ',ume:'03：テイクアウト',sauna:'04：コンテナサウナ',gallery:'05：ギャラリー/ショップ',villa:'06：コンテナ別荘',long:'07：横連結ロングカフェ',camp:'08：グランピング',tower:'09：縦使いタワー'};
 const modalEl=document.getElementById('modal');
 function openModal(){ document.getElementById('mTitle').textContent=(LABELS[curTier]||'')+' のご相談';
   document.getElementById('mDesc').textContent='このプランについて、ご希望はどれですか？';
@@ -676,8 +644,8 @@ document.querySelectorAll('#modal .opt').forEach(b=>b.addEventListener('click',(
   document.querySelectorAll('#modal .opt').forEach(x=>x.style.display='none'); }));
 
 // ===== AI見積りチャット（デモ）=====
-const PLAN={ matsu:{name:'01 フラッグシップ（3棟・2階建て）',base:[1500,2500]}, take:{name:'02 ワイドカフェ（2棟連結）',base:[600,1000]}, ume:{name:'03 テイクアウト（1棟）',base:[300,500]},
-  sauna:{name:'04 コンテナサウナ（1棟）',base:[250,450]}, gallery:{name:'05 ギャラリー/ショップ（2棟）',base:[600,1000]}, villa:{name:'06 コンテナ別荘（連結）',base:[1500,2500]},
+const PLAN={ matsu:{name:'01 フラッグシップ（40ft+20ft・2階建て）',base:[1500,2500]}, take:{name:'02 ロングカフェ（40ft 1棟）',base:[600,1000]}, ume:{name:'03 テイクアウト（20ft 1棟）',base:[300,500]},
+  sauna:{name:'04 コンテナサウナ（20ft 1棟）',base:[250,450]}, gallery:{name:'05 ギャラリー/ショップ（40ft 1棟）',base:[600,1000]}, villa:{name:'06 コンテナ別荘（40ft 1棟）',base:[1500,2500]},
   long:{name:'07 ロングカフェ（5棟横連結）',base:[1800,3000]}, camp:{name:'08 グランピング（複数棟）',base:[2000,5000]}, tower:{name:'09 縦使いタワー',base:[700,1200]} };
 const DELIVERY={ matsu:'約3〜5ヶ月', take:'約2〜3ヶ月', ume:'約1〜2ヶ月', sauna:'約1〜2ヶ月', gallery:'約2〜3ヶ月', villa:'約3〜5ヶ月', long:'約3〜5ヶ月', camp:'約4〜6ヶ月', tower:'約2〜3ヶ月' };
 const USE={ cafe:{name:'カフェ',f:1.0}, sauna:{name:'サウナ',f:1.25}, house:{name:'住居',f:1.1}, shop:{name:'物販店舗',f:1.0}, office:{name:'オフィス',f:1.05} };
