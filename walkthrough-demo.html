@@ -165,6 +165,27 @@
       <div class="price">¥1,500万〜2,500万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
+    <div class="card" data-tier="long">
+      <div class="rank">07</div><div class="grade">LONG CAFE</div>
+      <div class="title">ロングカフェ</div>
+      <div class="spec"><b>コンテナ5棟・横連結</b><br>30mのロングカウンター<br>長い前面ガラス＋テラス席<br>用途：大型カフェ・商業</div>
+      <div class="price">¥1,800万〜3,000万 <small>目安</small></div>
+      <div class="go">この建物に入る ▶</div>
+    </div>
+    <div class="card" data-tier="camp">
+      <div class="rank">08</div><div class="grade">GLAMPING</div>
+      <div class="title">グランピング施設</div>
+      <div class="spec"><b>敷地に複数棟を点在</b><br>コテージ×3・サウナ棟・管理棟<br>焚き火・テラス席・植栽<br>用途：宿泊・グランピング</div>
+      <div class="price">¥2,000万〜5,000万 <small>目安</small></div>
+      <div class="go">敷地を歩く ▶</div>
+    </div>
+    <div class="card" data-tier="tower">
+      <div class="rank">09</div><div class="grade">TOWER</div>
+      <div class="title">縦使いタワー</div>
+      <div class="spec"><b>コンテナを縦に使う</b><br>吹き抜けの高い縦空間<br>全高ガラス・高所の棚<br>用途：店舗・スタジオ・展望</div>
+      <div class="price">¥700万〜1,200万 <small>目安</small></div>
+      <div class="go">この建物に入る ▶</div>
+    </div>
   </div>
   <div class="note">いずれも20ftコンテナ実寸（6.06×2.44×2.59m）。仮モデルです。本番は御社の設計データ（CAD / BIM）に差し替え。<br>操作：WASD / 矢印＝移動、画面ドラッグ＝見回す。スマホは左下スティック＋右側ドラッグ。</div>
 </div>
@@ -505,7 +526,79 @@ function buildVilla(){
   terraceFront(Z1+2.2); tree(-6,-1,1.1); tree(6,0.6,1); tree(-2,-6.5,1.1); tree(2.5,-6.5,0.95); tree(6.5,5,1);
   spawnZ=7; statusText='06 VILLA：コンテナ別荘（連結・テラス／住居・宿泊）';
 }
-const BUILDERS={ ume:buildUme, take:buildTake, matsu:buildMatsu, sauna:buildSauna, gallery:buildGallery, villa:buildVilla };
+// ---- 07 LONG CAFE : 横連結の長いカフェ（5棟）----
+function buildLongCafe(){
+  const X0=-15,X1=15,Z0=-1.4,Z1=1.4;
+  interiorLiner(X0,X1,Z0,Z1,2.42);
+  corr('z',Z0,X0,X1,0,H,mRed); corr('x',X0,Z0,Z1,0,H,mRed); cargoEnd(X1,Z0,Z1,mRed);
+  storefront(X0+0.3,-0.9,Z1); storefront(0.9,X1-0.3,Z1); doorway(Z1,1.6);
+  for(const sx of [-9.09,-3.03,3.03,9.09]){ box(0.13,H,0.16,mDark,sx,H/2,Z1); box(0.13,H,0.16,mDark,sx,H/2,Z0); } // 連結シーム
+  col(X0-.06,X0+.06,Z0,Z1,0,H); col(X1-.06,X1+.06,Z0,Z1,0,H); col(X0,X1,Z0-.06,Z0+.06,0,H);
+  frameRing(X0,X1,Z0,Z1,0.06); frameRing(X0,X1,Z0,Z1,H); castings(X0,X1,Z0,Z1,0,H);
+  box(X1-X0-2,0.9,0.6,mWood,0,0.45,Z0+0.45); box(X1-X0-2,0.06,0.62,mDark,0,0.92,Z0+0.45); // ロングカウンター
+  for(let x=-12;x<=12;x+=1.4){ box(0.34,0.04,0.34,mDark,x,0.74,Z0+1.1); box(0.05,0.74,0.05,mDark,x,0.37,Z0+1.1); }
+  for(let x=-12;x<=12;x+=3.0){ box(0.8,0.04,0.7,mWood,x,0.72,Z1-0.7); }
+  for(let x=-12;x<=12;x+=4) plight(x,2.3,0);
+  const sg=sign('CAFE',0x1d1d22,5.0); sg.position.set(0,H+0.6,Z1+0.3);
+  npcIdle(-5,0.2,0,0xb5302a,0x2c2c32); npcIdle(3,0.5,Math.PI,0x8c8c92,0x33333a); npcWalk(-2,0.6,4,0.6,0xd9d9dd,0x33333a,0.5);
+  box(X1-X0,0.1,3.0,mWood,0,0.05,Z1+2.0);
+  for(let x=-11;x<=11;x+=5.5) outdoorSet(x,Z1+2.2);
+  for(const tx of [-16,-8,8,16]) tree(tx,Z1+4.6,1);
+  spawnZ=11; statusText='07 LONG CAFE：コンテナ5棟を横連結した長いカフェ';
+}
+// ---- 08 CAMP : グランピング（コテージ・サウナ棟・管理棟が点在）----
+function campHut(cx,cz,w,d,label,type){
+  const x0=cx-w/2,x1=cx+w/2,z0=cz-d/2,z1=cz+d/2;
+  box(w,0.06,d,mWood,cx,0.05,cz); box(w-0.1,0.04,d-0.1,mWhite,cx,2.42,cz);
+  corr('z',z0,x0,x1,0,H,mRed); corr('x',x0,z0,z1,0,H,mRed); corr('x',x1,z0,z1,0,H,mRed);
+  box(w-0.3,H-0.2,0.05,mGlass,cx,(H-0.2)/2,z1);
+  for(let yy=0.9;yy<H;yy+=0.9) box(w-0.3,0.05,0.07,mDark,cx,yy,z1+0.01);
+  frameRing(x0,x1,z0,z1,0.06); frameRing(x0,x1,z0,z1,H); castings(x0,x1,z0,z1,0,H);
+  col(x0-.06,x0+.06,z0,z1,0,H); col(x1-.06,x1+.06,z0,z1,0,H); col(x0,x1,z0-.06,z0+.06,0,H); col(x0,x1,z1-.06,z1+.06,0,H);
+  box(w+0.6,0.08,1.4,mWood,cx,0.05,z1+0.85);
+  plight(cx,2.2,cz);
+  if(type==='cottage'){ box(1.5,0.4,1.8,new THREE.MeshStandardMaterial({color:0xc0c0c6}),cx,0.3,cz-0.1); box(0.8,0.04,0.5,mWood,cx+0.5,0.42,z1-0.6); }
+  else if(type==='sauna'){ box(w-0.4,0.4,0.5,mWood,cx,0.5,z0+0.4); box(w-0.4,0.4,0.5,mWood,cx,0.85,z0+0.85); box(0.4,0.6,0.4,mDark,x1-0.5,0.3,z0+0.5); }
+  else { box(w-0.8,0.9,0.55,mWood,cx,0.45,z0+0.4); box(w-0.8,0.06,0.58,mDark,cx,0.92,z0+0.4); }
+  const sg=sign(label,0x1d1d22,Math.max(2.2,w*0.5)); sg.position.set(cx,H+0.45,z1+0.2);
+}
+function buildCamp(){
+  campHut(0,-2,6,3,'管理棟','kanri');
+  campHut(-9,-9,6,2.44,'COTTAGE','cottage');
+  campHut(9,-11,6,2.44,'COTTAGE','cottage');
+  campHut(-8,5,6,2.44,'COTTAGE','cottage');
+  campHut(10,4,3.2,2.44,'SAUNA','sauna');
+  box(1.0,0.2,1.0,mDark,0,0.1,8); box(0.4,0.5,0.4,mRed,0,0.3,8);
+  const fire=new THREE.PointLight(0xff5a1e,5,9,2); fire.position.set(0,0.7,8); G.add(fire);
+  for(const p of [[-3,9.5],[3,9.5]]) outdoorSet(p[0],p[1]);
+  for(const t of [[-13,-3],[13,-5],[-5,-14],[6,-16],[14,8],[-14,7],[-2,-7],[5,-1],[-11,2]]) tree(t[0],t[1],0.9);
+  npcIdle(0,1,0,0xb5302a,0x2c2c32); npcWalk(-3,3,3,3,0xd9d9dd,0x33333a,0.4); npcIdle(-8,-7,Math.PI,0x8c8c92,0x33333a);
+  spawnZ=15; statusText='08 CAMP：グランピング（コテージ・サウナ棟・管理棟が点在）— 敷地を歩けます';
+}
+// ---- 09 TOWER : コンテナを縦に使った塔状デザイン ----
+function buildTower(){
+  const X0=-2.44,X1=2.44,Z0=-1.22,Z1=1.22, TOP=6.0;
+  box(X1-X0,0.06,Z1-Z0,mWood,0,0.05,0); box(X1-X0,0.2,Z1-Z0,mWhite,0,TOP,0);
+  corr('z',Z0,X0,X1,0,TOP,mRed); corr('x',X0,Z0,Z1,0,TOP,mRed); corr('x',X1,Z0,Z1,0,TOP,mRed);
+  box(0.14,TOP,0.16,mDark,0,TOP/2,Z0); // 縦コンテナの連結シーム
+  function tallGlass(x0,x1){ box(x1-x0,TOP-0.2,0.05,mGlass,(x0+x1)/2,(TOP-0.2)/2,Z1);
+    for(let yy=0.9;yy<TOP;yy+=0.9) box(x1-x0,0.05,0.08,mDark,(x0+x1)/2,yy,Z1+0.01);
+    box(0.07,TOP-0.2,0.07,mDark,x0,(TOP-0.2)/2,Z1); box(0.07,TOP-0.2,0.07,mDark,x1,(TOP-0.2)/2,Z1);
+    col(x0,x1,Z1-.06,Z1+.06,0,TOP); }
+  tallGlass(X0+0.2,-0.5); tallGlass(0.5,X1-0.2);
+  doorway(Z1,1.0); box(1.0,TOP-2.15,0.05,mGlass,0,(2.15+TOP)/2,Z1); col(-0.5,0.5,Z1-.06,Z1+.06,2.15,TOP);
+  col(X0-.06,X0+.06,Z0,Z1,0,TOP); col(X1-.06,X1+.06,Z0,Z1,0,TOP); col(X0,X1,Z0-.06,Z0+.06,0,TOP);
+  frameRing(X0,X1,Z0,Z1,0.06); frameRing(X0,X1,Z0,Z1,TOP); castings(X0,X1,Z0,Z1,0,TOP);
+  box(1.8,0.5,0.7,new THREE.MeshStandardMaterial({color:0x7e7e86}),0,0.3,Z0+0.55); box(0.9,0.04,0.55,mWood,0,0.42,0.1);
+  box(X1-X0-0.4,0.05,0.3,mWood,0,2.4,Z0+0.3); box(X1-X0-0.4,0.05,0.3,mWood,0,3.6,Z0+0.3);
+  box(0.5,1.5,0.5,mPot,X1-0.6,0.78,Z0+0.5); blob(0.6,mLeaf,X1-0.6,1.85,Z0+0.5);
+  plight(0,2.2,0); plight(0,4.6,0);
+  const sg=sign('TOWER',0x1d1d22,2.6); sg.position.set(0,TOP+0.5,Z1+0.2);
+  npcIdle(-0.7,0.4,0,0x8c8c92,0x33333a);
+  terraceFront(Z1+2.0); tree(-5,-1,1); tree(5,0.6,1.1); tree(-2,-5,1);
+  spawnZ=9; statusText='09 TOWER：コンテナを縦に使った塔状デザイン（吹き抜けの縦空間）';
+}
+const BUILDERS={ ume:buildUme, take:buildTake, matsu:buildMatsu, sauna:buildSauna, gallery:buildGallery, villa:buildVilla, long:buildLongCafe, camp:buildCamp, tower:buildTower };
 
 // ---------- select / clear ----------
 let started=false, yaw=0, pitch=0, feetY=0;
@@ -549,7 +642,7 @@ document.getElementById('back').addEventListener('click',backToMenu);
 
 // CV導線（相談・資料請求モーダル）
 let curTier='';
-const LABELS={matsu:'01：フラッグシップ',take:'02：ワイドカフェ',ume:'03：テイクアウト',sauna:'04：コンテナサウナ',gallery:'05：ギャラリー/ショップ',villa:'06：コンテナ別荘'};
+const LABELS={matsu:'01：フラッグシップ',take:'02：ワイドカフェ',ume:'03：テイクアウト',sauna:'04：コンテナサウナ',gallery:'05：ギャラリー/ショップ',villa:'06：コンテナ別荘',long:'07：ロングカフェ',camp:'08：グランピング',tower:'09：縦使いタワー'};
 const modalEl=document.getElementById('modal');
 function openModal(){ document.getElementById('mTitle').textContent=(LABELS[curTier]||'')+' のご相談';
   document.getElementById('mDesc').textContent='このプランについて、ご希望はどれですか？';
@@ -576,8 +669,9 @@ document.querySelectorAll('#modal .opt').forEach(b=>b.addEventListener('click',(
 
 // ===== AI見積りチャット（デモ）=====
 const PLAN={ matsu:{name:'01 フラッグシップ（3棟・2階建て）',base:[1500,2500]}, take:{name:'02 ワイドカフェ（2棟連結）',base:[600,1000]}, ume:{name:'03 テイクアウト（1棟）',base:[300,500]},
-  sauna:{name:'04 コンテナサウナ（1棟）',base:[250,450]}, gallery:{name:'05 ギャラリー/ショップ（2棟）',base:[600,1000]}, villa:{name:'06 コンテナ別荘（連結）',base:[1500,2500]} };
-const DELIVERY={ matsu:'約3〜5ヶ月', take:'約2〜3ヶ月', ume:'約1〜2ヶ月', sauna:'約1〜2ヶ月', gallery:'約2〜3ヶ月', villa:'約3〜5ヶ月' };
+  sauna:{name:'04 コンテナサウナ（1棟）',base:[250,450]}, gallery:{name:'05 ギャラリー/ショップ（2棟）',base:[600,1000]}, villa:{name:'06 コンテナ別荘（連結）',base:[1500,2500]},
+  long:{name:'07 ロングカフェ（5棟横連結）',base:[1800,3000]}, camp:{name:'08 グランピング（複数棟）',base:[2000,5000]}, tower:{name:'09 縦使いタワー',base:[700,1200]} };
+const DELIVERY={ matsu:'約3〜5ヶ月', take:'約2〜3ヶ月', ume:'約1〜2ヶ月', sauna:'約1〜2ヶ月', gallery:'約2〜3ヶ月', villa:'約3〜5ヶ月', long:'約3〜5ヶ月', camp:'約4〜6ヶ月', tower:'約2〜3ヶ月' };
 const USE={ cafe:{name:'カフェ',f:1.0}, sauna:{name:'サウナ',f:1.25}, house:{name:'住居',f:1.1}, shop:{name:'物販店舗',f:1.0}, office:{name:'オフィス',f:1.05} };
 const REGION={ shuto:{name:'首都圏',add:0}, tokai:{name:'東海',add:20}, kansai:{name:'関西',add:40}, other:{name:'その他',add:60} };
 const est={};
