@@ -32,6 +32,13 @@
   #start h1 b { color:var(--accent); font-weight:700; }
   #start .sub { margin-top:14px; font-size:13.5px; letter-spacing:.04em; color:#5c5c62; line-height:1.8; }
   #start .sub b { color:var(--accent); font-weight:700; }
+  .navi-intro { display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap; margin-bottom:30px; }
+  #navi { height:clamp(150px,20vw,200px); width:auto; filter:drop-shadow(0 12px 22px rgba(0,0,0,.2)); }
+  .navi-bubble { position:relative; background:#fff; border:1px solid #e4e4e2; border-radius:16px; padding:16px 22px; font-size:14px; line-height:1.95; color:#1b1b1f; box-shadow:0 10px 28px rgba(0,0,0,.1); max-width:320px; text-align:left; }
+  .navi-bubble b { color:var(--accent); font-weight:700; }
+  .navi-bubble .nm { font-family:"Oswald",var(--sans); font-size:10.5px; letter-spacing:.2em; color:var(--accent); display:block; margin-bottom:6px; }
+  .navi-bubble::before { content:""; position:absolute; left:-9px; top:46%; border:9px solid transparent; border-right-color:#fff; }
+  @media (max-width:560px){ .navi-bubble::before{ left:50%; top:-9px; transform:translateX(-50%); border:9px solid transparent; border-bottom-color:#fff; } }
   #cards { margin-top:40px; display:flex; gap:20px; flex-wrap:wrap; justify-content:center; max-width:900px; }
   .card { width:272px; background:#c0392b; border:1px solid #9c2c20; border-radius:5px; padding:30px 22px 22px; cursor:pointer;
           text-align:left; position:relative; overflow:hidden; display:flex; flex-direction:column; transition:transform .28s cubic-bezier(.2,.8,.2,1), border-color .28s, box-shadow .28s; }
@@ -122,6 +129,10 @@
 </div>
 
 <div id="start">
+  <div class="navi-intro">
+    <img id="navi" src="navi.png" alt="ナビゲーター" />
+    <div class="navi-bubble"><span class="nm">NAVIGATOR</span><b>ようこそ！</b>わたしが案内するね。<br>気になる建物を選んで、<br>中を歩いて見てみてね 👋</div>
+  </div>
   <div class="kicker">CONTAINER · VIRTUAL SHOWROOM</div>
   <h1>入る建物を<b>選ぶ</b></h1>
   <div class="sub">実例ベースの<b>9プラン</b>。コンテナで何が建つかを、歩いて見比べられます。</div>
