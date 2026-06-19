@@ -63,6 +63,8 @@
   #hint { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); z-index:9; color:var(--text); font-size:11px; letter-spacing:.04em; opacity:.65; background:rgba(20,16,12,.42); padding:7px 16px; border:1px solid var(--line); border-radius:20px; backdrop-filter:blur(8px); display:none; }
   #cta { position:fixed; right:18px; bottom:54px; z-index:22; display:none; padding:14px 22px; font-size:13px; font-weight:700; letter-spacing:.04em; color:#fff; background:var(--accent); border:1px solid rgba(255,255,255,.12); border-radius:30px; cursor:pointer; box-shadow:0 10px 30px rgba(207,107,67,.45); transition:transform .15s; }
   #cta:hover { transform:translateY(-2px); }
+  #glb { position:fixed; left:18px; bottom:18px; z-index:22; display:none; padding:11px 16px; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--text); background:rgba(20,16,12,.5); border:1px solid var(--line); border-radius:6px; cursor:pointer; backdrop-filter:blur(8px); font-family:"Oswald",var(--sans); }
+  #glb:hover { border-color:var(--brass); }
   #modal { position:fixed; inset:0; z-index:40; display:none; align-items:center; justify-content:center; background:rgba(12,9,6,.66); backdrop-filter:blur(6px); padding:20px; }
   #modal .panel { width:360px; max-width:92vw; background:linear-gradient(180deg,#212127,#15151a); border:1px solid var(--line); border-radius:20px; padding:28px; text-align:center; box-shadow:0 30px 60px rgba(0,0,0,.6); }
   #modal h3 { font-family:var(--serif); font-size:20px; font-weight:600; letter-spacing:.02em; } #modal .mt { font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.8; }
@@ -95,6 +97,7 @@
 <div id="hint">スティックで移動・右側ドラッグで見回す</div>
 <button id="back">← 別の棟を選ぶ</button>
 <button id="cta">📋 このコンテナを相談・資料請求</button>
+<button id="glb">⬇ GLB書き出し（Blender用）</button>
 <div id="modal"><div class="panel">
   <h3 id="mTitle">ご相談・お見積り</h3>
   <div class="mt" id="mDesc">このプランについて、ご希望はどれですか？</div>
@@ -171,6 +174,7 @@
 </script>
 <script type="module">
 import * as THREE from 'three';
+import { GLTFExporter } from 'https://unpkg.com/three@0.160.0/examples/jsm/exporters/GLTFExporter.js';
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
 // ---------- renderer / scene ----------
@@ -525,6 +529,7 @@ function select(tier){
   h.textContent=isTouch?'スティックで移動・右側ドラッグで見回す':'ドラッグで見回す・WASD / 矢印で移動';
   if(isTouch) document.getElementById('mobile').style.display='block';
   curTier=tier; document.getElementById('cta').style.display='block';
+  if(!isTouch) document.getElementById('glb').style.display='block';
   document.getElementById('status').innerHTML='<span class="near">'+statusText+'</span>';
 }
 function backToMenu(){
@@ -535,6 +540,7 @@ function backToMenu(){
   document.getElementById('hint').style.display='none';
   document.getElementById('mobile').style.display='none';
   document.getElementById('cta').style.display='none';
+  document.getElementById('glb').style.display='none';
   document.getElementById('modal').style.display='none';
   document.getElementById('chat').style.display='none';
 }
@@ -549,6 +555,18 @@ function openModal(){ document.getElementById('mTitle').textContent=(LABELS[curT
   document.getElementById('mDesc').textContent='このプランについて、ご希望はどれですか？';
   document.querySelectorAll('#modal .opt').forEach(x=>x.style.display='block'); modalEl.style.display='flex'; }
 document.getElementById('cta').addEventListener('click',openModal);
+// GLB書き出し（Blenderで開ける .glb をダウンロード）
+function exportGLB(){
+  if(!currentBuilding) return;
+  const btn=document.getElementById('glb'), label=btn.textContent; btn.textContent='⏳ 書き出し中…';
+  new GLTFExporter().parse(currentBuilding, function(buf){
+    const blob=new Blob([buf],{type:'model/gltf-binary'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='container-'+(curTier||'model')+'.glb'; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },1000); btn.textContent=label;
+  }, function(err){ console.error('GLB export error',err); btn.textContent=label; }, {binary:true});
+}
+document.getElementById('glb').addEventListener('click',exportGLB);
 document.getElementById('mClose').addEventListener('click',()=>modalEl.style.display='none');
 modalEl.addEventListener('click',e=>{ if(e.target===modalEl) modalEl.style.display='none'; });
 document.querySelectorAll('#modal .opt').forEach(b=>b.addEventListener('click',()=>{
