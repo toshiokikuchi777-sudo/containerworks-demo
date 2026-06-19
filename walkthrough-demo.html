@@ -242,6 +242,7 @@ const mGreen=new THREE.MeshStandardMaterial({color:0xbb342b}), mCast=new THREE.M
 const mSteel=new THREE.MeshStandardMaterial({color:0x1f1f24}), mWood=new THREE.MeshStandardMaterial({color:0xb4b1aa});  // 黒鉄 / グレー床
 const mWhite=new THREE.MeshStandardMaterial({color:0xeeeef0}), mDark=new THREE.MeshStandardMaterial({color:0x222228});
 const mGlass=new THREE.MeshPhysicalMaterial({color:0xccd2d5,roughness:.05,transmission:.9,transparent:true,opacity:.34,metalness:0});
+const mRedT=new THREE.MeshStandardMaterial({color:0xc0392b,transparent:true,opacity:0.30,depthWrite:false,side:THREE.DoubleSide}); // 半透明の赤い前壁（撤去せず中を見せる）
 const mLeaf=new THREE.MeshStandardMaterial({color:0x6e776c}), mLeaf2=new THREE.MeshStandardMaterial({color:0x808a7c}); // 抑えたグレーグリーン
 const mTrunk=new THREE.MeshStandardMaterial({color:0x4e4a45}), mParasol=new THREE.MeshStandardMaterial({color:0xe6e3dc}), mPot=new THREE.MeshStandardMaterial({color:0x8a8884});
 const _outline=new THREE.MeshBasicMaterial({color:0x101018,side:THREE.BackSide});
@@ -269,9 +270,14 @@ function castings(xMin,xMax,zMin,zMax,yMin,yMax){const s=0.17;
   for(const X of[xMin,xMax])for(const Z of[zMin,zMax])for(const Y of[yMin+s/2,yMax-s/2]) box(s,s,s,mCast,X,Y,Z);}
 function frameRing(xMin,xMax,zMin,zMax,y){box(xMax-xMin+0.1,0.12,0.12,mSteel,(xMin+xMax)/2,y,zMin);box(xMax-xMin+0.1,0.12,0.12,mSteel,(xMin+xMax)/2,y,zMax);
   box(0.12,0.12,zMax-zMin,mSteel,xMin,y,(zMin+zMax)/2);box(0.12,0.12,zMax-zMin,mSteel,xMax,y,(zMin+zMax)/2);}
-function storefront(x0,x1,zFix){ box(x1-x0,H-0.2,0.05,mGlass,(x0+x1)/2,(H-0.2)/2,zFix);
-  for(let y=0.9;y<H;y+=0.9) box(x1-x0,0.06,0.08,mDark,(x0+x1)/2,y,zFix+0.01);
-  box(0.07,H-0.2,0.07,mDark,x0,(H-0.2)/2,zFix); box(0.07,H-0.2,0.07,mDark,x1,(H-0.2)/2,zFix);
+function storefront(x0,x1,zFix){ const w=x1-x0;
+  box(w,H-0.04,0.06,mRedT,(x0+x1)/2,H/2,zFix);                 // 半透明の赤い前壁（壁は撤去しない）
+  const n=Math.max(1,Math.round(w/2.2));
+  for(let i=0;i<n;i++){ const cx=x0+(i+0.5)*(w/n), ww=Math.min(1.3,(w/n)*0.62);
+    box(ww,1.15,0.03,mGlass,cx,1.5,zFix+0.03);                 // くり抜いた窓
+    box(ww+0.08,0.06,0.06,mDark,cx,2.1,zFix+0.02); box(ww+0.08,0.06,0.06,mDark,cx,0.9,zFix+0.02);
+    box(0.06,1.25,0.06,mDark,cx-ww/2,1.5,zFix+0.02); box(0.06,1.25,0.06,mDark,cx+ww/2,1.5,zFix+0.02); }
+  box(0.09,H,0.09,mDark,x0,H/2,zFix); box(0.09,H,0.09,mDark,x1,H/2,zFix);  // コンテナ端の縦枠
   col(x0,x1,zFix-0.06,zFix+0.06,0,H); }
 function doorway(zFix,DW){ box(0.08,2.15,0.1,mDark,-DW/2,1.07,zFix); box(0.08,2.15,0.1,mDark,DW/2,1.07,zFix);
   box(DW+0.18,0.1,0.1,mDark,0,2.15,zFix); col(-DW/2,DW/2,zFix-0.06,zFix+0.06,2.15,H); }
@@ -551,8 +557,10 @@ function campHut(cx,cz,w,d,label,type){
   const x0=cx-w/2,x1=cx+w/2,z0=cz-d/2,z1=cz+d/2;
   box(w,0.06,d,mWood,cx,0.05,cz); box(w-0.1,0.04,d-0.1,mWhite,cx,2.42,cz);
   corr('z',z0,x0,x1,0,H,mRed); corr('x',x0,z0,z1,0,H,mRed); corr('x',x1,z0,z1,0,H,mRed);
-  box(w-0.3,H-0.2,0.05,mGlass,cx,(H-0.2)/2,z1);
-  for(let yy=0.9;yy<H;yy+=0.9) box(w-0.3,0.05,0.07,mDark,cx,yy,z1+0.01);
+  box(w-0.2,H-0.04,0.06,mRedT,cx,H/2,z1);                       // 半透明の赤い前壁
+  { const ww=Math.min(1.4,w*0.5); box(ww,1.1,0.03,mGlass,cx,1.4,z1+0.03); // くり抜いた窓
+    box(ww+0.08,0.06,0.06,mDark,cx,1.95,z1+0.02); box(ww+0.08,0.06,0.06,mDark,cx,0.85,z1+0.02);
+    box(0.06,1.2,0.06,mDark,cx-ww/2,1.4,z1+0.02); box(0.06,1.2,0.06,mDark,cx+ww/2,1.4,z1+0.02); }
   frameRing(x0,x1,z0,z1,0.06); frameRing(x0,x1,z0,z1,H); castings(x0,x1,z0,z1,0,H);
   col(x0-.06,x0+.06,z0,z1,0,H); col(x1-.06,x1+.06,z0,z1,0,H); col(x0,x1,z0-.06,z0+.06,0,H); col(x0,x1,z1-.06,z1+.06,0,H);
   box(w+0.6,0.08,1.4,mWood,cx,0.05,z1+0.85);
@@ -581,12 +589,12 @@ function buildTower(){
   box(X1-X0,0.06,Z1-Z0,mWood,0,0.05,0); box(X1-X0,0.2,Z1-Z0,mWhite,0,TOP,0);
   corr('z',Z0,X0,X1,0,TOP,mRed); corr('x',X0,Z0,Z1,0,TOP,mRed); corr('x',X1,Z0,Z1,0,TOP,mRed);
   box(0.14,TOP,0.16,mDark,0,TOP/2,Z0); // 縦コンテナの連結シーム
-  function tallGlass(x0,x1){ box(x1-x0,TOP-0.2,0.05,mGlass,(x0+x1)/2,(TOP-0.2)/2,Z1);
-    for(let yy=0.9;yy<TOP;yy+=0.9) box(x1-x0,0.05,0.08,mDark,(x0+x1)/2,yy,Z1+0.01);
-    box(0.07,TOP-0.2,0.07,mDark,x0,(TOP-0.2)/2,Z1); box(0.07,TOP-0.2,0.07,mDark,x1,(TOP-0.2)/2,Z1);
+  function tallGlass(x0,x1){ box(x1-x0,TOP-0.04,0.06,mRedT,(x0+x1)/2,TOP/2,Z1);   // 半透明の赤い縦長前壁
+    for(let yy=1.5;yy<TOP;yy+=1.6) box((x1-x0)*0.7,1.0,0.03,mGlass,(x0+x1)/2,yy,Z1+0.03);  // 縦に並ぶくり抜き窓
+    box(0.07,TOP,0.07,mDark,x0,TOP/2,Z1); box(0.07,TOP,0.07,mDark,x1,TOP/2,Z1);
     col(x0,x1,Z1-.06,Z1+.06,0,TOP); }
   tallGlass(X0+0.2,-0.5); tallGlass(0.5,X1-0.2);
-  doorway(Z1,1.0); box(1.0,TOP-2.15,0.05,mGlass,0,(2.15+TOP)/2,Z1); col(-0.5,0.5,Z1-.06,Z1+.06,2.15,TOP);
+  doorway(Z1,1.0); box(1.0,TOP-2.15,0.05,mRedT,0,(2.15+TOP)/2,Z1); col(-0.5,0.5,Z1-.06,Z1+.06,2.15,TOP);
   col(X0-.06,X0+.06,Z0,Z1,0,TOP); col(X1-.06,X1+.06,Z0,Z1,0,TOP); col(X0,X1,Z0-.06,Z0+.06,0,TOP);
   frameRing(X0,X1,Z0,Z1,0.06); frameRing(X0,X1,Z0,Z1,TOP); castings(X0,X1,Z0,Z1,0,TOP);
   box(1.8,0.5,0.7,new THREE.MeshStandardMaterial({color:0x7e7e86}),0,0.3,Z0+0.55); box(0.9,0.04,0.55,mWood,0,0.42,0.1);
