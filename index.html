@@ -199,6 +199,7 @@
 <script type="module">
 import * as THREE from 'three';
 import { GLTFExporter } from 'https://unpkg.com/three@0.160.0/examples/jsm/exporters/GLTFExporter.js';
+import { RoomEnvironment } from 'https://unpkg.com/three@0.160.0/examples/jsm/environments/RoomEnvironment.js';
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
 // ---------- renderer / scene ----------
@@ -217,14 +218,17 @@ const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.12;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;
 document.getElementById('app').appendChild(renderer.domElement);
+// 環境マップ（IBL）：ガラス・金属・塗装面に自然な映り込みを与えて質感アップ
+const _pmrem=new THREE.PMREMGenerator(renderer);
+scene.environment=_pmrem.fromScene(new RoomEnvironment(),0.04).texture;
 
 // 夕方の柔らかな光
-scene.add(new THREE.HemisphereLight(0xeef1f4,0x595960,0.55));
-scene.add(new THREE.AmbientLight(0xffffff,0.36));
-const sun=new THREE.DirectionalLight(0xffffff,1.4);
-sun.position.set(22,18,12); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
+scene.add(new THREE.HemisphereLight(0xeef1f4,0x595960,0.3));
+scene.add(new THREE.AmbientLight(0xffffff,0.15));
+const sun=new THREE.DirectionalLight(0xffffff,1.55);
+sun.position.set(22,18,12); sun.castShadow=true; sun.shadow.mapSize.set(4096,4096);
 sun.shadow.camera.near=1; sun.shadow.camera.far=110;
 sun.shadow.camera.left=-30;sun.shadow.camera.right=30;sun.shadow.camera.top=30;sun.shadow.camera.bottom=-30;
 sun.shadow.bias=-0.0004; sun.shadow.radius=3;
@@ -234,20 +238,20 @@ const fill=new THREE.DirectionalLight(0xcdd6de,0.3); fill.position.set(-14,10,-1
 
 // ground (persistent)
 const _grad=(function(s){const a=new Uint8Array(s);for(let i=0;i<s;i++)a[i]=Math.round(255*(i/(s-1)));const t=new THREE.DataTexture(a,s,1,THREE.RedFormat);t.needsUpdate=true;t.minFilter=THREE.NearestFilter;t.magFilter=THREE.NearestFilter;t.generateMipmaps=false;return t;})(3);
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshToonMaterial({color:0xcececa,gradientMap:_grad}));
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshStandardMaterial({color:0xcececa,roughness:0.95,metalness:0.0}));
 ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
 const grid=new THREE.GridHelper(240,120,0xbcbcb8,0xc6c6c2); grid.position.y=0.01; grid.material.transparent=true; grid.material.opacity=0.35; scene.add(grid);
 
 // ---------- materials ----------
 // 赤×黒×白×グレー（赤は差し色）
-const mRed=new THREE.MeshStandardMaterial({color:0xc0392b}),  mBlue=new THREE.MeshStandardMaterial({color:0x9a2f24});   // 赤コンテナ（前）/ 赤コンテナ（後・濃）
-const mGreen=new THREE.MeshStandardMaterial({color:0xbb342b}), mCast=new THREE.MeshStandardMaterial({color:0x131316}); // 赤コンテナ（上・色味違い）/ 黒金具
-const mSteel=new THREE.MeshStandardMaterial({color:0x1f1f24}), mWood=new THREE.MeshStandardMaterial({color:0xb4b1aa});  // 黒鉄 / グレー床
-const mWhite=new THREE.MeshStandardMaterial({color:0xeeeef0}), mDark=new THREE.MeshStandardMaterial({color:0x222228});
-const mGlass=new THREE.MeshPhysicalMaterial({color:0xccd2d5,roughness:.05,transmission:.9,transparent:true,opacity:.34,metalness:0});
-const mRedT=new THREE.MeshStandardMaterial({color:0xc0392b,transparent:true,opacity:0.30,depthWrite:false,side:THREE.DoubleSide}); // 半透明の赤い前壁（撤去せず中を見せる）
-const mLeaf=new THREE.MeshStandardMaterial({color:0x6e776c}), mLeaf2=new THREE.MeshStandardMaterial({color:0x808a7c}); // 抑えたグレーグリーン
-const mTrunk=new THREE.MeshStandardMaterial({color:0x4e4a45}), mParasol=new THREE.MeshStandardMaterial({color:0xe6e3dc}), mPot=new THREE.MeshStandardMaterial({color:0x8a8884});
+const mRed=new THREE.MeshStandardMaterial({color:0xc0392b,roughness:.5,metalness:.25}),  mBlue=new THREE.MeshStandardMaterial({color:0x9a2f24,roughness:.5,metalness:.25});   // 塗装鋼の赤コンテナ
+const mGreen=new THREE.MeshStandardMaterial({color:0xbb342b,roughness:.5,metalness:.25}), mCast=new THREE.MeshStandardMaterial({color:0x131316,roughness:.4,metalness:.7}); // 上コンテナ / 黒い鋳鋼金具
+const mSteel=new THREE.MeshStandardMaterial({color:0x1f1f24,roughness:.35,metalness:.8}), mWood=new THREE.MeshStandardMaterial({color:0xb4b1aa,roughness:.7,metalness:.05});  // 黒鉄 / グレー床
+const mWhite=new THREE.MeshStandardMaterial({color:0xeeeef0,roughness:.85,metalness:0}), mDark=new THREE.MeshStandardMaterial({color:0x222228,roughness:.5,metalness:.4});
+const mGlass=new THREE.MeshPhysicalMaterial({color:0xdce6ea,roughness:.02,transmission:.94,transparent:true,opacity:.32,metalness:0,ior:1.45}); // 高品質ガラス
+const mRedT=new THREE.MeshStandardMaterial({color:0xc0392b,transparent:true,opacity:0.30,depthWrite:false,side:THREE.DoubleSide,roughness:.5,metalness:.2}); // 半透明の赤い前壁
+const mLeaf=new THREE.MeshStandardMaterial({color:0x6e776c,roughness:.85}), mLeaf2=new THREE.MeshStandardMaterial({color:0x808a7c,roughness:.85});
+const mTrunk=new THREE.MeshStandardMaterial({color:0x4e4a45,roughness:.8}), mParasol=new THREE.MeshStandardMaterial({color:0xe6e3dc,roughness:.7}), mPot=new THREE.MeshStandardMaterial({color:0x8a8884,roughness:.7});
 const _outline=new THREE.MeshBasicMaterial({color:0x101018,side:THREE.BackSide});
 const _hsl={};
 
@@ -323,16 +327,8 @@ function terraceFront(cz){ box(5.6,0.1,3.0,mWood,0,0.05,cz); outdoorSet(-1.35,cz
 
 // ---------- toon/outline pass on a group ----------
 function toonify(group){
-  const outs=[];
-  group.traverse(o=>{
-    if(!o.isMesh||!o.material||!o.material.color) return;
-    if(o.material.transparent&&o.material.opacity<0.6) return; // glass
-    const c=o.material.color.clone(); c.getHSL(_hsl); c.setHSL(_hsl.h,_hsl.s*0.9,Math.min(0.95,_hsl.l*1.04+0.03));
-    o.material=new THREE.MeshToonMaterial({color:c,gradientMap:_grad});
-    if(o.geometry&&(o.geometry.type==='BoxGeometry'||o.geometry.type==='IcosahedronGeometry')&&!o.userData.noOutline){ o.geometry.computeBoundingBox(); const sz=new THREE.Vector3(); o.geometry.boundingBox.getSize(sz);
-      const md=Math.max(sz.x,sz.y,sz.z); if(md>0.4&&md<40){const m=new THREE.Mesh(o.geometry,_outline);m.position.copy(o.position);m.quaternion.copy(o.quaternion);m.scale.copy(o.scale).multiplyScalar(1.06);outs.push(m);} }
-  });
-  outs.forEach(m=>group.add(m));
+  // PBRのまま：環境マップの映り込みを効かせて質感を上げる
+  group.traverse(o=>{ if(o.isMesh&&o.material&&('envMapIntensity' in o.material)) o.material.envMapIntensity=0.75; });
 }
 
 // ====================== BUILDINGS ======================
