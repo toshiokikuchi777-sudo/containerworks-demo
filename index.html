@@ -25,14 +25,16 @@
   #back:hover { border-color:var(--brass); }
 
   /* selection screen */
-  #start { position:fixed; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
-           background:radial-gradient(130% 120% at 50% -8%, #f7f7f5 0%, #e3e3e1 72%); padding:32px; overflow:auto; }
+  #start { position:fixed; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center;
+           background:radial-gradient(130% 120% at 50% -6%, #f8f8f6 0%, #e2e2e0 74%); padding:54px 32px 48px; overflow:auto; }
+  #start .kicker { font-family:"Oswald",var(--sans); font-size:11px; font-weight:600; letter-spacing:.42em; color:var(--accent); margin-bottom:14px; }
   #start h1 { font-family:var(--serif); font-size:clamp(26px,5vw,44px); font-weight:600; letter-spacing:.05em; line-height:1.4; color:#1b1b1f; }
   #start h1 b { color:var(--accent); font-weight:700; }
   #start .sub { margin-top:14px; font-size:13.5px; letter-spacing:.04em; color:#5c5c62; line-height:1.8; }
-  #cards { margin-top:42px; display:flex; gap:22px; flex-wrap:wrap; justify-content:center; max-width:960px; }
+  #start .sub b { color:var(--accent); font-weight:700; }
+  #cards { margin-top:40px; display:flex; gap:20px; flex-wrap:wrap; justify-content:center; max-width:900px; }
   .card { width:272px; background:#c0392b; border:1px solid #9c2c20; border-radius:5px; padding:30px 22px 22px; cursor:pointer;
-          text-align:left; position:relative; overflow:hidden; transition:transform .28s cubic-bezier(.2,.8,.2,1), border-color .28s, box-shadow .28s; }
+          text-align:left; position:relative; overflow:hidden; display:flex; flex-direction:column; transition:transform .28s cubic-bezier(.2,.8,.2,1), border-color .28s, box-shadow .28s; }
   .card > * { position:relative; z-index:1; }
   /* コンテナの波板（縦リブ） */
   .card::after { content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
@@ -48,9 +50,9 @@
   .card .title { color:#fff; }
   .card .spec { font-size:12px; color:rgba(255,255,255,.85); margin-top:12px; line-height:2; }
   .card .spec b { color:#fff; font-weight:600; }
-  .card .price { margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,.28); font-size:17px; font-weight:700; color:#fff; letter-spacing:.02em; }
+  .card .price { margin-top:auto; padding-top:14px; border-top:1px solid rgba(255,255,255,.28); font-size:17px; font-weight:700; color:#fff; letter-spacing:.02em; }
   .card .price small { font-size:10.5px; color:rgba(255,255,255,.66); font-weight:400; margin-left:4px; }
-  .card .go { margin-top:18px; display:block; font-family:"Oswald",var(--sans); font-size:13px; font-weight:600; letter-spacing:.12em; color:#fff;
+  .card .go { margin-top:14px; display:block; font-family:"Oswald",var(--sans); font-size:13px; font-weight:600; letter-spacing:.12em; color:#fff;
               background:transparent; border:1px solid rgba(255,255,255,.85); padding:12px 0; border-radius:3px; width:100%; text-align:center; transition:background .2s, color .2s; }
   .card:hover .go { background:#fff; color:#c0392b; }
   #start .note { margin-top:34px; font-size:10.5px; color:#7c7c80; max-width:540px; line-height:1.7; letter-spacing:.02em; }
@@ -120,8 +122,9 @@
 </div>
 
 <div id="start">
+  <div class="kicker">CONTAINER · VIRTUAL SHOWROOM</div>
   <h1>入る建物を<b>選ぶ</b></h1>
-  <div class="sub">コンテナの組み合わせで、規模もグレードも自由自在。3タイプを歩いて見比べられます。</div>
+  <div class="sub">実例ベースの<b>9プラン</b>。コンテナで何が建つかを、歩いて見比べられます。</div>
   <div id="cards">
     <div class="card m" data-tier="matsu">
       <div class="rank">01</div><div class="grade">PREMIUM</div>
