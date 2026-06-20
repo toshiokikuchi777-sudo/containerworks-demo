@@ -28,6 +28,8 @@
   #zoom { position:fixed; top:96px; right:18px; z-index:22; display:none; padding:9px 16px; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--text); background:rgba(20,16,12,.5); border:1px solid var(--line); border-radius:30px; cursor:pointer; backdrop-filter:blur(8px); }
   #zoom:hover { border-color:var(--brass); }
   #weather { position:fixed; top:132px; right:18px; z-index:22; display:none; padding:9px 16px; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--text); background:rgba(20,16,12,.5); border:1px solid var(--line); border-radius:30px; cursor:pointer; backdrop-filter:blur(8px); }
+  #tour { position:fixed; top:168px; right:18px; z-index:22; display:none; padding:9px 16px; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--text); background:rgba(20,16,12,.5); border:1px solid var(--line); border-radius:30px; cursor:pointer; backdrop-filter:blur(8px); }
+  #tour.on { background:var(--accent); border-color:transparent; color:#fff; }
   #weather:hover { border-color:var(--brass); }
 
   /* selection screen */
@@ -118,6 +120,7 @@
 <button id="view">視点：三人称</button>
 <button id="zoom">視点距離：標準</button>
 <button id="weather">天気：☀️ 晴れ</button>
+<button id="tour">🎥 自動ツアー</button>
 <button id="cta">📋 このコンテナを相談・資料請求</button>
 <button id="glb">⬇ GLB書き出し（Blender用）</button>
 <div id="modal"><div class="panel">
@@ -252,6 +255,7 @@ scene.environment=_pmrem.fromScene(new RoomEnvironment(),0.04).texture;
 // ===== プレイヤーアバター（三人称・Walk.fbx）=====
 let avatar=null, avatarMixer=null, walkAction=null;
 let playerX=0, playerZ=9, heading=Math.PI, camDist=4.6, camDcur=4.6, thirdPerson=true;
+let autoTour=false, tourAng=0;
 const AV_FWD=0; // モデルの正面補正（必要なら Math.PI）
 new FBXLoader().load('Walking.fbx', function(obj){
   obj.scale.setScalar(0.01);
@@ -298,22 +302,49 @@ for(let i=0;i<RN;i++){ rpos[i*3]=(Math.random()-0.5)*46; rpos[i*3+1]=Math.random
 rainGeo.setAttribute('position',new THREE.BufferAttribute(rpos,3));
 const rain=new THREE.Points(rainGeo,new THREE.PointsMaterial({color:0xb8c0c6,size:0.07,transparent:true,opacity:0.5,depthWrite:false})); rain.visible=false; scene.add(rain);
 const WEATHER={
-  sunny:  { name:'☀️ 晴れ', sky:['#5b9bd6','#9cc6e6','#e7f1f7'], fog:0xe7f1f7, fogF:[60,185], sun:[0xffffff,1.55,[22,18,12]], hemi:0.5, amb:0.38, ambC:0xffffff, exp:1.0, rain:false },
-  cloudy: { name:'☁️ 曇り', sky:['#a7b1b9','#c4ccd2','#dde2e4'], fog:0xd2d8db, fogF:[40,150], sun:[0xeef0f2,0.5,[14,24,10]], hemi:0.72, amb:0.55, ambC:0xeef1f4, exp:1.0, rain:false },
-  sunset: { name:'🌇 夕方', sky:['#39466b','#c66b4a','#f1c47c'], fog:0xe2a274, fogF:[40,140], sun:[0xff9a48,1.4,[28,6,14]], hemi:0.45, amb:0.3, ambC:0xffd6a8, exp:1.05, rain:false },
-  night:  { name:'🌙 夜',   sky:['#0a1428','#16284a','#2a3c5c'], fog:0x12203a, fogF:[28,120], sun:[0x6a82b8,0.32,[12,16,-8]], hemi:0.16, amb:0.12, ambC:0x4a5e84, exp:1.18, rain:false },
-  rain:   { name:'🌧️ 雨',   sky:['#5a636b','#7a838b','#9aa0a4'], fog:0x868c90, fogF:[24,108], sun:[0xc8d0d6,0.38,[10,22,8]], hemi:0.5, amb:0.42, ambC:0xc8d0d6, exp:0.95, rain:true }
+  sunny:  { name:'☀️ 晴れ', sky:['#5b9bd6','#9cc6e6','#e7f1f7'], fog:0xe7f1f7, fogF:[60,185], sun:[0xffffff,1.55,[22,18,12]], hemi:0.5, amb:0.38, ambC:0xffffff, exp:1.0, rain:false, cloudC:'#ffffff', cloudO:0.92 },
+  cloudy: { name:'☁️ 曇り', sky:['#a7b1b9','#c4ccd2','#dde2e4'], fog:0xd2d8db, fogF:[40,150], sun:[0xeef0f2,0.5,[14,24,10]], hemi:0.72, amb:0.55, ambC:0xeef1f4, exp:1.0, rain:false, cloudC:'#d2d8dd', cloudO:0.97 },
+  sunset: { name:'🌇 夕方', sky:['#39466b','#c66b4a','#f1c47c'], fog:0xe2a274, fogF:[40,140], sun:[0xff9a48,1.4,[28,6,14]], hemi:0.45, amb:0.3, ambC:0xffd6a8, exp:1.05, rain:false, cloudC:'#f6d3a2', cloudO:0.9 },
+  night:  { name:'🌙 夜',   sky:['#0a1428','#16284a','#2a3c5c'], fog:0x12203a, fogF:[28,120], sun:[0x6a82b8,0.32,[12,16,-8]], hemi:0.16, amb:0.12, ambC:0x4a5e84, exp:1.18, rain:false, cloudC:'#34435f', cloudO:0.58 },
+  rain:   { name:'🌧️ 雨',   sky:['#5a636b','#7a838b','#9aa0a4'], fog:0x868c90, fogF:[24,108], sun:[0xc8d0d6,0.38,[10,22,8]], hemi:0.5, amb:0.42, ambC:0xc8d0d6, exp:0.95, rain:true, cloudC:'#8d9398', cloudO:0.97 }
 };
-let curWeather='sunny';
-function setWeather(k){ const w=WEATHER[k]; curWeather=k;
+// ===== 雲レイヤー（時間帯で色が変わる・ゆっくり流れる）=====
+const _cloudTex=(function(){const cv=document.createElement('canvas');cv.width=cv.height=128;const x=cv.getContext('2d');
+  const g=x.createRadialGradient(64,64,4,64,64,64); g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.55,'rgba(255,255,255,.85)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  x.fillStyle=g; x.beginPath(); x.arc(64,64,64,0,7); x.fill();
+  const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; return t;})();
+const clouds=[];
+(function(){ const defs=[[-70,62,-40,46],[-30,70,-90,40],[40,58,-60,52],[95,66,-20,44],[-100,60,40,40],[10,72,80,50],[70,64,70,46],[-55,68,95,42],[120,58,-95,48],[-120,64,-70,44]];
+  for(const d of defs){ const m=new THREE.Sprite(new THREE.SpriteMaterial({map:_cloudTex,transparent:true,depthWrite:false,fog:false,opacity:0.9}));
+    m.position.set(d[0],d[1],d[2]); m.scale.set(d[3],d[3]*0.6,1); m.userData.spd=0.55+(Math.abs(d[0])%7)*0.07; clouds.push(m); scene.add(m); } })();
+
+// ===== 天気トランジション（時間帯演出）=====
+function wxState(w){ return {
+  s0:new THREE.Color(w.sky[0]), s1:new THREE.Color(w.sky[1]), s2:new THREE.Color(w.sky[2]),
+  fog:new THREE.Color(w.fog), fn:w.fogF[0], ff:w.fogF[1],
+  sunC:new THREE.Color(w.sun[0]), sunI:w.sun[1], sx:w.sun[2][0], sy:w.sun[2][1], sz:w.sun[2][2],
+  hemi:w.hemi, amb:w.amb, ambC:new THREE.Color(w.ambC), exp:w.exp,
+  cloudC:new THREE.Color(w.cloudC), cloudO:w.cloudO, rain:!!w.rain }; }
+function lerpWX(a,b,t){ const L=(p,q)=>p+(q-p)*t; return {
+  s0:a.s0.clone().lerp(b.s0,t), s1:a.s1.clone().lerp(b.s1,t), s2:a.s2.clone().lerp(b.s2,t),
+  fog:a.fog.clone().lerp(b.fog,t), fn:L(a.fn,b.fn), ff:L(a.ff,b.ff),
+  sunC:a.sunC.clone().lerp(b.sunC,t), sunI:L(a.sunI,b.sunI), sx:L(a.sx,b.sx), sy:L(a.sy,b.sy), sz:L(a.sz,b.sz),
+  hemi:L(a.hemi,b.hemi), amb:L(a.amb,b.amb), ambC:a.ambC.clone().lerp(b.ambC,t), exp:L(a.exp,b.exp),
+  cloudC:a.cloudC.clone().lerp(b.cloudC,t), cloudO:L(a.cloudO,b.cloudO), rain:b.rain }; }
+function applyWX(s){
   if(scene.background&&scene.background.dispose) scene.background.dispose();
-  scene.background=makeSky(w.sky[0],w.sky[1],w.sky[2]);
-  scene.fog.color.set(w.fog); scene.fog.near=w.fogF[0]; scene.fog.far=w.fogF[1];
-  sun.color.set(w.sun[0]); sun.intensity=w.sun[1]; sun.position.set(w.sun[2][0],w.sun[2][1],w.sun[2][2]);
-  hemiLight.intensity=w.hemi; ambLight.intensity=w.amb; ambLight.color.set(w.ambC);
-  renderer.toneMappingExposure=w.exp; rain.visible=!!w.rain;
-}
-setWeather('sunny');
+  scene.background=makeSky('#'+s.s0.getHexString(),'#'+s.s1.getHexString(),'#'+s.s2.getHexString());
+  scene.fog.color.copy(s.fog); scene.fog.near=s.fn; scene.fog.far=s.ff;
+  sun.color.copy(s.sunC); sun.intensity=s.sunI; sun.position.set(s.sx,s.sy,s.sz);
+  hemiLight.intensity=s.hemi; ambLight.intensity=s.amb; ambLight.color.copy(s.ambC);
+  renderer.toneMappingExposure=s.exp;
+  for(const c of clouds){ c.material.color.copy(s.cloudC); c.material.opacity=s.cloudO; } }
+let curWeather='sunny', WX=wxState(WEATHER.sunny), WXt=WX, wxMix=1;
+function setWeather(k){ const w=WEATHER[k]; curWeather=k;
+  WX = (wxMix<1) ? lerpWX(WX,WXt,wxMix) : WXt;   // いまの見た目を新たな起点にして滑らかに繋ぐ
+  WXt = wxState(w); wxMix=0;
+  if(w.rain) rain.visible=true; }                // 雨へ向かうときは即出し、止むのは遷移終了時に消す
+applyWX(WX);
 
 // ---------- materials ----------
 // 赤×黒×白×グレー（赤は差し色）
@@ -392,6 +423,21 @@ function blob(r,mat,x,y,z){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(
 function tree(x,z,s){s=s||1; box(0.24*s,1.4*s,0.24*s,mTrunk,x,0.7*s,z);
   blob(0.95*s,mLeaf,x,1.7*s,z); blob(0.72*s,mLeaf2,x+0.35*s,2.1*s,z-0.1*s); blob(0.66*s,mLeaf,x-0.3*s,2.15*s,z+0.18*s); }
 function potPlant(x,z,s){s=s||1; box(0.42*s,0.46*s,0.42*s,mPot,x,0.23*s,z); blob(0.44*s,mLeaf,x,0.78*s,z); blob(0.32*s,mLeaf2,x+0.13*s,1.05*s,z); }
+
+// ---------- 入口アプローチ（敷地パッド・石畳・植栽・サイン）＝“設置された実物”感 ----------
+const SIGN_TXT={matsu:'FLAGSHIP',take:'CAFE',ume:'TAKEOUT',sauna:'SAUNA',gallery:'GALLERY',villa:'VILLA',long:'LONG CAFE',camp:'GLAMPING',tower:'TOWER'};
+function siteApproach(tier){
+  const z0=1.7, z1=Math.min(spawnZ+1.0, z0+8.5), pw=2.7, mid=(z0+z1)/2, len=z1-z0;
+  box(pw+2.6,0.05,len+1.3,mWood,0,0.03,mid);                               // 敷地パッド
+  const n=Math.max(3,Math.round(len/1.3));
+  for(let i=0;i<n;i++) box(pw,0.04,(len/n)*0.82,mDark,0,0.075,z0+(i+0.5)*(len/n)); // 石畳パネル
+  box(0.14,0.2,len+1.1,mCast,-(pw/2+0.2),0.10,mid); box(0.14,0.2,len+1.1,mCast,(pw/2+0.2),0.10,mid); // 縁石
+  for(let i=0;i<n;i++){ const pz=z0+(i+0.35)*(len/n); potPlant(-(pw/2+0.95),pz,0.92); potPlant((pw/2+0.95),pz+0.55,0.92); } // 植栽（左右交互）
+  const sx=-(pw/2+1.75), spz=z1-0.1;                                        // パイロンサイン（敷地入口・左手前）
+  box(0.18,2.4,0.18,mSteel,sx,1.2,spz); box(1.75,0.94,0.14,mDark,sx,2.15,spz);
+  col(sx-0.2,sx+0.2,spz-0.2,spz+0.2,0,2.4);
+  const s=sign(SIGN_TXT[tier]||'MODEL','#c0392b',1.6); s.position.set(sx,2.15,spz+0.1);
+}
 function outdoorSet(x,z){ box(0.82,0.05,0.82,mWood,x,0.72,z); box(0.07,0.72,0.07,mDark,x,0.36,z);
   for(const dx of [-0.62,0.62]){ box(0.32,0.05,0.32,mDark,x+dx,0.45,z); box(0.06,0.45,0.06,mDark,x+dx,0.22,z); }
   box(0.06,2.15,0.06,mDark,x,1.07,z); const um=new THREE.Mesh(new THREE.ConeGeometry(1.05,0.55,8),mParasol); um.position.set(x,2.3,z); um.castShadow=true; G.add(um); }
@@ -729,6 +775,7 @@ function select(tier){
   clearBuilding();
   currentBuilding=new THREE.Group(); scene.add(currentBuilding); G=currentBuilding;
   BUILDERS[tier]();
+  if(tier!=='camp') siteApproach(tier);
   toonify(currentBuilding);
   G=scene;
   playerX=0; playerZ=spawnZ; feetY=0; yaw=0; pitch=0.12; heading=Math.PI;
@@ -744,6 +791,7 @@ function select(tier){
   document.getElementById('view').style.display='block';
   document.getElementById('zoom').style.display='block';
   document.getElementById('weather').style.display='block';
+  document.getElementById('tour').style.display='block'; setTour(false);
   if(!isTouch) document.getElementById('glb').style.display='block';
   document.getElementById('status').innerHTML='<span class="near">'+statusText+'</span>';
 }
@@ -759,6 +807,7 @@ function backToMenu(){
   document.getElementById('view').style.display='none';
   document.getElementById('zoom').style.display='none';
   document.getElementById('weather').style.display='none';
+  setTour(false); document.getElementById('tour').style.display='none';
   document.getElementById('modal').style.display='none';
   document.getElementById('chat').style.display='none';
   if(avatar) avatar.visible=false;
@@ -771,6 +820,12 @@ renderer.domElement.addEventListener('wheel',function(e){ if(!started||!thirdPer
 // 天気切替
 const WK=['sunny','cloudy','sunset','night','rain']; let wi=0;
 document.getElementById('weather').addEventListener('click',function(){ wi=(wi+1)%WK.length; setWeather(WK[wi]); this.textContent='天気：'+WEATHER[WK[wi]].name; });
+// 自動ツアー（見るだけモード）：建物の周りをゆっくり旋回。初見でも歩かず体感できる
+function setTour(on){ autoTour=on; const b=document.getElementById('tour');
+  b.classList.toggle('on',on); b.textContent=on?'■ ツアーを止める':'🎥 自動ツアー';
+  if(on){ tourAng=0; if(avatar)avatar.visible=false; document.getElementById('cross').style.display='none'; }
+  else { document.getElementById('cross').style.display=started?'block':'none'; } }
+document.getElementById('tour').addEventListener('click',()=>setTour(!autoTour));
 document.querySelectorAll('.card').forEach((c,i)=>{ c.style.animationDelay=(0.05*i)+'s'; c.addEventListener('click',()=>select(c.dataset.tier)); });
 document.getElementById('back').addEventListener('click',backToMenu);
 
@@ -848,20 +903,20 @@ document.getElementById('chatSend').addEventListener('click',handleFree);
 document.getElementById('chatText').addEventListener('keydown',e=>{ if(e.key==='Enter') handleFree(); });
 
 // ---------- controls (drag-look + WASD, no pointer-lock) ----------
-const keys={}; addEventListener('keydown',e=>{keys[e.code]=true;}); addEventListener('keyup',e=>{keys[e.code]=false;});
+const keys={}; addEventListener('keydown',e=>{keys[e.code]=true; if(autoTour&&/^(Key[WASD]|Arrow)/.test(e.code))setTour(false);}); addEventListener('keyup',e=>{keys[e.code]=false;});
 const move={x:0,z:0};
 let dragging=false,dpx=0,dpy=0;
-renderer.domElement.addEventListener('mousedown',e=>{ if(!started||isTouch)return; dragging=true; dpx=e.clientX; dpy=e.clientY; });
+renderer.domElement.addEventListener('mousedown',e=>{ if(!started||isTouch)return; if(autoTour)setTour(false); dragging=true; dpx=e.clientX; dpy=e.clientY; });
 addEventListener('mouseup',()=>dragging=false);
 addEventListener('mousemove',e=>{ if(!dragging)return; yaw-=(e.clientX-dpx)*0.004; pitch-=(e.clientY-dpy)*0.004; pitch=Math.max(-1.2,Math.min(1.2,pitch)); dpx=e.clientX; dpy=e.clientY; });
 if(isTouch){
   const joy=document.getElementById('joy'),knob=document.getElementById('knob'),mpad=document.getElementById('movepad');let jid=null,ox=0,oy=0;
-  mpad.addEventListener('touchstart',e=>{const t=e.changedTouches[0];jid=t.identifier;ox=t.clientX;oy=t.clientY;joy.style.left=ox+'px';joy.style.top=oy+'px';joy.style.display='block';knob.style.transform='translate(0,0)';e.preventDefault();},{passive:false});
+  mpad.addEventListener('touchstart',e=>{if(autoTour)setTour(false);const t=e.changedTouches[0];jid=t.identifier;ox=t.clientX;oy=t.clientY;joy.style.left=ox+'px';joy.style.top=oy+'px';joy.style.display='block';knob.style.transform='translate(0,0)';e.preventDefault();},{passive:false});
   mpad.addEventListener('touchmove',e=>{for(const t of e.changedTouches){if(t.identifier===jid){let dx=t.clientX-ox,dy=t.clientY-oy;const max=48,d=Math.hypot(dx,dy);if(d>max){dx*=max/d;dy*=max/d;}knob.style.transform=`translate(${dx}px,${dy}px)`;move.x=dx/max;move.z=dy/max;}}e.preventDefault();},{passive:false});
   const ej=e=>{for(const t of e.changedTouches){if(t.identifier===jid){jid=null;move.x=0;move.z=0;joy.style.display='none';}}};
   mpad.addEventListener('touchend',ej);mpad.addEventListener('touchcancel',ej);
   const pad=document.getElementById('lookpad');let lid=null,lx=0,ly=0;
-  pad.addEventListener('touchstart',e=>{const t=e.changedTouches[0];lid=t.identifier;lx=t.clientX;ly=t.clientY;e.preventDefault();},{passive:false});
+  pad.addEventListener('touchstart',e=>{if(autoTour)setTour(false);const t=e.changedTouches[0];lid=t.identifier;lx=t.clientX;ly=t.clientY;e.preventDefault();},{passive:false});
   pad.addEventListener('touchmove',e=>{for(const t of e.changedTouches){if(t.identifier===lid){yaw-=(t.clientX-lx)*0.005;pitch-=(t.clientY-ly)*0.005;pitch=Math.max(-1.2,Math.min(1.2,pitch));lx=t.clientX;ly=t.clientY;}}e.preventDefault();},{passive:false});
   const el=e=>{for(const t of e.changedTouches){if(t.identifier===lid)lid=null;}};
   pad.addEventListener('touchend',el);pad.addEventListener('touchcancel',el);
@@ -895,7 +950,11 @@ const clock=new THREE.Clock();
 function camBlocked(x,y,z){ for(const c of colliders){ if(y<c.minY||y>c.maxY)continue; if(x>c.minX-0.25&&x<c.maxX+0.25&&z>c.minZ-0.25&&z<c.maxZ+0.25)return true; } return false; }
 function animate(){requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(),0.05); const speed=(keys['ShiftLeft']||keys['ShiftRight'])?5.6:3.7;
+  // 雲の流れ＋天気の時間帯トランジション（常時）
+  for(const c of clouds){ c.position.x+=c.userData.spd*dt; if(c.position.x>140)c.position.x=-140; }
+  if(wxMix<1){ wxMix=Math.min(1,wxMix+dt/0.9); applyWX(lerpWX(WX,WXt,wxMix)); if(wxMix>=1&&!WXt.rain) rain.visible=false; }
   if(started){
+   if(!autoTour){
     let mx=0,mz=0;
     if(isTouch){ mx=move.x; mz=-move.z; }
     else { if(keys['KeyW']||keys['ArrowUp'])mz+=1; if(keys['KeyS']||keys['ArrowDown'])mz-=1; if(keys['KeyA']||keys['ArrowLeft'])mx-=1; if(keys['KeyD']||keys['ArrowRight'])mx+=1; }
@@ -923,8 +982,14 @@ function animate(){requestAnimationFrame(animate);
     } else {
       camera.rotation.order='YXZ'; camera.rotation.y=yaw; camera.rotation.x=pitch; camera.position.set(playerX,feetY+1.6,playerZ);
     }
+   } else {
+      // 自動ツアー：建物の周りをゆっくり旋回（初見でも歩かず全体を体感）
+      tourAng += dt*0.16; const cx=0, cy=1.5, cz=0, R=11;
+      camera.position.set(cx+Math.sin(tourAng)*R, cy+3.4+Math.sin(tourAng*0.6)*1.9, cz+Math.cos(tourAng)*R);
+      camera.lookAt(cx, cy+1.0, cz);
+   }
     _T+=dt;
-    if(rain.visible){ const pa=rainGeo.attributes.position.array; for(let i=1;i<pa.length;i+=3){ pa[i]-=20*dt; if(pa[i]<0)pa[i]+=22; } rainGeo.attributes.position.needsUpdate=true; rain.position.set(playerX,0,playerZ); }
+    if(rain.visible){ const pa=rainGeo.attributes.position.array; for(let i=1;i<pa.length;i+=3){ pa[i]-=20*dt; if(pa[i]<0)pa[i]+=22; } rainGeo.attributes.position.needsUpdate=true; rain.position.set(camera.position.x,0,camera.position.z); }
     for(const n of npcs){
       if(n.kind==='idle'){ n.pg.position.y=Math.sin(_T*2+n.ph)*0.02; }
       else { n.t+=dt*n.spd; const k=Math.sin(n.t)*0.5+0.5;
