@@ -120,7 +120,7 @@
 <div id="modal"><div class="panel">
   <h3 id="mTitle">ご相談・お見積り</h3>
   <div class="mt" id="mDesc">このプランについて、ご希望はどれですか？</div>
-  <button class="opt go" data-a="estimate">⚡ AIで概算見積りを出す</button>
+  <button class="opt go" data-a="estimate">⚡ AIで概算シミュレーション</button>
   <button class="opt" data-a="visit">🏠 駒沢の展示場に来場予約</button>
   <button class="opt" data-a="doc">📄 資料・CADデータを請求</button>
   <button class="opt" data-a="line">💬 LINEで相談（友だち追加）</button>
@@ -145,7 +145,7 @@
   </div>
   <div class="kicker">CONTAINER · VIRTUAL SHOWROOM</div>
   <h1>入る建物を<b>選ぶ</b></h1>
-  <div class="sub">実例ベースの<b>9プラン</b>。コンテナで何が建つかを、歩いて見比べられます。</div>
+  <div class="sub">実例ベースの<b>9プラン</b>。コンテナで何が建つかを、歩いて見比べられます。<br><span style="opacity:.7;font-size:.86em">※価格は概算シミュレーション。正式費用は土地・法規（用途地域/建築確認）確認後に算出します。</span></div>
   <div id="cards">
     <div class="card m" data-tier="matsu">
       <div class="rank">01</div><div class="grade">PREMIUM</div>
@@ -191,7 +191,7 @@
     </div>
     <div class="card" data-tier="long">
       <div class="rank">07</div><div class="grade">LONG CAFE</div>
-      <div class="title">ロングカフェ</div>
+      <div class="title">横連結ロングカフェ</div>
       <div class="spec"><b>コンテナ5棟・横連結</b><br>30mのロングカウンター<br>長い前面ガラス＋テラス席<br>用途：大型カフェ・商業</div>
       <div class="price">¥1,800万〜3,000万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
@@ -248,7 +248,7 @@ scene.environment=_pmrem.fromScene(new RoomEnvironment(),0.04).texture;
 
 // ===== プレイヤーアバター（三人称・Walk.fbx）=====
 let avatar=null, avatarMixer=null, walkAction=null;
-let playerX=0, playerZ=9, heading=Math.PI, camDist=4.6, thirdPerson=true;
+let playerX=0, playerZ=9, heading=Math.PI, camDist=4.6, camDcur=4.6, thirdPerson=true;
 const AV_FWD=0; // モデルの正面補正（必要なら Math.PI）
 new FBXLoader().load('Walking.fbx', function(obj){
   obj.scale.setScalar(0.01);
@@ -265,7 +265,7 @@ new FBXLoader().load('Walking.fbx', function(obj){
 const hemiLight=new THREE.HemisphereLight(0xeef1f4,0x595960,0.5); scene.add(hemiLight);
 const ambLight=new THREE.AmbientLight(0xffffff,0.38); scene.add(ambLight);
 const sun=new THREE.DirectionalLight(0xffffff,1.55);
-sun.position.set(22,18,12); sun.castShadow=true; sun.shadow.mapSize.set(4096,4096);
+sun.position.set(22,18,12); sun.castShadow=true; sun.shadow.mapSize.set(isTouch?2048:4096,isTouch?2048:4096);
 sun.shadow.camera.near=1; sun.shadow.camera.far=110;
 sun.shadow.camera.left=-30;sun.shadow.camera.right=30;sun.shadow.camera.top=30;sun.shadow.camera.bottom=-30;
 sun.shadow.bias=-0.0004; sun.shadow.radius=3;
@@ -398,7 +398,7 @@ function toonify(group){
     const arr=Array.isArray(o.material)?o.material:[o.material];
     const nm=arr.map(m=>{ if(!m||!m.color) return m;
       if(m.transparent&&m.opacity<0.6) return m;              // ガラス・半透明前壁はそのまま
-      const t=new THREE.MeshToonMaterial({color:m.color.clone(),gradientMap:_grad}); if(m.map)t.map=m.map; return t; });
+      const t=new THREE.MeshToonMaterial({color:m.color.clone(),gradientMap:_grad}); if(m.map)t.map=m.map; t.userData._tmp=true; return t; });
     o.material=Array.isArray(o.material)?nm:nm[0];
     if(!o.isSkinnedMesh&&o.geometry&&(o.geometry.type==='BoxGeometry'||o.geometry.type==='IcosahedronGeometry')&&!o.userData.noOutline){
       o.geometry.computeBoundingBox(); o.geometry.boundingBox.getSize(V); const md=Math.max(V.x,V.y,V.z);
@@ -708,7 +708,12 @@ const BUILDERS={ ume:buildUme, take:buildTake, matsu:buildMatsu, sauna:buildSaun
 let started=false, yaw=0, pitch=0, feetY=0;
 function clearBuilding(){
   if(currentBuilding){ scene.remove(currentBuilding);
-    currentBuilding.traverse(o=>{ if(o.geometry)o.geometry.dispose&&o.geometry.dispose(); }); }
+    currentBuilding.traverse(o=>{
+      if(o.geometry&&o.geometry.dispose)o.geometry.dispose();
+      // 建物ごとに新規生成したマテリアルとその看板テクスチャのみ解放。共有マテリアル(mRed/_outline等)・共有gradientMap(_grad)・ガラス/半透明壁は破棄しない。
+      const mats=Array.isArray(o.material)?o.material:(o.material?[o.material]:[]);
+      for(const m of mats){ if(m&&m.userData&&m.userData._tmp){ if(m.map&&m.map.dispose)m.map.dispose(); if(m.dispose)m.dispose(); } }
+    }); }
   colliders.length=0; surfaces.length=0; npcs.length=0; currentBuilding=null;
 }
 function select(tier){
@@ -789,8 +794,8 @@ document.querySelectorAll('#modal .opt').forEach(b=>b.addEventListener('click',(
 
 // ===== AI見積りチャット（デモ）=====
 const PLAN={ matsu:{name:'01 フラッグシップ（コンテナ5棟・ブロック積み3層）',base:[2000,3500]}, take:{name:'02 ロングカフェ（40ft 1棟）',base:[600,1000]}, ume:{name:'03 テイクアウト（20ft 1棟）',base:[300,500]},
-  sauna:{name:'04 コンテナサウナ（20ft 1棟）',base:[250,450]}, gallery:{name:'05 ギャラリー/ショップ（40ft 1棟）',base:[600,1000]}, villa:{name:'06 コンテナ別荘（40ft 1棟）',base:[1500,2500]},
-  long:{name:'07 ロングカフェ（5棟横連結）',base:[1800,3000]}, camp:{name:'08 グランピング（複数棟）',base:[2000,5000]}, tower:{name:'09 縦使いタワー',base:[700,1200]} };
+  sauna:{name:'04 コンテナサウナ（20ft 1棟）',base:[250,450]}, gallery:{name:'05 ギャラリー/ショップ（40ft＋2階の2階建て）',base:[600,1000]}, villa:{name:'06 コンテナ別荘（40ft＋20ftロフトの2階建て）',base:[1500,2500]},
+  long:{name:'07 横連結ロングカフェ（5棟連結）',base:[1800,3000]}, camp:{name:'08 グランピング（複数棟）',base:[2000,5000]}, tower:{name:'09 縦使いタワー',base:[700,1200]} };
 const DELIVERY={ matsu:'約3〜5ヶ月', take:'約2〜3ヶ月', ume:'約1〜2ヶ月', sauna:'約1〜2ヶ月', gallery:'約2〜3ヶ月', villa:'約3〜5ヶ月', long:'約3〜5ヶ月', camp:'約4〜6ヶ月', tower:'約2〜3ヶ月' };
 const USE={ cafe:{name:'カフェ',f:1.0}, sauna:{name:'サウナ',f:1.25}, house:{name:'住居',f:1.1}, shop:{name:'物販店舗',f:1.0}, office:{name:'オフィス',f:1.05} };
 const REGION={ shuto:{name:'首都圏',add:0}, tokai:{name:'東海',add:20}, kansai:{name:'関西',add:40}, other:{name:'その他',add:60} };
@@ -801,14 +806,14 @@ function cChips(items){ chatChips.innerHTML=''; items.forEach(it=>{ const c=docu
 function cClear(){ chatChips.innerHTML=''; }
 function cBot(html,after){ cClear(); const t=document.createElement('div'); t.className='msg bot typing'; t.textContent='● ● ●'; chatBody.appendChild(t); chatBody.scrollTop=chatBody.scrollHeight; setTimeout(()=>{ t.remove(); cAppend(html,'bot'); if(after)after(); },650); }
 function openChat(){ est.tier=curTier; chatBody.innerHTML=''; cClear(); chatEl.style.display='flex';
-  cBot('こんにちは！AI見積りアシスタントです🤖<br>「<b>'+PLAN[curTier].name+'</b>」で検討中ですね。まず<b>ご用途</b>は？',()=>{
+  cBot('こんにちは！AI概算シミュレーターです🤖<br>「<b>'+PLAN[curTier].name+'</b>」で検討中ですね。まず<b>ご用途</b>は？',()=>{
     cChips([{label:'カフェ',fn:()=>pickUse('cafe')},{label:'サウナ',fn:()=>pickUse('sauna')},{label:'住居',fn:()=>pickUse('house')},{label:'物販店舗',fn:()=>pickUse('shop')},{label:'オフィス',fn:()=>pickUse('office')}]); }); }
 function pickUse(u,silent){ est.use=u; if(!silent)cAppend(USE[u].name,'user'); cBot('ありがとうございます。<b>設置エリア</b>はどちらですか？（輸送費の目安が変わります）',()=>{
   cChips([{label:'首都圏',fn:()=>pickRegion('shuto')},{label:'東海',fn:()=>pickRegion('tokai')},{label:'関西',fn:()=>pickRegion('kansai')},{label:'その他',fn:()=>pickRegion('other')}]); }); }
 function pickRegion(r,silent){ est.region=r; if(!silent)cAppend(REGION[r].name,'user'); cBot('概算を計算しています…',()=>showResult()); }
 function showResult(){ const p=PLAN[est.tier],u=USE[est.use],rg=REGION[est.region];
   const lo=Math.round(p.base[0]*u.f+rg.add), hi=Math.round(p.base[1]*u.f+rg.add);
-  cAppend('<b>概算お見積り</b><br>プラン：'+p.name+'<br>用途：'+u.name+' ／ エリア：'+rg.name+'<hr><div class="big">¥'+lo.toLocaleString()+'万 〜 '+hi.toLocaleString()+'万</div>本体＋基礎工事＋輸送目安込み<br>納期目安：'+DELIVERY[est.tier]+'<br><small>※仕様・現地条件で変動。正式見積りは現地調査後。</small>','bot');
+  cAppend('<b>概算お見積り</b><br>プラン：'+p.name+'<br>用途：'+u.name+' ／ エリア：'+rg.name+'<hr><div class="big">¥'+lo.toLocaleString()+'万 〜 '+hi.toLocaleString()+'万</div>本体＋基礎工事＋輸送目安込み<br>納期目安：'+DELIVERY[est.tier]+'<br><small>※用途地域・建築確認・基礎/給排水/電気・現地条件で費用と可否が変わります。正式費用は現地調査・法規確認後に算出。</small>','bot');
   cBot('この内容で<b>次へ</b>進めます。どうしますか？',()=>{
     cChips([{label:'🏠 来場予約',fn:()=>cDone('来場予約')},{label:'📄 正式見積り依頼',fn:()=>cDone('正式見積り依頼')},{label:'💬 LINEで相談',fn:()=>cDone('LINEで相談')}]); }); }
 function cDone(x){ cAppend(x,'user'); cClear(); cBot('承知しました！担当より追ってご連絡します。ありがとうございました🙌<br><small>（デモ表示／本番は予約・見積り・LINEに接続）</small>'); }
@@ -901,7 +906,10 @@ function animate(){requestAnimationFrame(animate);
       const tx=playerX, ty=feetY+1.25, tz=playerZ, cp=Math.max(0.2,Math.cos(pitch)), vy=Math.sin(pitch);
       let d=camDist;
       while(d>1.3){ if(!camBlocked(tx+Math.sin(yaw)*d*cp, ty+d*vy+1.5, tz+Math.cos(yaw)*d*cp)) break; d-=0.4; }
-      camera.position.set(tx+Math.sin(yaw)*d*cp, Math.max(feetY+0.5, ty+d*vy+1.5), tz+Math.cos(yaw)*d*cp);
+      // 衝突で距離が急変したときの瞬間ジャンプ（視界飛び＝酔いの原因）を補間で抑える。詰めるときは速く、戻すときは滑らかに。
+      camDcur += (d-camDcur) * (d<camDcur ? 1 : Math.min(1,dt*6));
+      const dd=camDcur;
+      camera.position.set(tx+Math.sin(yaw)*dd*cp, Math.max(feetY+0.5, ty+dd*vy+1.5), tz+Math.cos(yaw)*dd*cp);
       camera.lookAt(tx,ty,tz);
     } else {
       camera.rotation.order='YXZ'; camera.rotation.y=yaw; camera.rotation.x=pitch; camera.position.set(playerX,feetY+1.6,playerZ);
