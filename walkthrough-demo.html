@@ -149,8 +149,8 @@
     <div class="card m" data-tier="matsu">
       <div class="rank">01</div><div class="grade">PREMIUM</div>
       <div class="title">フラッグシップ</div>
-      <div class="spec"><b>40ft＋20ftを積む・2階建て</b><br>1階40ft／上に20ftを積む<br>ロフト＋屋上テラス<br>用途：カフェ＋住居/オフィス</div>
-      <div class="price">¥1,500万〜2,500万 <small>目安</small></div>
+      <div class="spec"><b>コンテナ5棟・ブロック積み3層</b><br>1階40ft＋ロフト＋直交で張り出し<br>上にペントハウス＋屋上テラス<br>用途：カフェ＋住居/オフィス</div>
+      <div class="price">¥2,000万〜3,500万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
     <div class="card t" data-tier="take">
@@ -508,10 +508,29 @@ function buildMatsu(){
   surfaces.push({xMin:LX0,xMax:LX1,zMin:LZ0,zMax:LZ1,y:UP});
   surfaces.push({xMin:TX0,xMax:TX1,zMin:TZ0,zMax:TZ1,y:UP});
   surfaces.push({ramp:1,axis:'z',xMin:SX0,xMax:SX1,zMin:SzTop,zMax:SzBot,c0:SzBot,y0:0,c1:SzTop,y1:UP});
+  // ===== ブロック積み：直交キャンチレバー(C) ＋ ペントハウス(D) =====
+  // C：テラス右端に直交配置し前方へ張り出す20ft（濃い赤）
+  const CX0=3.5,CX1=5.95,CZ0=-1.6,CZ1=4.4,CY0=UP,CY1=UP+2.45;
+  box(CX1-CX0,0.12,CZ1-CZ0,mSteel,(CX0+CX1)/2,CY0+0.06,(CZ0+CZ1)/2);
+  box(CX1-CX0,0.12,CZ1-CZ0,mWhite,(CX0+CX1)/2,CY1-0.06,(CZ0+CZ1)/2);
+  corr('x',CX0,CZ0,CZ1,CY0,CY1,mBlue); corr('x',CX1,CZ0,CZ1,CY0,CY1,mBlue);
+  corr('z',CZ1,CX0,CX1,CY0,CY1,mBlue); corr('z',CZ0,CX0,CX1,CY0,CY1,mBlue);
+  box(1.4,1.1,0.05,mGlass,(CX0+CX1)/2,CY0+1.25,CZ1-0.03); box(0.05,1.1,2.0,mGlass,CX0+0.02,CY0+1.25,1.0);
+  frameRing(CX0,CX1,CZ0,CZ1,CY0); frameRing(CX0,CX1,CZ0,CZ1,CY1); castings(CX0,CX1,CZ0,CZ1,CY0,CY1);
+  col(CX0-.06,CX0+.06,-1.22,1.22,CY0,CY1);
+  box(CX1-CX0,0.1,1.5,mSteel,(CX0+CX1)/2,CY0-0.05,GZ1+0.7); // 張り出し下のキャノピー
+  // D：ロフトの上に積み、テラス側へ張り出すペントハウス（赤）
+  const DX0=-3.0,DX1=1.6,DZ0=-1.22,DZ1=1.22,DY0=LY1,DY1=LY1+2.45;
+  box(DX1-DX0,0.12,DZ1-DZ0,mSteel,(DX0+DX1)/2,DY0+0.06,0);
+  box(DX1-DX0,0.12,DZ1-DZ0,mWhite,(DX0+DX1)/2,DY1-0.06,0);
+  corr('z',DZ0,DX0,DX1,DY0,DY1,mRed); corr('z',DZ1,DX0,DX1,DY0,DY1,mRed); corr('x',DX0,DZ0,DZ1,DY0,DY1,mRed); corr('x',DX1,DZ0,DZ1,DY0,DY1,mRed);
+  box(2.6,1.3,0.05,mGlass,(DX0+DX1)/2,DY0+1.35,DZ1-0.03); box(2.6,1.3,0.05,mGlass,(DX0+DX1)/2,DY0+1.35,DZ0+0.03);
+  frameRing(DX0,DX1,DZ0,DZ1,DY0); frameRing(DX0,DX1,DZ0,DZ1,DY1); castings(DX0,DX1,DZ0,DZ1,DY0,DY1);
+  box(DX1-DX0,0.1,DZ1-DZ0,mSteel,(DX0+DX1)/2,DY0-0.05,0); // 張り出し下スラブ
   npcIdle(-3,0.2,0,0xb5302a,0x2c2c32); npcWalk(0,0.5,3.5,0.5,0xd9d9dd,0x33333a,0.55);
   const sg=sign('CAFE',0x1d1d22,3.6); sg.position.set(0,H+0.55,GZ1+0.3);
   terraceFront(GZ1+2.2); tree(-7,-1,1.1); tree(7,3.5,0.95); tree(-2,-6,1.1); tree(3,-6,1);
-  spawnZ=9; statusText='01：40ft＋20ftを積んだ2階建て（右の外階段で屋上テラス＆ロフトへ ▲）';
+  spawnZ=10; statusText='01：コンテナ5棟をブロック積み・3層構成（外階段で屋上テラス＆ロフトへ ▲）';
 }
 
 // ---- 04 SAUNA : コンテナサウナ（1棟・駐車場1台分）----
@@ -735,7 +754,7 @@ document.querySelectorAll('#modal .opt').forEach(b=>b.addEventListener('click',(
   document.querySelectorAll('#modal .opt').forEach(x=>x.style.display='none'); }));
 
 // ===== AI見積りチャット（デモ）=====
-const PLAN={ matsu:{name:'01 フラッグシップ（40ft+20ft・2階建て）',base:[1500,2500]}, take:{name:'02 ロングカフェ（40ft 1棟）',base:[600,1000]}, ume:{name:'03 テイクアウト（20ft 1棟）',base:[300,500]},
+const PLAN={ matsu:{name:'01 フラッグシップ（コンテナ5棟・ブロック積み3層）',base:[2000,3500]}, take:{name:'02 ロングカフェ（40ft 1棟）',base:[600,1000]}, ume:{name:'03 テイクアウト（20ft 1棟）',base:[300,500]},
   sauna:{name:'04 コンテナサウナ（20ft 1棟）',base:[250,450]}, gallery:{name:'05 ギャラリー/ショップ（40ft 1棟）',base:[600,1000]}, villa:{name:'06 コンテナ別荘（40ft 1棟）',base:[1500,2500]},
   long:{name:'07 ロングカフェ（5棟横連結）',base:[1800,3000]}, camp:{name:'08 グランピング（複数棟）',base:[2000,5000]}, tower:{name:'09 縦使いタワー',base:[700,1200]} };
 const DELIVERY={ matsu:'約3〜5ヶ月', take:'約2〜3ヶ月', ume:'約1〜2ヶ月', sauna:'約1〜2ヶ月', gallery:'約2〜3ヶ月', villa:'約3〜5ヶ月', long:'約3〜5ヶ月', camp:'約4〜6ヶ月', tower:'約2〜3ヶ月' };
