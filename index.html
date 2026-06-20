@@ -177,14 +177,14 @@
     <div class="card" data-tier="gallery">
       <div class="rank">05</div><div class="grade">GALLERY</div>
       <div class="title">ギャラリー / ショップ</div>
-      <div class="spec"><b>40ftコンテナ1棟</b><br>白基調＋くり抜き開口<br>長い展示壁・什器<br>用途：ギャラリー・物販</div>
+      <div class="spec"><b>40ft＋2階を積む・2階建て</b><br>白基調＋くり抜き開口<br>上階ギャラリー＋屋上テラス<br>用途：ギャラリー・物販</div>
       <div class="price">¥600万〜1,000万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
     <div class="card" data-tier="villa">
       <div class="rank">06</div><div class="grade">VILLA</div>
       <div class="title">コンテナ別荘</div>
-      <div class="spec"><b>40ftコンテナ1棟・テラス付き</b><br>寝室・居間・キッチンを長手に<br>大きな前面テラス<br>用途：別荘・宿泊</div>
+      <div class="spec"><b>40ft＋20ftロフトの2階建て</b><br>1階に居間/キッチン・2階に寝室<br>外階段で屋上テラスへ<br>用途：別荘・宿泊</div>
       <div class="price">¥1,500万〜2,500万 <small>目安</small></div>
       <div class="go">この建物に入る ▶</div>
     </div>
@@ -198,7 +198,7 @@
     <div class="card" data-tier="camp">
       <div class="rank">08</div><div class="grade">GLAMPING</div>
       <div class="title">グランピング施設</div>
-      <div class="spec"><b>敷地に複数棟を点在</b><br>コテージ×3・サウナ棟・管理棟<br>焚き火・テラス席・植栽<br>用途：宿泊・グランピング</div>
+      <div class="spec"><b>敷地に複数棟を点在（2段積みも）</b><br>2階建てコテージ・サウナ棟・管理棟<br>焚き火・テラス席・植栽<br>用途：宿泊・グランピング</div>
       <div class="price">¥2,000万〜5,000万 <small>目安</small></div>
       <div class="go">敷地を歩く ▶</div>
     </div>
@@ -555,6 +555,32 @@ function buildSauna(){
   spawnZ=5.5; statusText='04 SAUNA：コンテナサウナ（駐車場1台分・1棟）';
 }
 // ---- 05 GALLERY : ギャラリー/ショップ（2棟連結・白基調・大開口）----
+// ===== 共通：上に20ftを積む（ロフト＋屋上テラス＋外階段）=====
+function addLoft(GX0,GX1,GZ0,GZ1,loftFurn){
+  const UP=2.70, midZ=(GZ0+GZ1)/2;
+  box(GX1-GX0,0.16,GZ1-GZ0,mSteel,(GX0+GX1)/2,H,midZ);   // 2階床スラブ
+  const LX0=GX0,LX1=(GX0+GX1)/2-0.05,LZ0=GZ0,LZ1=GZ1,LY0=H,LY1=H+2.45;
+  box(LX1-LX0,0.12,LZ1-LZ0,mWhite,(LX0+LX1)/2,LY1-0.06,midZ);
+  corr('z',LZ0,LX0,LX1,LY0,LY1,mGreen); corr('z',LZ1,LX0,LX1,LY0,LY1,mGreen); corr('x',LX0,LZ0,LZ1,LY0,LY1,mGreen);
+  corr('x',LX1,LZ0,midZ-0.55,LY0,LY1,mGreen); corr('x',LX1,midZ+0.55,LZ1,LY0,LY1,mGreen);
+  box(1.0,2.05,0.06,mDark,LX1,LY0+1.0,midZ); box(1.6,1.0,0.05,mGlass,(LX0+LX1)/2,LY0+1.25,LZ1-0.03);
+  frameRing(LX0,LX1,LZ0,LZ1,LY0); frameRing(LX0,LX1,LZ0,LZ1,LY1); castings(LX0,LX1,LZ0,LZ1,LY0,LY1);
+  col(LX0-.06,LX0+.06,LZ0,LZ1,LY0,LY1); col(LX0,LX1,LZ0-.06,LZ0+.06,LY0,LY1); col(LX0,LX1,LZ1-.06,LZ1+.06,LY0,LY1);
+  col(LX1-.06,LX1+.06,LZ0,midZ-0.55,LY0,LY1); col(LX1-.06,LX1+.06,midZ+0.55,LZ1,LY0,LY1);
+  box(LX1-LX0-0.1,0.04,LZ1-LZ0-0.1,mWhite,(LX0+LX1)/2,LY1-0.12,midZ);
+  const lp=new THREE.PointLight(0xffe9cf,4.5,7,2);lp.position.set(LX0+2,LY1-0.4,midZ);G.add(lp);
+  if(loftFurn)loftFurn(LX0,LX1,UP,midZ);
+  const TX0=(GX0+GX1)/2,TX1=GX1;
+  box(TX1-TX0,0.08,GZ1-GZ0,mWood,(TX0+TX1)/2,UP+0.02,midZ);
+  function rail(x0,x1,z0,z1){ box((x1-x0)||0.06,0.9,(z1-z0)||0.06,mSteel,(x0+x1)/2,UP+0.5,(z0+z1)/2); col(Math.min(x0,x1)-.05,Math.max(x0,x1)+.05,Math.min(z0,z1)-.05,Math.max(z0,z1)+.05,UP,UP+0.95); }
+  rail(TX0,TX1,GZ1,GZ1); rail(TX0,TX1,GZ0,GZ0); rail(TX1,TX1,GZ0,midZ-0.6); rail(TX1,TX1,midZ+0.6,GZ1);
+  const SX0=GX1+0.05,SX1=GX1+1.3,SzTop=midZ,SzBot=midZ+3.0,STN=12;
+  for(let i=0;i<STN;i++){const t=i/(STN-1),z=SzBot+(SzTop-SzBot)*t,y=UP*t; box(SX1-SX0,0.12,(SzBot-SzTop)/STN+0.05,mSteel,(SX0+SX1)/2,y+0.06,z);}
+  box(0.1,0.9,(SzBot-SzTop),mSteel,SX1,UP/2+0.3,(SzTop+SzBot)/2);
+  surfaces.push({xMin:LX0,xMax:LX1,zMin:LZ0,zMax:LZ1,y:UP});
+  surfaces.push({xMin:TX0,xMax:TX1,zMin:GZ0,zMax:GZ1,y:UP});
+  surfaces.push({ramp:1,axis:'z',xMin:SX0,xMax:SX1,zMin:SzTop,zMax:SzBot,c0:SzBot,y0:0,c1:SzTop,y1:UP});
+}
 function buildGallery(){
   const X0=-6.1,X1=6.1,Z0=-1.22,Z1=1.22;   // 40ftコンテナ1棟
   box(X1-X0,0.06,Z1-Z0,mWood,0,0.05,0); box(X1-X0-0.1,0.04,Z1-Z0-0.1,mWhite,0,2.42,0);
@@ -566,11 +592,12 @@ function buildGallery(){
   [0x222228,0xb5302a,0xeeeef0,0x8c8c92,0x222228,0xb5302a].forEach((c,i)=>{ box(0.9,0.9,0.05,new THREE.MeshStandardMaterial({color:c}),-4.6+i*1.85,1.55,Z0+0.1); });
   box(0.5,0.95,0.5,mWhite,-2.5,0.47,0.2); box(0.4,0.45,0.4,mDark,-2.5,1.15,0.2);
   box(0.5,0.95,0.5,mWhite,1.5,0.47,0.2); box(0.35,0.55,0.35,mRed,1.5,1.2,0.2);
-  for(let x=-4;x<=4;x+=4) plight(x,2.3,0);
-  const sg=sign('GALLERY',0x1d1d22,3.4); sg.position.set(0,H+0.55,Z1+0.3);
+  for(let x=-4;x<=4;x+=4) plight(x,2.2,0);
+  addLoft(X0,X1,Z0,Z1,function(lx0,lx1,UP,mz){ [0xb5302a,0xeeeef0,0x222228].forEach((c,i)=>box(0.05,0.8,1.0,new THREE.MeshStandardMaterial({color:c}),lx0+0.14,UP+1.2,Z0+0.6+i*0.0+( -0.6+i*0.6))); box(0.5,0.85,0.5,mWhite,lx0+2.4,UP+0.42,mz); box(0.35,0.5,0.35,mRed,lx0+2.4,UP+1.1,mz); });
+  const sg=sign('GALLERY',0x1d1d22,3.4); sg.position.set(3,H+0.55,Z1+0.3);
   npcIdle(-2,0.3,Math.PI,0x8c8c92,0x33333a); npcWalk(-1,0.4,3,0.4,0xd9d9dd,0x33333a,0.45);
-  terraceFront(Z1+2.0); tree(-7,-1,1); tree(7,0.6,1.1); tree(-2,-5,1); tree(3,-5,0.95);
-  spawnZ=8; statusText='05 GALLERY：40ftコンテナ1棟・ギャラリー/ショップ（実寸 約12m）';
+  terraceFront(Z1+2.0); tree(-7,-1,1); tree(7,3.5,1.1); tree(-2,-5,1); tree(3,-5,0.95);
+  spawnZ=10; statusText='05 GALLERY：40ft＋2階ギャラリーの2階建て（外階段で屋上テラス＆上階へ ▲）';
 }
 // ---- 06 VILLA : コンテナ別荘（連結・テラス・住居）----
 function buildVilla(){
@@ -588,11 +615,12 @@ function buildVilla(){
   box(1.2,0.04,0.8,mWood,-1.4,0.72,Z1-0.6); for(const sx of[-0.5,0.5])box(0.05,0.72,0.05,mDark,-1.4+sx,0.36,Z1-0.6);
   box(2.6,0.9,0.55,mWood,X1-2.0,0.45,Z0+0.4); box(2.6,0.06,0.58,mDark,X1-2.0,0.92,Z0+0.4);
   potPlant(X1-0.7,Z1-0.5,0.8);
-  for(let x=-4;x<=4;x+=4) plight(x,2.3,0);
-  const sg=sign('VILLA',0x1d1d22,3.0); sg.position.set(0,H+0.55,Z1+0.3);
+  for(let x=-4;x<=4;x+=4) plight(x,2.2,0);
+  addLoft(X0,X1,Z0,Z1,function(lx0,lx1,UP,mz){ box(1.6,0.4,1.9,new THREE.MeshStandardMaterial({color:0xc0c0c6}),lx0+1.6,UP+0.2,mz); box(1.6,0.3,0.3,mWhite,lx0+1.6,UP+0.5,Z0+0.25); box(1.0,0.04,0.5,mWood,lx0+3.4,UP+0.4,mz); });
+  const sg=sign('VILLA',0x1d1d22,3.0); sg.position.set(3,H+0.55,Z1+0.3);
   npcIdle(2,0.4,Math.PI,0x8c8c92,0x33333a); npcIdle(X0+1.4,0.4,0,0xd9d9dd,0x33333a);
-  terraceFront(Z1+2.2); tree(-7,-1,1.1); tree(7,0.6,1); tree(-2,-5.5,1.1); tree(3,-5.5,0.95);
-  spawnZ=8; statusText='06 VILLA：40ftコンテナ1棟・別荘（実寸 約12m／寝室・居間・キッチン）';
+  terraceFront(Z1+2.2); tree(-7,-1,1.1); tree(7,3.5,1); tree(-2,-5.5,1.1); tree(3,-5.5,0.95);
+  spawnZ=10; statusText='06 VILLA：40ft＋20ftロフトの2階建て別荘（外階段で屋上テラス＆寝室へ ▲）';
 }
 // ---- 07 LONG CAFE : 横連結の長いカフェ（5棟）----
 function buildLongCafe(){
@@ -615,7 +643,7 @@ function buildLongCafe(){
   spawnZ=11; statusText='07 LONG CAFE：コンテナ5棟を横連結した長いカフェ';
 }
 // ---- 08 CAMP : グランピング（コテージ・サウナ棟・管理棟が点在）----
-function campHut(cx,cz,w,d,label,type){
+function campHut(cx,cz,w,d,label,type,stack){
   const x0=cx-w/2,x1=cx+w/2,z0=cz-d/2,z1=cz+d/2;
   box(w,0.06,d,mWood,cx,0.05,cz); box(w-0.1,0.04,d-0.1,mWhite,cx,2.42,cz);
   corr('z',z0,x0,x1,0,H,mRed); corr('x',x0,z0,z1,0,H,mRed); corr('x',x1,z0,z1,0,H,mRed);
@@ -630,14 +658,19 @@ function campHut(cx,cz,w,d,label,type){
   if(type==='cottage'){ box(1.5,0.4,1.8,new THREE.MeshStandardMaterial({color:0xc0c0c6}),cx,0.3,cz-0.1); box(0.8,0.04,0.5,mWood,cx+0.5,0.42,z1-0.6); }
   else if(type==='sauna'){ box(w-0.4,0.4,0.5,mWood,cx,0.5,z0+0.4); box(w-0.4,0.4,0.5,mWood,cx,0.85,z0+0.85); box(0.4,0.6,0.4,mDark,x1-0.5,0.3,z0+0.5); }
   else { box(w-0.8,0.9,0.55,mWood,cx,0.45,z0+0.4); box(w-0.8,0.06,0.58,mDark,cx,0.92,z0+0.4); }
-  const sg=sign(label,0x1d1d22,Math.max(2.2,w*0.5)); sg.position.set(cx,H+0.45,z1+0.2);
+  if(stack){ const uy0=H,uy1=H+2.45,ux0=x0+0.55,ux1=x1;
+    box(ux1-ux0,0.12,d,mSteel,(ux0+ux1)/2,uy0+0.06,cz); box(ux1-ux0,0.12,d,mWhite,(ux0+ux1)/2,uy1-0.06,cz);
+    corr('z',z0,ux0,ux1,uy0,uy1,mGreen); corr('z',z1,ux0,ux1,uy0,uy1,mGreen); corr('x',ux0,z0,z1,uy0,uy1,mGreen); corr('x',ux1,z0,z1,uy0,uy1,mGreen);
+    box((ux1-ux0)*0.55,1.0,0.05,mGlass,(ux0+ux1)/2,uy0+1.25,z1+0.02);
+    frameRing(ux0,ux1,z0,z1,uy0); frameRing(ux0,ux1,z0,z1,uy1); castings(ux0,ux1,z0,z1,uy0,uy1); }
+  const sg=sign(label,0x1d1d22,Math.max(2.2,w*0.5)); sg.position.set(cx,(stack?(H+2.45):H)+0.45,z1+0.2);
 }
 function buildCamp(){
-  campHut(0,-2,6,3,'管理棟','kanri');
-  campHut(-9,-9,6,2.44,'COTTAGE','cottage');
-  campHut(9,-11,6,2.44,'COTTAGE','cottage');
-  campHut(-8,5,6,2.44,'COTTAGE','cottage');
-  campHut(10,4,3.2,2.44,'SAUNA','sauna');
+  campHut(0,-2,6,3,'管理棟','kanri',true);
+  campHut(-9,-9,6,2.44,'COTTAGE','cottage',true);
+  campHut(9,-11,6,2.44,'COTTAGE','cottage',false);
+  campHut(-8,5,6,2.44,'COTTAGE','cottage',true);
+  campHut(10,4,3.2,2.44,'SAUNA','sauna',false);
   box(1.0,0.2,1.0,mDark,0,0.1,8); box(0.4,0.5,0.4,mRed,0,0.3,8);
   const fire=new THREE.PointLight(0xff5a1e,5,9,2); fire.position.set(0,0.7,8); G.add(fire);
   for(const p of [[-3,9.5],[3,9.5]]) outdoorSet(p[0],p[1]);
