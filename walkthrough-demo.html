@@ -46,8 +46,10 @@
   .navi-bubble::before { content:""; position:absolute; left:-9px; top:46%; border:9px solid transparent; border-right-color:#fff; }
   @media (max-width:560px){ .navi-bubble::before{ left:50%; top:-9px; transform:translateX(-50%); border:9px solid transparent; border-bottom-color:#fff; } }
   #cards { margin-top:40px; display:flex; gap:20px; flex-wrap:wrap; justify-content:center; max-width:900px; }
+  @keyframes cardUp { from { opacity:0; transform:translateY(22px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
   .card { width:272px; background:#c0392b; border:1px solid #9c2c20; border-radius:5px; padding:30px 22px 22px; cursor:pointer;
-          text-align:left; position:relative; overflow:hidden; display:flex; flex-direction:column; transition:transform .28s cubic-bezier(.2,.8,.2,1), border-color .28s, box-shadow .28s; }
+          text-align:left; position:relative; overflow:hidden; display:flex; flex-direction:column; transition:transform .28s cubic-bezier(.2,.8,.2,1), border-color .28s, box-shadow .28s;
+          animation:cardUp .58s cubic-bezier(.2,.7,.2,1) backwards; }
   .card > * { position:relative; z-index:1; }
   /* コンテナの波板（縦リブ） */
   .card::after { content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
@@ -71,6 +73,7 @@
   #start .note { margin-top:34px; font-size:10.5px; color:#7c7c80; max-width:540px; line-height:1.7; letter-spacing:.02em; }
 
   #cross { position:fixed; top:50%; left:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:rgba(255,255,255,.6); z-index:9; display:none; pointer-events:none; }
+  #vignette { position:fixed; inset:0; z-index:8; pointer-events:none; background:radial-gradient(125% 115% at 50% 40%, transparent 54%, rgba(18,16,14,.22) 100%); }
   #mobile { position:fixed; inset:0; z-index:20; display:none; pointer-events:none; }
   #movepad { position:absolute; left:0; top:0; width:60%; height:100%; pointer-events:auto; touch-action:none; }
   #joy { position:fixed; width:128px; height:128px; margin-left:-64px; margin-top:-64px; border-radius:50%; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.34); pointer-events:none; display:none; box-shadow:0 4px 18px rgba(0,0,0,.28); }
@@ -108,7 +111,7 @@
 </style>
 </head>
 <body>
-<div id="app"></div><div id="cross"></div>
+<div id="app"></div><div id="vignette"></div><div id="cross"></div>
 <div id="mobile"><div id="movepad"></div><div id="lookpad"></div><div id="joy"><div id="knob"></div></div></div>
 <div id="hint">スティックで移動・右側ドラッグで見回す</div>
 <button id="back">← 別の棟を選ぶ</button>
@@ -275,9 +278,15 @@ const fill=new THREE.DirectionalLight(0xcdd6de,0.3); fill.position.set(-14,10,-1
 
 // ground (persistent)
 const _grad=(function(s){const a=new Uint8Array(s);for(let i=0;i<s;i++)a[i]=Math.round(255*(i/(s-1)));const t=new THREE.DataTexture(a,s,1,THREE.RedFormat);t.needsUpdate=true;t.minFilter=THREE.NearestFilter;t.magFilter=THREE.NearestFilter;t.generateMipmaps=false;return t;})(3);
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshStandardMaterial({color:0xcececa,roughness:0.95,metalness:0.0}));
+const _groundTex=(function(){const cv=document.createElement('canvas');cv.width=cv.height=1024;const x=cv.getContext('2d');
+  const g=x.createRadialGradient(512,512,60,512,512,512);
+  g.addColorStop(0,'#edebe6'); g.addColorStop(0.5,'#e3e2dd'); g.addColorStop(0.82,'#d4d6d5'); g.addColorStop(1,'#c5c9cb');
+  x.fillStyle=g; x.fillRect(0,0,1024,1024);
+  const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; return t;})();
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshStandardMaterial({map:_groundTex,roughness:0.97,metalness:0.0}));
 ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
-const grid=new THREE.GridHelper(240,120,0xbcbcb8,0xc6c6c2); grid.position.y=0.01; grid.material.transparent=true; grid.material.opacity=0.35; scene.add(grid);
+// 近景だけスケール感のある細グリッド。遠景は地面のラジアルに溶けて“スタジオ・サイクロラマ”調に
+const grid=new THREE.GridHelper(80,80,0xc3c3bf,0xcdcdc9); grid.position.y=0.012; grid.material.transparent=true; grid.material.opacity=0.16; scene.add(grid);
 
 // ===== 天気システム =====
 function makeSky(c0,c1,c2){ const cv=document.createElement('canvas'); cv.width=4; cv.height=320; const x=cv.getContext('2d');
@@ -762,7 +771,7 @@ renderer.domElement.addEventListener('wheel',function(e){ if(!started||!thirdPer
 // 天気切替
 const WK=['sunny','cloudy','sunset','night','rain']; let wi=0;
 document.getElementById('weather').addEventListener('click',function(){ wi=(wi+1)%WK.length; setWeather(WK[wi]); this.textContent='天気：'+WEATHER[WK[wi]].name; });
-document.querySelectorAll('.card').forEach(c=> c.addEventListener('click',()=>select(c.dataset.tier)) );
+document.querySelectorAll('.card').forEach((c,i)=>{ c.style.animationDelay=(0.05*i)+'s'; c.addEventListener('click',()=>select(c.dataset.tier)); });
 document.getElementById('back').addEventListener('click',backToMenu);
 
 // CV導線（相談・資料請求モーダル）
