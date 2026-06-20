@@ -880,7 +880,7 @@ function floorAt(x,z,fy){ let best=0;
 const clock=new THREE.Clock();
 function camBlocked(x,y,z){ for(const c of colliders){ if(y<c.minY||y>c.maxY)continue; if(x>c.minX-0.25&&x<c.maxX+0.25&&z>c.minZ-0.25&&z<c.maxZ+0.25)return true; } return false; }
 function animate(){requestAnimationFrame(animate);
-  const dt=Math.min(clock.getDelta(),0.05); const speed=(keys['ShiftLeft']||keys['ShiftRight'])?4.6:2.7;
+  const dt=Math.min(clock.getDelta(),0.05); const speed=(keys['ShiftLeft']||keys['ShiftRight'])?5.6:3.7;
   if(started){
     let mx=0,mz=0;
     if(isTouch){ mx=move.x; mz=-move.z; }
@@ -896,7 +896,7 @@ function animate(){requestAnimationFrame(animate);
     const useTP = thirdPerson && avatar;
     if(avatar){ avatar.visible=useTP; avatar.position.set(playerX,feetY,playerZ);
       let dh=heading-avatar.rotation.y; while(dh>Math.PI)dh-=6.28318; while(dh<-Math.PI)dh+=6.28318; avatar.rotation.y+=dh*Math.min(1,dt*10);
-      if(walkAction) walkAction.paused=!moving; if(avatarMixer) avatarMixer.update(dt); }
+      if(walkAction){ walkAction.paused=!moving; walkAction.timeScale=speed/2.7; } if(avatarMixer) avatarMixer.update(dt); }
     if(useTP){
       const tx=playerX, ty=feetY+1.25, tz=playerZ, cp=Math.max(0.2,Math.cos(pitch)), vy=Math.sin(pitch);
       let d=camDist;
