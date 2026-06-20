@@ -404,15 +404,33 @@ function sign(t,bg,w){const c=document.createElement('canvas');c.width=512;c.hei
 // ---------- NPC（人物）----------
 function person(x,z,rotY,top,bot,skin){
   const pg=new THREE.Group(); pg.position.set(x,0,z); pg.rotation.y=rotY||0;
-  const Tm=new THREE.MeshStandardMaterial({color:top}), Bm=new THREE.MeshStandardMaterial({color:bot}),
-        Sm=new THREE.MeshStandardMaterial({color:skin||0xd6d6da}), Hm=new THREE.MeshStandardMaterial({color:0x26262c});
-  const mk=(g,m,py,px)=>{const me=new THREE.Mesh(g,m);me.position.set(px||0,py,0);me.castShadow=true;me.userData.noOutline=true;pg.add(me);};
-  mk(new THREE.BoxGeometry(0.42,0.9,0.3),Bm,0.45);             // 脚
-  mk(new THREE.BoxGeometry(0.46,0.62,0.3),Tm,1.18);           // 胴
-  mk(new THREE.BoxGeometry(0.11,0.55,0.16),Tm,1.15,-0.29);    // 腕
-  mk(new THREE.BoxGeometry(0.11,0.55,0.16),Tm,1.15,0.29);
-  mk(new THREE.SphereGeometry(0.14,14,12),Sm,1.62);           // 頭
-  mk(new THREE.BoxGeometry(0.32,0.17,0.34),Hm,1.72);          // 髪
+  const Tm=new THREE.MeshStandardMaterial({color:top,roughness:.82}),  Bm=new THREE.MeshStandardMaterial({color:bot,roughness:.85}),
+        Sm=new THREE.MeshStandardMaterial({color:skin||0xe8c7a6,roughness:.72}), Hm=new THREE.MeshStandardMaterial({color:0x2a2622,roughness:.7}),
+        Shm=new THREE.MeshStandardMaterial({color:0x1c1c20,roughness:.55}), Am=new THREE.MeshStandardMaterial({color:top,roughness:.82});
+  const part=(parent,g,m,py,px,pz)=>{const me=new THREE.Mesh(g,m);me.position.set(px||0,py,pz||0);me.castShadow=true;me.userData.noOutline=true;parent.add(me);return me;};
+  // 胴・腰・肩
+  part(pg,new THREE.BoxGeometry(0.44,0.18,0.27),Bm,0.95);                 // 腰
+  part(pg,new THREE.BoxGeometry(0.46,0.5,0.25),Tm,1.26);                  // 胴
+  part(pg,new THREE.BoxGeometry(0.52,0.16,0.27),Tm,1.5);                  // 肩
+  part(pg,new THREE.BoxGeometry(0.2,0.34,0.04),Bm,1.18,0,0.13);          // 上着の前立て（差し色アクセント）
+  // 首・頭・髪
+  part(pg,new THREE.CylinderGeometry(0.07,0.08,0.12,10),Sm,1.56);        // 首
+  part(pg,new THREE.SphereGeometry(0.135,16,14),Sm,1.66);                // 頭
+  const hair=part(pg,new THREE.IcosahedronGeometry(0.158,1),Hm,1.68); hair.scale.set(1.0,0.92,1.06); // 髪（面取りで立体感）
+  part(pg,new THREE.BoxGeometry(0.27,0.09,0.05),Hm,1.62,0,0.12);         // 前髪
+  // 脚（ピボットGroup：股関節から振れる）
+  const legGrp=(sx)=>{ const gp=new THREE.Group(); gp.position.set(sx,0.9,0);
+    part(gp,new THREE.BoxGeometry(0.18,0.8,0.22),Bm,-0.4);               // 脚
+    part(gp,new THREE.BoxGeometry(0.2,0.12,0.33),Shm,-0.84,0,0.05);      // 靴
+    pg.add(gp); return gp; };
+  const legL=legGrp(-0.12), legR=legGrp(0.12);
+  // 腕（ピボットGroup：肩から振れる）
+  const armGrp=(sx)=>{ const gp=new THREE.Group(); gp.position.set(sx,1.46,0);
+    part(gp,new THREE.BoxGeometry(0.12,0.42,0.14),Am,-0.21);             // 腕（袖）
+    part(gp,new THREE.SphereGeometry(0.072,10,8),Sm,-0.45);             // 手
+    pg.add(gp); return gp; };
+  const armL=armGrp(-0.30), armR=armGrp(0.30);
+  pg.userData.limbs={legL,legR,armL,armR};
   pg.scale.setScalar(0.955);                                   // 頭頂≈1.8m→約1.72mに（アバター・実寸と統一）
   G.add(pg); return pg;
 }
@@ -992,11 +1010,14 @@ function animate(){requestAnimationFrame(animate);
     _T+=dt;
     if(rain.visible){ const pa=rainGeo.attributes.position.array; for(let i=1;i<pa.length;i+=3){ pa[i]-=20*dt; if(pa[i]<0)pa[i]+=22; } rainGeo.attributes.position.needsUpdate=true; rain.position.set(camera.position.x,0,camera.position.z); }
     for(const n of npcs){
-      if(n.kind==='idle'){ n.pg.position.y=Math.sin(_T*2+n.ph)*0.02; }
+      const L=n.pg.userData.limbs;
+      if(n.kind==='idle'){ n.pg.position.y=Math.sin(_T*2+n.ph)*0.02;
+        if(L){ const s=Math.sin(_T*1.4+n.ph)*0.05; L.armL.rotation.x=s; L.armR.rotation.x=-s; L.legL.rotation.x=0; L.legR.rotation.x=0; } }
       else { n.t+=dt*n.spd; const k=Math.sin(n.t)*0.5+0.5;
         n.pg.position.x=n.ax+(n.bx-n.ax)*k; n.pg.position.z=n.az+(n.bz-n.az)*k;
         n.pg.position.y=Math.abs(Math.sin(_T*7))*0.03;
-        n.pg.rotation.y=Math.atan2(n.bx-n.ax,n.bz-n.az)+(Math.cos(n.t)<0?Math.PI:0); }
+        n.pg.rotation.y=Math.atan2(n.bx-n.ax,n.bz-n.az)+(Math.cos(n.t)<0?Math.PI:0);
+        if(L){ const p=_T*7, sw=Math.sin(p); L.legL.rotation.x=sw*0.5; L.legR.rotation.x=-sw*0.5; L.armL.rotation.x=-sw*0.45; L.armR.rotation.x=sw*0.45; } }
     }
   }
   renderer.render(scene,camera);
