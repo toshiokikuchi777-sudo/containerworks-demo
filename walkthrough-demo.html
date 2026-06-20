@@ -351,8 +351,8 @@ applyWX(WX);
 const mRed=new THREE.MeshStandardMaterial({color:0xc0392b,roughness:.5,metalness:.25}),  mBlue=new THREE.MeshStandardMaterial({color:0x9a2f24,roughness:.5,metalness:.25});   // 塗装鋼の赤コンテナ
 const mGreen=new THREE.MeshStandardMaterial({color:0xbb342b,roughness:.5,metalness:.25}), mCast=new THREE.MeshStandardMaterial({color:0x131316,roughness:.4,metalness:.7}); // 上コンテナ / 黒い鋳鋼金具
 const mSteel=new THREE.MeshStandardMaterial({color:0x1f1f24,roughness:.35,metalness:.8}), mWood=new THREE.MeshStandardMaterial({color:0xb4b1aa,roughness:.7,metalness:.05});  // 黒鉄 / グレー床
-const mWhite=new THREE.MeshStandardMaterial({color:0xeeeef0,roughness:.85,metalness:0}), mDark=new THREE.MeshStandardMaterial({color:0x222228,roughness:.5,metalness:.4});
-const mGlass=new THREE.MeshStandardMaterial({color:0xdfeef5,transparent:true,opacity:0.30,depthWrite:false,side:THREE.DoubleSide,roughness:0.2,metalness:0.0,emissive:0xa9cbdd,emissiveIntensity:0.42}); // 透けるガラス：室内が暗くても黒い穴にならないよう僅かに自発光させ、常に明るいガラス面に見せる
+const mWhite=new THREE.MeshStandardMaterial({color:0xeeeef0,roughness:.85,metalness:0,emissive:0xdfe2e8,emissiveIntensity:0.34}), mDark=new THREE.MeshStandardMaterial({color:0x222228,roughness:.5,metalness:.4}); // 内装の白は自発光させ、ガラス/半透明壁越しに常に明るく見える
+const mGlass=new THREE.MeshStandardMaterial({color:0xd9eaf2,transparent:true,opacity:0.14,depthWrite:false,side:THREE.DoubleSide,roughness:0.2,metalness:0.0}); // 本物の透明ガラス（emissive無し）。低不透明＋明るい室内で“透けて中が見える”
 const mRedT=new THREE.MeshStandardMaterial({color:0xc0392b,transparent:true,opacity:0.16,depthWrite:false,side:THREE.DoubleSide,roughness:.5,metalness:.2}); // 半透明の赤い前壁（中の内装を見せる：透過強め）
 const mLeaf=new THREE.MeshStandardMaterial({color:0x6e776c,roughness:.85}), mLeaf2=new THREE.MeshStandardMaterial({color:0x808a7c,roughness:.85});
 const mTrunk=new THREE.MeshStandardMaterial({color:0x4e4a45,roughness:.8}), mParasol=new THREE.MeshStandardMaterial({color:0xe6e3dc,roughness:.7}), mPot=new THREE.MeshStandardMaterial({color:0x8a8884,roughness:.7});
@@ -472,9 +472,12 @@ function toonify(group){
     const arr=Array.isArray(o.material)?o.material:[o.material];
     const nm=arr.map(m=>{ if(!m||!m.color) return m;
       if(m.transparent&&m.opacity<0.6) return m;              // ガラス・半透明前壁はそのまま
-      const t=new THREE.MeshToonMaterial({color:m.color.clone(),gradientMap:_grad}); if(m.map)t.map=m.map; t.userData._tmp=true; return t; });
+      const t=new THREE.MeshToonMaterial({color:m.color.clone(),gradientMap:_grad}); if(m.map)t.map=m.map;
+      if(m.emissive&&m.emissiveIntensity>0){ t.emissive.copy(m.emissive); t.emissiveIntensity=m.emissiveIntensity; } // 自発光を引き継ぐ（内装の白＝透けた先を明るく）
+      t.userData._tmp=true; return t; });
     o.material=Array.isArray(o.material)?nm:nm[0];
-    if(!o.isSkinnedMesh&&o.geometry&&(o.geometry.type==='BoxGeometry'||o.geometry.type==='IcosahedronGeometry')&&!o.userData.noOutline){
+    const _fm=Array.isArray(o.material)?o.material[0]:o.material;
+    if(!o.isSkinnedMesh&&(!_fm||!_fm.transparent)&&o.geometry&&(o.geometry.type==='BoxGeometry'||o.geometry.type==='IcosahedronGeometry')&&!o.userData.noOutline){ // 透明素材（ガラス/半透明壁）には黒い輪郭を付けない＝透けた先が黒くならない
       o.geometry.computeBoundingBox(); o.geometry.boundingBox.getSize(V); const md=Math.max(V.x,V.y,V.z);
       if(md>0.4&&md<40){ const om=new THREE.Mesh(o.geometry,_outline); om.position.copy(o.position); om.quaternion.copy(o.quaternion); om.scale.copy(o.scale).multiplyScalar(1.05); outs.push(om); }
     }
