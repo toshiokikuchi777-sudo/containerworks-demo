@@ -258,7 +258,7 @@ let playerX=0, playerZ=9, heading=Math.PI, camDist=4.6, camDcur=4.6, thirdPerson
 let autoTour=false, tourAng=0;
 const AV_FWD=0; // モデルの正面補正（必要なら Math.PI）
 new FBXLoader().load('Walking.fbx', function(obj){
-  obj.scale.setScalar(0.01);
+  obj.scale.setScalar(0.00907); // 元1.90m→約1.72mに（実寸コンテナH=2.59m・一人称目線1.6mと整合）
   obj.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.frustumCulled=false;
     const arr=Array.isArray(o.material)?o.material:[o.material];
     const nm=arr.map(m=>{ const t=new THREE.MeshToonMaterial({color:(m&&m.color)?m.color.clone():new THREE.Color(0xffffff),gradientMap:_grad}); if(m&&m.map)t.map=m.map; return t; });
@@ -413,6 +413,7 @@ function person(x,z,rotY,top,bot,skin){
   mk(new THREE.BoxGeometry(0.11,0.55,0.16),Tm,1.15,0.29);
   mk(new THREE.SphereGeometry(0.14,14,12),Sm,1.62);           // 頭
   mk(new THREE.BoxGeometry(0.32,0.17,0.34),Hm,1.72);          // 髪
+  pg.scale.setScalar(0.955);                                   // 頭頂≈1.8m→約1.72mに（アバター・実寸と統一）
   G.add(pg); return pg;
 }
 function npcIdle(x,z,rot,top,bot){ const pg=person(x,z,rot,top,bot); npcs.push({pg,kind:'idle',ph:Math.abs(x*7+z*13)%6}); }
