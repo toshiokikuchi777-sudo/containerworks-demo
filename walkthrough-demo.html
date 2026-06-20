@@ -984,7 +984,7 @@ function animate(){requestAnimationFrame(animate);
     }
    } else {
       // 自動ツアー：建物の周りをゆっくり旋回（初見でも歩かず全体を体感）
-      tourAng += dt*0.16; const cx=0, cy=1.5, cz=0, R=11;
+      tourAng += dt*0.26; const cx=0, cy=1.5, cz=0, R=11;
       camera.position.set(cx+Math.sin(tourAng)*R, cy+3.4+Math.sin(tourAng*0.6)*1.9, cz+Math.cos(tourAng)*R);
       camera.lookAt(cx, cy+1.0, cz);
    }
