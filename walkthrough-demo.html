@@ -27,6 +27,8 @@
   #view:hover { border-color:var(--brass); }
   #zoom { position:fixed; top:96px; right:18px; z-index:22; display:none; padding:9px 16px; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--text); background:rgba(20,16,12,.5); border:1px solid var(--line); border-radius:30px; cursor:pointer; backdrop-filter:blur(8px); }
   #zoom:hover { border-color:var(--brass); }
+  #weather { position:fixed; top:132px; right:18px; z-index:22; display:none; padding:9px 16px; font-size:12px; font-weight:600; letter-spacing:.04em; color:var(--text); background:rgba(20,16,12,.5); border:1px solid var(--line); border-radius:30px; cursor:pointer; backdrop-filter:blur(8px); }
+  #weather:hover { border-color:var(--brass); }
 
   /* selection screen */
   #start { position:fixed; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center;
@@ -111,6 +113,7 @@
 <button id="back">← 別の棟を選ぶ</button>
 <button id="view">視点：三人称</button>
 <button id="zoom">視点距離：標準</button>
+<button id="weather">天気：☀️ 晴れ</button>
 <button id="cta">📋 このコンテナを相談・資料請求</button>
 <button id="glb">⬇ GLB書き出し（Blender用）</button>
 <div id="modal"><div class="panel">
@@ -258,8 +261,8 @@ new FBXLoader().load('Walking.fbx', function(obj){
 }, undefined, function(e){ console.error('FBX load error',e); });
 
 // 夕方の柔らかな光
-scene.add(new THREE.HemisphereLight(0xeef1f4,0x595960,0.5));
-scene.add(new THREE.AmbientLight(0xffffff,0.38));
+const hemiLight=new THREE.HemisphereLight(0xeef1f4,0x595960,0.5); scene.add(hemiLight);
+const ambLight=new THREE.AmbientLight(0xffffff,0.38); scene.add(ambLight);
 const sun=new THREE.DirectionalLight(0xffffff,1.55);
 sun.position.set(22,18,12); sun.castShadow=true; sun.shadow.mapSize.set(4096,4096);
 sun.shadow.camera.near=1; sun.shadow.camera.far=110;
@@ -274,6 +277,33 @@ const _grad=(function(s){const a=new Uint8Array(s);for(let i=0;i<s;i++)a[i]=Math
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshStandardMaterial({color:0xcececa,roughness:0.95,metalness:0.0}));
 ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
 const grid=new THREE.GridHelper(240,120,0xbcbcb8,0xc6c6c2); grid.position.y=0.01; grid.material.transparent=true; grid.material.opacity=0.35; scene.add(grid);
+
+// ===== 天気システム =====
+function makeSky(c0,c1,c2){ const cv=document.createElement('canvas'); cv.width=4; cv.height=320; const x=cv.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,320); g.addColorStop(0,c0); g.addColorStop(0.55,c1); g.addColorStop(1,c2); x.fillStyle=g; x.fillRect(0,0,4,320);
+  const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; return t; }
+// 雨パーティクル
+const rainGeo=new THREE.BufferGeometry(); const RN=1400; const rpos=new Float32Array(RN*3);
+for(let i=0;i<RN;i++){ rpos[i*3]=(Math.random()-0.5)*46; rpos[i*3+1]=Math.random()*22; rpos[i*3+2]=(Math.random()-0.5)*46; }
+rainGeo.setAttribute('position',new THREE.BufferAttribute(rpos,3));
+const rain=new THREE.Points(rainGeo,new THREE.PointsMaterial({color:0xb8c0c6,size:0.07,transparent:true,opacity:0.5,depthWrite:false})); rain.visible=false; scene.add(rain);
+const WEATHER={
+  sunny:  { name:'☀️ 晴れ', sky:['#5b9bd6','#9cc6e6','#e7f1f7'], fog:0xe7f1f7, fogF:[60,185], sun:[0xffffff,1.55,[22,18,12]], hemi:0.5, amb:0.38, ambC:0xffffff, exp:1.0, rain:false },
+  cloudy: { name:'☁️ 曇り', sky:['#a7b1b9','#c4ccd2','#dde2e4'], fog:0xd2d8db, fogF:[40,150], sun:[0xeef0f2,0.5,[14,24,10]], hemi:0.72, amb:0.55, ambC:0xeef1f4, exp:1.0, rain:false },
+  sunset: { name:'🌇 夕方', sky:['#39466b','#c66b4a','#f1c47c'], fog:0xe2a274, fogF:[40,140], sun:[0xff9a48,1.4,[28,6,14]], hemi:0.45, amb:0.3, ambC:0xffd6a8, exp:1.05, rain:false },
+  night:  { name:'🌙 夜',   sky:['#0a1428','#16284a','#2a3c5c'], fog:0x12203a, fogF:[28,120], sun:[0x6a82b8,0.32,[12,16,-8]], hemi:0.16, amb:0.12, ambC:0x4a5e84, exp:1.18, rain:false },
+  rain:   { name:'🌧️ 雨',   sky:['#5a636b','#7a838b','#9aa0a4'], fog:0x868c90, fogF:[24,108], sun:[0xc8d0d6,0.38,[10,22,8]], hemi:0.5, amb:0.42, ambC:0xc8d0d6, exp:0.95, rain:true }
+};
+let curWeather='sunny';
+function setWeather(k){ const w=WEATHER[k]; curWeather=k;
+  if(scene.background&&scene.background.dispose) scene.background.dispose();
+  scene.background=makeSky(w.sky[0],w.sky[1],w.sky[2]);
+  scene.fog.color.set(w.fog); scene.fog.near=w.fogF[0]; scene.fog.far=w.fogF[1];
+  sun.color.set(w.sun[0]); sun.intensity=w.sun[1]; sun.position.set(w.sun[2][0],w.sun[2][1],w.sun[2][2]);
+  hemiLight.intensity=w.hemi; ambLight.intensity=w.amb; ambLight.color.set(w.ambC);
+  renderer.toneMappingExposure=w.exp; rain.visible=!!w.rain;
+}
+setWeather('sunny');
 
 // ---------- materials ----------
 // 赤×黒×白×グレー（赤は差し色）
@@ -646,6 +676,7 @@ function select(tier){
   curTier=tier; document.getElementById('cta').style.display='block';
   document.getElementById('view').style.display='block';
   document.getElementById('zoom').style.display='block';
+  document.getElementById('weather').style.display='block';
   if(!isTouch) document.getElementById('glb').style.display='block';
   document.getElementById('status').innerHTML='<span class="near">'+statusText+'</span>';
 }
@@ -660,6 +691,7 @@ function backToMenu(){
   document.getElementById('glb').style.display='none';
   document.getElementById('view').style.display='none';
   document.getElementById('zoom').style.display='none';
+  document.getElementById('weather').style.display='none';
   document.getElementById('modal').style.display='none';
   document.getElementById('chat').style.display='none';
   if(avatar) avatar.visible=false;
@@ -669,6 +701,9 @@ document.getElementById('view').addEventListener('click',function(){ thirdPerson
 const CAMD=[4.6,2.5,6.6], CAMN=['標準','近い','遠い']; let camI=0;
 document.getElementById('zoom').addEventListener('click',function(){ camI=(camI+1)%3; camDist=CAMD[camI]; this.textContent='視点距離：'+CAMN[camI]; });
 renderer.domElement.addEventListener('wheel',function(e){ if(!started||!thirdPerson)return; e.preventDefault(); camDist=Math.max(1.6,Math.min(8,camDist+e.deltaY*0.0035)); },{passive:false});
+// 天気切替
+const WK=['sunny','cloudy','sunset','night','rain']; let wi=0;
+document.getElementById('weather').addEventListener('click',function(){ wi=(wi+1)%WK.length; setWeather(WK[wi]); this.textContent='天気：'+WEATHER[WK[wi]].name; });
 document.querySelectorAll('.card').forEach(c=> c.addEventListener('click',()=>select(c.dataset.tier)) );
 document.getElementById('back').addEventListener('click',backToMenu);
 
@@ -819,6 +854,7 @@ function animate(){requestAnimationFrame(animate);
       camera.rotation.order='YXZ'; camera.rotation.y=yaw; camera.rotation.x=pitch; camera.position.set(playerX,feetY+1.6,playerZ);
     }
     _T+=dt;
+    if(rain.visible){ const pa=rainGeo.attributes.position.array; for(let i=1;i<pa.length;i+=3){ pa[i]-=20*dt; if(pa[i]<0)pa[i]+=22; } rainGeo.attributes.position.needsUpdate=true; rain.position.set(playerX,0,playerZ); }
     for(const n of npcs){
       if(n.kind==='idle'){ n.pg.position.y=Math.sin(_T*2+n.ph)*0.02; }
       else { n.t+=dt*n.spd; const k=Math.sin(n.t)*0.5+0.5;
