@@ -353,7 +353,7 @@ const mGreen=new THREE.MeshStandardMaterial({color:0xbb342b,roughness:.5,metalne
 const mSteel=new THREE.MeshStandardMaterial({color:0x1f1f24,roughness:.35,metalness:.8}), mWood=new THREE.MeshStandardMaterial({color:0xb4b1aa,roughness:.7,metalness:.05});  // 黒鉄 / グレー床
 const mWhite=new THREE.MeshStandardMaterial({color:0xeeeef0,roughness:.85,metalness:0}), mDark=new THREE.MeshStandardMaterial({color:0x222228,roughness:.5,metalness:.4});
 const mGlass=new THREE.MeshStandardMaterial({color:0xdfeef5,transparent:true,opacity:0.30,depthWrite:false,side:THREE.DoubleSide,roughness:0.2,metalness:0.0,emissive:0xa9cbdd,emissiveIntensity:0.42}); // 透けるガラス：室内が暗くても黒い穴にならないよう僅かに自発光させ、常に明るいガラス面に見せる
-const mRedT=new THREE.MeshStandardMaterial({color:0xc0392b,transparent:true,opacity:0.30,depthWrite:false,side:THREE.DoubleSide,roughness:.5,metalness:.2}); // 半透明の赤い前壁
+const mRedT=new THREE.MeshStandardMaterial({color:0xc0392b,transparent:true,opacity:0.16,depthWrite:false,side:THREE.DoubleSide,roughness:.5,metalness:.2}); // 半透明の赤い前壁（中の内装を見せる：透過強め）
 const mLeaf=new THREE.MeshStandardMaterial({color:0x6e776c,roughness:.85}), mLeaf2=new THREE.MeshStandardMaterial({color:0x808a7c,roughness:.85});
 const mTrunk=new THREE.MeshStandardMaterial({color:0x4e4a45,roughness:.8}), mParasol=new THREE.MeshStandardMaterial({color:0xe6e3dc,roughness:.7}), mPot=new THREE.MeshStandardMaterial({color:0x8a8884,roughness:.7});
 const _outline=new THREE.MeshBasicMaterial({color:0x101018,side:THREE.BackSide});
@@ -491,7 +491,7 @@ function interiorLiner(X0,X1,Z0,Z1,top){ // white inner walls + low ceiling
   box(0.05,top,Z1-Z0-0.1,mWhite,X1-0.12,top/2,(Z0+Z1)/2);
   box(X1-X0-0.1,top,0.05,mWhite,(X0+X1)/2,top/2,Z0+0.12);
   box(X1-X0-0.1,0.06,Z1-Z0,mWood,(X0+X1)/2,0.05,(Z0+Z1)/2); }
-function plight(x,y,z){const l=new THREE.PointLight(0xffe9cf,4.5,7,2);l.position.set(x,y,z);G.add(l);}
+function plight(x,y,z){const l=new THREE.PointLight(0xfff1dc,7.0,8.5,2);l.position.set(x,y,z);G.add(l);} // 室内を明るく＝ガラス/半透明壁越しに内装が見える
 
 // ---- 03 : 1 container takeout café ----
 function buildUme(){
@@ -570,7 +570,7 @@ function buildMatsu(){
   box(LX1-LX0-0.1,0.04,LZ1-LZ0-0.1,mWhite,(LX0+LX1)/2,LY1-0.12,0);
   box(1.6,0.35,1.9,new THREE.MeshStandardMaterial({color:0xc0c0c6}),LX0+1.3,UP+0.18,0);
   box(1.2,0.04,0.6,mWood,LX0+3.2,UP+0.4,0);
-  const lp=new THREE.PointLight(0xffe9cf,4.5,7,2);lp.position.set(LX0+2,LY1-0.4,0);G.add(lp);
+  const lp=new THREE.PointLight(0xfff1dc,6.5,8,2);lp.position.set(LX0+2,LY1-0.4,0);G.add(lp);
   // 屋上テラス（右半分）＋手すり
   const TX0=0.0,TX1=6.1,TZ0=-1.22,TZ1=1.22;
   box(TX1-TX0,0.08,TZ1-TZ0,mWood,(TX0+TX1)/2,UP+0.02,0);
@@ -643,7 +643,7 @@ function addLoft(GX0,GX1,GZ0,GZ1,loftFurn){
   col(LX0-.06,LX0+.06,LZ0,LZ1,LY0,LY1); col(LX0,LX1,LZ0-.06,LZ0+.06,LY0,LY1); col(LX0,LX1,LZ1-.06,LZ1+.06,LY0,LY1);
   col(LX1-.06,LX1+.06,LZ0,midZ-0.55,LY0,LY1); col(LX1-.06,LX1+.06,midZ+0.55,LZ1,LY0,LY1);
   box(LX1-LX0-0.1,0.04,LZ1-LZ0-0.1,mWhite,(LX0+LX1)/2,LY1-0.12,midZ);
-  const lp=new THREE.PointLight(0xffe9cf,4.5,7,2);lp.position.set(LX0+2,LY1-0.4,midZ);G.add(lp);
+  const lp=new THREE.PointLight(0xfff1dc,6.5,8,2);lp.position.set(LX0+2,LY1-0.4,midZ);G.add(lp);
   if(loftFurn)loftFurn(LX0,LX1,UP,midZ);
   const TX0=(GX0+GX1)/2,TX1=GX1;
   box(TX1-TX0,0.08,GZ1-GZ0,mWood,(TX0+TX1)/2,UP+0.02,midZ);
