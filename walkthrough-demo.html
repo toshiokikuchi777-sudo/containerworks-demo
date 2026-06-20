@@ -72,9 +72,10 @@
 
   #cross { position:fixed; top:50%; left:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:rgba(255,255,255,.6); z-index:9; display:none; pointer-events:none; }
   #mobile { position:fixed; inset:0; z-index:20; display:none; pointer-events:none; }
-  #joy { position:absolute; left:22px; bottom:30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.28); pointer-events:auto; touch-action:none; }
-  #knob { position:absolute; left:35px; top:35px; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,.55); }
-  #lookpad { position:absolute; right:0; top:0; width:55%; height:100%; pointer-events:auto; touch-action:none; }
+  #movepad { position:absolute; left:0; top:0; width:60%; height:100%; pointer-events:auto; touch-action:none; }
+  #joy { position:fixed; width:128px; height:128px; margin-left:-64px; margin-top:-64px; border-radius:50%; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.34); pointer-events:none; display:none; box-shadow:0 4px 18px rgba(0,0,0,.28); }
+  #knob { position:absolute; left:39px; top:39px; width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,.62); box-shadow:0 2px 8px rgba(0,0,0,.3); }
+  #lookpad { position:absolute; right:0; top:0; width:40%; height:100%; pointer-events:auto; touch-action:none; }
   #hint { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); z-index:9; color:var(--text); font-size:11px; letter-spacing:.04em; opacity:.65; background:rgba(20,16,12,.42); padding:7px 16px; border:1px solid var(--line); border-radius:20px; backdrop-filter:blur(8px); display:none; }
   #cta { position:fixed; right:18px; bottom:54px; z-index:22; display:none; padding:14px 22px; font-size:13px; font-weight:700; letter-spacing:.04em; color:#fff; background:var(--accent); border:1px solid rgba(255,255,255,.12); border-radius:30px; cursor:pointer; box-shadow:0 10px 30px rgba(207,107,67,.45); transition:transform .15s; }
   #cta:hover { transform:translateY(-2px); }
@@ -108,7 +109,7 @@
 </head>
 <body>
 <div id="app"></div><div id="cross"></div>
-<div id="mobile"><div id="joy"><div id="knob"></div></div><div id="lookpad"></div></div>
+<div id="mobile"><div id="movepad"></div><div id="lookpad"></div><div id="joy"><div id="knob"></div></div></div>
 <div id="hint">スティックで移動・右側ドラッグで見回す</div>
 <button id="back">← 別の棟を選ぶ</button>
 <button id="view">視点：三人称</button>
@@ -840,11 +841,11 @@ renderer.domElement.addEventListener('mousedown',e=>{ if(!started||isTouch)retur
 addEventListener('mouseup',()=>dragging=false);
 addEventListener('mousemove',e=>{ if(!dragging)return; yaw-=(e.clientX-dpx)*0.004; pitch-=(e.clientY-dpy)*0.004; pitch=Math.max(-1.2,Math.min(1.2,pitch)); dpx=e.clientX; dpy=e.clientY; });
 if(isTouch){
-  const joy=document.getElementById('joy'),knob=document.getElementById('knob');let jid=null,cx=0,cy=0;
-  joy.addEventListener('touchstart',e=>{const t=e.changedTouches[0];jid=t.identifier;const r=joy.getBoundingClientRect();cx=r.left+r.width/2;cy=r.top+r.height/2;e.preventDefault();},{passive:false});
-  joy.addEventListener('touchmove',e=>{for(const t of e.changedTouches){if(t.identifier===jid){let dx=t.clientX-cx,dy=t.clientY-cy;const max=45,d=Math.hypot(dx,dy);if(d>max){dx*=max/d;dy*=max/d;}knob.style.transform=`translate(${dx}px,${dy}px)`;move.x=dx/max;move.z=dy/max;}}e.preventDefault();},{passive:false});
-  const ej=e=>{for(const t of e.changedTouches){if(t.identifier===jid){jid=null;move.x=0;move.z=0;knob.style.transform='translate(0,0)';}}};
-  joy.addEventListener('touchend',ej);joy.addEventListener('touchcancel',ej);
+  const joy=document.getElementById('joy'),knob=document.getElementById('knob'),mpad=document.getElementById('movepad');let jid=null,ox=0,oy=0;
+  mpad.addEventListener('touchstart',e=>{const t=e.changedTouches[0];jid=t.identifier;ox=t.clientX;oy=t.clientY;joy.style.left=ox+'px';joy.style.top=oy+'px';joy.style.display='block';knob.style.transform='translate(0,0)';e.preventDefault();},{passive:false});
+  mpad.addEventListener('touchmove',e=>{for(const t of e.changedTouches){if(t.identifier===jid){let dx=t.clientX-ox,dy=t.clientY-oy;const max=48,d=Math.hypot(dx,dy);if(d>max){dx*=max/d;dy*=max/d;}knob.style.transform=`translate(${dx}px,${dy}px)`;move.x=dx/max;move.z=dy/max;}}e.preventDefault();},{passive:false});
+  const ej=e=>{for(const t of e.changedTouches){if(t.identifier===jid){jid=null;move.x=0;move.z=0;joy.style.display='none';}}};
+  mpad.addEventListener('touchend',ej);mpad.addEventListener('touchcancel',ej);
   const pad=document.getElementById('lookpad');let lid=null,lx=0,ly=0;
   pad.addEventListener('touchstart',e=>{const t=e.changedTouches[0];lid=t.identifier;lx=t.clientX;ly=t.clientY;e.preventDefault();},{passive:false});
   pad.addEventListener('touchmove',e=>{for(const t of e.changedTouches){if(t.identifier===lid){yaw-=(t.clientX-lx)*0.005;pitch-=(t.clientY-ly)*0.005;pitch=Math.max(-1.2,Math.min(1.2,pitch));lx=t.clientX;ly=t.clientY;}}e.preventDefault();},{passive:false});
