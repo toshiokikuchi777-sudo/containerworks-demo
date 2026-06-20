@@ -352,7 +352,7 @@ const mRed=new THREE.MeshStandardMaterial({color:0xc0392b,roughness:.5,metalness
 const mGreen=new THREE.MeshStandardMaterial({color:0xbb342b,roughness:.5,metalness:.25}), mCast=new THREE.MeshStandardMaterial({color:0x131316,roughness:.4,metalness:.7}); // 上コンテナ / 黒い鋳鋼金具
 const mSteel=new THREE.MeshStandardMaterial({color:0x1f1f24,roughness:.35,metalness:.8}), mWood=new THREE.MeshStandardMaterial({color:0xb4b1aa,roughness:.7,metalness:.05});  // 黒鉄 / グレー床
 const mWhite=new THREE.MeshStandardMaterial({color:0xeeeef0,roughness:.85,metalness:0}), mDark=new THREE.MeshStandardMaterial({color:0x222228,roughness:.5,metalness:.4});
-const mGlass=new THREE.MeshPhysicalMaterial({color:0xdce6ea,roughness:.02,transmission:.94,transparent:true,opacity:.32,metalness:0,ior:1.45}); // 高品質ガラス
+const mGlass=new THREE.MeshStandardMaterial({color:0xcfe3ef,transparent:true,opacity:0.24,depthWrite:false,side:THREE.DoubleSide,roughness:0.08,metalness:0.12}); // 透けるガラス（アルファ＋環境の映り込み。transmissionは室内が暗いと黒く見えるため不採用）
 const mRedT=new THREE.MeshStandardMaterial({color:0xc0392b,transparent:true,opacity:0.30,depthWrite:false,side:THREE.DoubleSide,roughness:.5,metalness:.2}); // 半透明の赤い前壁
 const mLeaf=new THREE.MeshStandardMaterial({color:0x6e776c,roughness:.85}), mLeaf2=new THREE.MeshStandardMaterial({color:0x808a7c,roughness:.85});
 const mTrunk=new THREE.MeshStandardMaterial({color:0x4e4a45,roughness:.8}), mParasol=new THREE.MeshStandardMaterial({color:0xe6e3dc,roughness:.7}), mPot=new THREE.MeshStandardMaterial({color:0x8a8884,roughness:.7});
