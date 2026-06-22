@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バーチャル展示場 × AI接客 ご提案サマリー｜Vsw.co.jp</title>
+<meta name="description" content="全国どこからでも『コンテナの中に入れる』会社へ。WebGLバーチャル展示場 × AI接客 × CV導線を1つのURLで完結。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f3ee; --panel:#ffffff; --ink:#1c1813; --muted:#6f675c; --line:#e3ddd2;
+    --accent:#c0392b; --accent-d:#9c2c20; --dark:#15120d; --dark2:#211c15; --gold:#c79a5b;
+    --mincho:"Shippori Mincho B1",serif; --sans:"Zen Kaku Gothic New",sans-serif; --stencil:"Oswald",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.85;-webkit-font-smoothing:antialiased;font-weight:400}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+  section{padding:78px 0}
+  h2{font-family:var(--mincho);font-weight:700;font-size:clamp(24px,4vw,38px);letter-spacing:.02em;line-height:1.4}
+  .kicker{font-family:var(--stencil);font-weight:600;letter-spacing:.28em;font-size:12px;color:var(--accent);text-transform:uppercase;margin-bottom:14px}
+  .lead{color:var(--muted);font-size:16px;margin-top:14px;max-width:60ch}
+  .accent{color:var(--accent)}
+  .num{font-family:var(--stencil);font-weight:700}
+
+  /* top bar */
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(246,243,238,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .row{display:flex;align-items:center;justify-content:space-between;height:58px}
+  .brand{font-family:var(--stencil);font-weight:700;font-size:18px;color:var(--accent);letter-spacing:.01em}
+  .topbar .to{font-size:12.5px;color:var(--muted);letter-spacing:.02em}
+  .topbar .cta{font-size:12.5px;font-weight:700;color:#fff;background:var(--accent);padding:8px 16px;border-radius:30px;text-decoration:none;white-space:nowrap}
+  .topbar .to b{color:var(--ink);font-weight:700}
+
+  /* hero */
+  .hero{background:var(--dark);color:#f3efe8;position:relative;overflow:hidden;padding:96px 0 88px}
+  .hero::before{content:"";position:absolute;inset:0;opacity:.16;
+    background:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 2px,transparent 2px 26px);pointer-events:none}
+  .hero::after{content:"";position:absolute;right:-120px;top:-120px;width:520px;height:520px;border-radius:50%;
+    background:radial-gradient(circle,rgba(192,57,43,.55),transparent 62%);filter:blur(8px);pointer-events:none}
+  .hero .wrap{position:relative;z-index:1}
+  .hero .kicker{color:#e7b9a8}
+  .hero h1{font-family:var(--mincho);font-weight:800;font-size:clamp(32px,6.4vw,62px);line-height:1.28;letter-spacing:.01em}
+  .hero h1 .accent{color:#e96a52}
+  .hero p.sub{color:#cdc6ba;font-size:clamp(15px,2vw,18px);margin-top:22px;max-width:54ch}
+  .hero .meta{margin-top:14px;font-size:13px;color:#9d958a;letter-spacing:.03em}
+  .btns{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+  .btn{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:15px;text-decoration:none;padding:15px 26px;border-radius:34px;transition:transform .15s,box-shadow .15s}
+  .btn-main{background:var(--accent);color:#fff;box-shadow:0 12px 34px rgba(192,57,43,.4)}
+  .btn-main:hover{transform:translateY(-2px)}
+  .btn-ghost{border:1px solid rgba(255,255,255,.32);color:#f3efe8}
+  .btn-ghost:hover{background:rgba(255,255,255,.08)}
+  .hero .demohint{margin-top:16px;font-size:12.5px;color:#8f877c}
+
+  /* one message */
+  .oneline{background:var(--accent);color:#fff;text-align:center}
+  .oneline .wrap{padding:50px 24px}
+  .oneline p{font-family:var(--mincho);font-weight:600;font-size:clamp(19px,3.2vw,30px);line-height:1.55;letter-spacing:.01em}
+  .oneline small{display:block;margin-top:12px;font-family:var(--sans);font-size:13px;opacity:.85;letter-spacing:.04em}
+
+  /* strengths + weakness */
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .chip{font-size:13px;font-weight:500;background:var(--panel);border:1px solid var(--line);padding:8px 15px;border-radius:30px}
+  .chip b{color:var(--accent)}
+  .weak{margin-top:34px;background:var(--dark);color:#f0ece4;border-radius:18px;padding:30px 30px;position:relative;overflow:hidden}
+  .weak .tag{font-family:var(--stencil);letter-spacing:.2em;font-size:11px;color:#e7b9a8}
+  .weak h3{font-family:var(--mincho);font-weight:700;font-size:22px;margin:8px 0 8px}
+  .weak p{color:#c7c0b4;font-size:15px}
+  table.fc{width:100%;border-collapse:collapse;margin-top:26px;font-size:14.5px}
+  table.fc th,table.fc td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.fc thead th{font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  table.fc td:first-child{font-weight:500}
+  table.fc td.loss{color:var(--accent);font-weight:600;white-space:nowrap}
+  @media(max-width:640px){table.fc td.loss{white-space:normal}}
+
+  /* flow */
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:34px}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px 20px;position:relative}
+  .step .n{font-family:var(--stencil);font-weight:700;font-size:30px;color:var(--accent);line-height:1}
+  .step h4{font-family:var(--mincho);font-weight:700;font-size:17px;margin:10px 0 8px}
+  .step p{font-size:13.5px;color:var(--muted)}
+  .flow .step::after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--accent);font-weight:700;font-size:16px;z-index:2}
+  .flow .step:last-child::after{display:none}
+  @media(max-width:880px){.flow{grid-template-columns:repeat(2,1fr)}.flow .step:nth-child(2)::after{display:none}}
+  @media(max-width:480px){.flow{grid-template-columns:1fr}.flow .step::after{content:"↓";right:50%;top:auto;bottom:-15px;transform:translateX(50%)}}
+
+  /* grades (松竹梅) */
+  .alt{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .grades{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+  .grade{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+  .grade .cap{padding:9px 0;text-align:center;font-family:var(--stencil);font-weight:600;letter-spacing:.16em;font-size:12px;color:#fff;background:var(--dark)}
+  .grade.matsu .cap{background:var(--accent)}
+  .grade .body{padding:24px 22px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .grade .jp{font-family:var(--mincho);font-weight:700;font-size:24px}
+  .grade .spec{font-size:13.5px;color:var(--muted);min-height:42px}
+  .grade .price{font-family:var(--stencil);font-weight:700;font-size:21px;margin-top:8px}
+  .grade .use{font-size:12px;color:var(--muted);margin-top:2px}
+  @media(max-width:780px){.grades{grid-template-columns:1fr}}
+  .note{font-size:12.5px;color:var(--muted);margin-top:18px}
+
+  /* effects */
+  .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:34px}
+  .ec{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px 24px}
+  .ec h4{font-family:var(--mincho);font-weight:700;font-size:18px;margin-bottom:6px}
+  .ec h4 .accent{font-family:var(--stencil)}
+  .ec p{font-size:14px;color:var(--muted)}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+
+  /* phases timeline */
+  .phases{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:36px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+  .ph{background:var(--panel);padding:24px 20px;border-right:1px solid var(--line)}
+  .ph:last-child{border-right:none}
+  .ph .pn{font-family:var(--stencil);font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--accent)}
+  .ph h4{font-family:var(--mincho);font-weight:700;font-size:16px;margin:8px 0 6px}
+  .ph p{font-size:13px;color:var(--muted)}
+  .ph .kpi{font-size:12px;color:var(--ink);margin-top:10px;font-weight:600}
+  @media(max-width:780px){.phases{grid-template-columns:1fr}.ph{border-right:none;border-bottom:1px solid var(--line)}.ph:last-child{border-bottom:none}}
+  .hook{margin-top:22px;background:var(--dark);color:#f0ece4;border-radius:14px;padding:20px 24px;font-size:14.5px}
+  .hook b{color:#e96a52}
+
+  /* fee table */
+  .fee{width:100%;border-collapse:collapse;margin-top:32px;font-size:14px}
+  .fee th,.fee td{padding:15px 16px;border-bottom:1px solid var(--line);text-align:left}
+  .fee thead th{font-size:12px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;font-weight:700}
+  .fee td.plan{font-family:var(--mincho);font-weight:700;font-size:16px;white-space:nowrap}
+  .fee td.num2{font-family:var(--stencil);font-weight:600;white-space:nowrap}
+  .fee tr:last-child td{border-bottom:none}
+
+  /* why */
+  .why{background:var(--dark);color:#f1ede5}
+  .why h2{color:#fff}
+  .why .kicker{color:#e7b9a8}
+  .why p{color:#cbc4b8;font-size:16px;margin-top:18px;max-width:64ch}
+  .why .pts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
+  .why .pt{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:20px 20px}
+  .why .pt b{display:block;font-family:var(--mincho);font-size:17px;margin-bottom:6px;color:#fff}
+  .why .pt span{font-size:13px;color:#aaa297}
+  @media(max-width:780px){.why .pts{grid-template-columns:1fr}}
+
+  /* next / cta */
+  .next ol{margin:26px 0 0 0;padding:0;list-style:none;counter-reset:n;display:grid;gap:14px}
+  .next li{counter-increment:n;position:relative;padding:18px 20px 18px 64px;background:var(--panel);border:1px solid var(--line);border-radius:14px;font-size:15px}
+  .next li::before{content:counter(n);position:absolute;left:18px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--stencil);font-weight:700;display:flex;align-items:center;justify-content:center}
+  .finalcta{background:var(--accent);color:#fff;text-align:center}
+  .finalcta .wrap{padding:64px 24px}
+  .finalcta h2{color:#fff}
+  .finalcta p{margin:14px auto 0;max-width:48ch;color:#ffe6e0;font-size:15.5px}
+  .finalcta .btn-white{display:inline-flex;gap:9px;align-items:center;margin-top:28px;background:#fff;color:var(--accent);font-weight:700;font-size:16px;padding:16px 30px;border-radius:34px;text-decoration:none;box-shadow:0 14px 34px rgba(0,0,0,.18)}
+  .finalcta .url{margin-top:16px;font-family:var(--stencil);font-size:13px;color:#ffd9d1;letter-spacing:.02em;word-break:break-all}
+
+  footer{background:var(--dark2);color:#9a9287;text-align:center;padding:34px 24px;font-size:12.5px;line-height:1.9}
+  footer .b{color:#e0d9cd;font-family:var(--stencil);letter-spacing:.04em}
+  footer .secret{color:#7a7367;margin-top:6px}
+  .divider{height:1px;background:var(--line)}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar"><div class="wrap"><div class="row">
+  <div class="brand">Vsw.co.jp</div>
+  <div class="to">For&nbsp; <b>株式会社コンテナワークス</b>&nbsp;様</div>
+  <a class="cta" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/" target="_blank" rel="noopener">▶ 動くデモ</a>
+</div></div></div>
+
+<!-- HERO -->
+<header class="hero"><div class="wrap">
+  <div class="kicker">Container × Virtual Showroom × AI</div>
+  <h1>全国どこからでも、<br>「コンテナの中に<span class="accent">入れる</span>」会社へ。</h1>
+  <p class="sub">バーチャル展示場 × AI接客 × CV導線を、<b>1つのURL</b>で完結。<br>体感 → 相談 → 来場/見積りまでを、スマホ一枚で繋ぎます。</p>
+  <div class="meta">ご提案：MASTAR DESIGN ／ Vsw株式会社　｜　2026年6月</div>
+  <div class="btns">
+    <a class="btn btn-main" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/" target="_blank" rel="noopener">▶ 動くデモを体験する</a>
+    <a class="btn btn-ghost" href="#solution">提案の要点を見る</a>
+  </div>
+  <div class="demohint">※アプリ不要・スマホ可。「歩いて・相談して・概算見積りが出る」ところまで、その場で体験できます。</div>
+</div></header>
+
+<!-- ONE MESSAGE -->
+<section class="oneline"><div class="wrap">
+  <p>単なるWebではなく、御社の売上が増える<br>「体感 → 相談 → CV」の一本の動線を、1つのURLで。</p>
+  <small>ワンメッセージ</small>
+</div></section>
+
+<!-- 現状認識 -->
+<section><div class="wrap">
+  <div class="kicker">01 ── 現状認識</div>
+  <h2>強みは十分。課題は、たった一つ。</h2>
+  <p class="lead"><b>強み：</b>建築確認申請対応・建築基準法準拠・国交省認定工場製造／18用途以上の実績／フルオーダー対応／全国対応。</p>
+  <div class="chips">
+    <span class="chip">建築確認 <b>対応</b></span>
+    <span class="chip">建築基準法 <b>準拠</b></span>
+    <span class="chip">国交省認定 <b>工場製造</b></span>
+    <span class="chip"><b>18用途</b>以上の実績</span>
+    <span class="chip"><b>フルオーダー</b></span>
+    <span class="chip"><b>全国</b>対応</span>
+  </div>
+
+  <div class="weak">
+    <div class="tag">THE ONLY WEAK POINT</div>
+    <h3>唯一の弱点 ＝「体感の非対称性」</h3>
+    <p>コンテナハウスの価値の本体は “中に入った時の広さ・天井高・光・質感”。<br>なのに、最も伝わりにくい商材を、写真・動画・物理展示場だけで売っている。</p>
+  </div>
+
+  <table class="fc">
+    <thead><tr><th>事実</th><th>取りこぼし</th></tr></thead>
+    <tbody>
+      <tr><td>駒沢展示場が2026年8月までリニューアル閉館中</td><td class="loss">最重要の体感装置が稼働ゼロ</td></tr>
+      <tr><td>体感が東京・山中湖に物理拘束</td><td class="loss">全国の見込み客に現物を見せられない</td></tr>
+      <tr><td>価格の大半が「お見積もり」</td><td class="loss">価格不安で問い合わせ前に離脱</td></tr>
+      <tr><td>代理店は物理展示場を持てない</td><td class="loss">体感を伝えられないまま売る問題が拡散</td></tr>
+    </tbody>
+  </table>
+</div></section>
+
+<div class="divider"></div>
+
+<!-- 解決策フロー -->
+<section id="solution"><div class="wrap">
+  <div class="kicker">02 ── 解決策（デモで実演）</div>
+  <h2>「入って・歩いて・相談して・CV」を1画面で。</h2>
+  <p class="lead">物理展示場を持ち歩けないなら、ブラウザの中に展示場をつくる。SNS・LP・名刺・代理店の営業現場、どこからでもURL/QR一発で開けます。</p>
+  <div class="flow">
+    <div class="step"><div class="n">01</div><h4>建物を選ぶ</h4><p>松・竹・梅でグレード/価格を最初に提示。予算の入口をつくる。</p></div>
+    <div class="step"><div class="n">02</div><h4>中を歩く</h4><p>一人称/三人称でコンテナ建築を体感。人物・テラス・緑・天気つき。</p></div>
+    <div class="step"><div class="n">03</div><h4>AIに相談</h4><p>用途×設置エリアで概算金額を提示。価格不安をその場で解消。</p></div>
+    <div class="step"><div class="n">04</div><h4>そのままCV</h4><p>来場予約／正式見積り／資料・CADデータ請求／LINE相談へ。</p></div>
+  </div>
+  <p class="note">※デモには 9プランの実例ベース展示場・自動ツアー（見るだけモード）・天気切替・GLB書き出しを実装済み。</p>
+</div></section>
+
+<!-- 松竹梅 -->
+<section class="alt"><div class="wrap">
+  <div class="kicker">03 ── 価格グレードの見せ方</div>
+  <h2>松竹梅 ＝ 予算の“入口”を最初に提示。</h2>
+  <p class="lead">「いくらか分からない」を、入口でなくす。検討の心理的ハードルを下げ、相談へ繋げます。</p>
+  <div class="grades">
+    <div class="grade"><div class="cap">梅 ENTRY</div><div class="body">
+      <div class="jp">コンパクト</div>
+      <div class="spec">20ftコンテナ1棟・最小構成。最短で開業。</div>
+      <div class="price">¥200万〜500万</div>
+      <div class="use">用途：テイクアウト店・コンテナサウナ</div>
+    </div></div>
+    <div class="grade"><div class="cap">竹 STANDARD</div><div class="body">
+      <div class="jp">スタンダード</div>
+      <div class="spec">40ft 1棟〜2階建て。窓・ドアをくり抜いた前面。</div>
+      <div class="price">¥450万〜1,000万</div>
+      <div class="use">用途：店舗・カフェ・ギャラリー/物販</div>
+    </div></div>
+    <div class="grade matsu"><div class="cap">松 PREMIUM</div><div class="body">
+      <div class="jp">プレミアム</div>
+      <div class="spec">複数棟をブロック積み・2階建て。屋上テラス付き。</div>
+      <div class="price">¥1,200万〜2,800万</div>
+      <div class="use">用途：別荘・宿泊・フラッグシップ店舗</div>
+    </div></div>
+  </div>
+  <p class="note">※目安レンジ（デモ表示）。本番は御社の実価格・実モデルに差し替え。AI概算は建物×用途×設置エリアで変動。正式費用は現地調査・法規確認後に算出。</p>
+</div></section>
+
+<!-- 効果 -->
+<section><div class="wrap">
+  <div class="kicker">04 ── なぜ売上に効くか</div>
+  <h2>体感格差を消し、離脱を相談に変える。</h2>
+  <div class="grid2">
+    <div class="ec"><h4><span class="accent">①</span> 体感格差の解消</h4><p>閉館中の駒沢・行けない全国客・物理展示できないフルオーダーを、ブラウザ一枚で解決。</p></div>
+    <div class="ec"><h4><span class="accent">②</span> 離脱の削減</h4><p>価格不安 → AIが概算レンジを即提示 → 問い合わせ前の離脱を相談に変換。</p></div>
+    <div class="ec"><h4><span class="accent">③</span> 24時間・無制限接客</h4><p>夜間・休日もAIが一次対応。人の営業には良質なリードだけを渡す。</p></div>
+    <div class="ec"><h4><span class="accent">④</span> 代理店の武器</h4><p>URL一つで、全国の代理店が同品質の展示・接客を再現できる共通インフラに。</p></div>
+  </div>
+</div></section>
+
+<div class="divider"></div>
+
+<!-- 段階導入 -->
+<section><div class="wrap">
+  <div class="kicker">05 ── 段階導入</div>
+  <h2>小さく始めて、攻めに広げる。</h2>
+  <div class="phases">
+    <div class="ph"><div class="pn">PHASE 0</div><h4>診断</h4><p>現状の流入・離脱・問い合わせ率を可視化。</p><div class="kpi">KPI：現状CV率のベースライン</div></div>
+    <div class="ph"><div class="pn">PHASE 1</div><h4>展示場＋AI接客</h4><p>WebGL展示場（実データ化）＋AIチャット＋CV導線を公開。</p><div class="kpi">KPI：問い合わせCV +20〜50%</div></div>
+    <div class="ph"><div class="pn">PHASE 2</div><h4>LINE＋増幅</h4><p>LINE AIで追客＋AIプロモで流入増。</p><div class="kpi">KPI：再来訪・歩留まり</div></div>
+    <div class="ph"><div class="pn">PHASE 3</div><h4>攻め</h4><p>メタバース展示場／代理店共通インフラ化。</p><div class="kpi">KPI：代理店経由受注・月額ストック</div></div>
+  </div>
+  <div class="hook">📣 <b>駒沢リニューアル（2026年8月）と同時ローンチ</b>＝「リアル＋バーチャル展示場 同日オープン＝コンテナ業界初」のPRフックに。</div>
+</div></section>
+
+<!-- 制作・運用費用 -->
+<section class="alt"><div class="wrap">
+  <div class="kicker">06 ── 制作・運用（我々の費用）</div>
+  <h2>追加受注 年数件で投資回収。</h2>
+  <p class="lead">WebGLは3Dスキャンせず、御社の設計データ（CAD/BIM）をWeb用3D（glTF）に変換＝低コスト・短納期。建築基準法の断定はAIにさせず「目安＋要相談→有人」に限定し、御社のリスクを作りません。</p>
+  <table class="fee">
+    <thead><tr><th>プラン</th><th>含むもの</th><th>初期（税抜）</th><th>月額（税抜）</th></tr></thead>
+    <tbody>
+      <tr><td class="plan">MVP</td><td>AIチャット＋CV導線＋簡易展示場</td><td class="num2">80〜150万</td><td class="num2">8〜15万</td></tr>
+      <tr><td class="plan">標準</td><td>＋WebGL一人称展示場（実データ変換）＋AI接客強化</td><td class="num2">200〜350万</td><td class="num2">12〜20万</td></tr>
+      <tr><td class="plan">フル</td><td>＋メタバース＋代理店共通インフラ＋AIプロモ</td><td class="num2">500〜1,000万+</td><td class="num2">15〜30万</td></tr>
+    </tbody>
+  </table>
+  <p class="note">※1棟あたり高単価ゆえ、追加受注が年数件増えるだけで投資回収（標準プラン＝年3〜4棟が目安）。</p>
+</div></section>
+
+<!-- なぜVsw -->
+<section class="why"><div class="wrap">
+  <div class="kicker">07 ── なぜ MASTAR / Vsw か</div>
+  <h2>Web × XR × AI × 世界観を、一社で一気通貫。</h2>
+  <p>御社のブランド「<b>遊び場をつくろう（make playground）</b>」は、3D・メタバース体験と思想的に同期します。そして——この提案は、<b>すでに動くデモがあります</b>。説明ではなく、その場でスマホを渡して体験いただけます。</p>
+  <div class="pts">
+    <div class="pt"><b>一気通貫</b><span>企画・コピー・WebGL・AI・XRまで一社完結。窓口が分散しない。</span></div>
+    <div class="pt"><b>実データ活用</b><span>スキャン不要。CAD/BIM → glTF変換で低コスト・短納期。</span></div>
+    <div class="pt"><b>動く提案</b><span>絵に描いた餅ではなく、今日触れる成果物が最大の決め手。</span></div>
+  </div>
+</div></section>
+
+<!-- 次アクション -->
+<section class="next"><div class="wrap">
+  <div class="kicker">08 ── 次アクション</div>
+  <h2>まずは「現状診断」から。</h2>
+  <ol>
+    <li><b>フェーズ0：現状診断（小予算）</b>で初回接点をつくる。</li>
+    <li>商談の場で<b>このデモを体験</b>（最大の決め手）。</li>
+    <li>ヒアリング確定事項：①既存3Dデータの形式（変換費）②平均受注単価・粗利（回収計算）③LINE公式アカウント現状。</li>
+  </ol>
+</div></section>
+
+<!-- FINAL CTA -->
+<section class="finalcta"><div class="wrap">
+  <h2>説明より、体験を。</h2>
+  <p>スマホでこのURLを開けば、コンテナの中を歩いて、AIに相談して、概算見積りが出ます。</p>
+  <a class="btn-white" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/" target="_blank" rel="noopener">▶ 動くデモを開く</a>
+  <div class="url">https://toshiokikuchi777-sudo.github.io/containerworks-demo/</div>
+</div></section>
+
+<footer>
+  <div class="b">MASTAR DESIGN ／ Vsw株式会社</div>
+  <div>バーチャル展示場 × AI接客 導入提案サマリー　｜　2026年6月</div>
+  <div class="secret">本提案サマリーは株式会社コンテナワークス様向けに作成（社外秘）。</div>
+</footer>
+
+</body>
+</html>
