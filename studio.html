@@ -224,8 +224,8 @@ const fill=new THREE.DirectionalLight(0xcdd6de,0.32); fill.position.set(-14,10,-
 
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(300,300),new THREE.MeshStandardMaterial({color:0xd7ddd9,roughness:0.97}));
 ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
-const grid=new THREE.GridHelper(120,120,0xc3c3bf,0xcdcdc9); grid.position.y=0.012; grid.material.transparent=true; grid.material.opacity=0.18; scene.add(grid);
-const gridMaj=new THREE.GridHelper(120,20,0x4fb6d6,0x4fb6d6); gridMaj.position.y=0.015; gridMaj.material.transparent=true; gridMaj.material.opacity=0.07; scene.add(gridMaj);
+const grid=new THREE.GridHelper(40,40,0xc3c3bf,0xcdcdc9); grid.position.y=0.012; grid.material.transparent=true; grid.material.opacity=0.22; scene.add(grid);
+const gridMaj=new THREE.GridHelper(40,8,0x4fb6d6,0x4fb6d6); gridMaj.position.y=0.015; gridMaj.material.transparent=true; gridMaj.material.opacity=0.10; scene.add(gridMaj);
 
 /* ============ MATERIALS（既存index.htmlのパレットを踏襲）============ */
 const _grad=(s=>{const a=new Uint8Array(s);for(let i=0;i<s;i++)a[i]=Math.round(255*(i/(s-1)));const t=new THREE.DataTexture(a,s,1,THREE.RedFormat);t.needsUpdate=true;t.minFilter=t.magFilter=THREE.NearestFilter;return t;})(3);
@@ -837,6 +837,20 @@ function buildFromPlan(plan,keepView){
     controls.target.set(c.x,Math.max(1.6,sz.y*0.45),c.z);
     const r=Math.max(sz.x,sz.z,6); camera.position.set(c.x+r*1.1,sz.y*0.9+6,c.z+r*1.25);
   }
+  // 敷地境界の更新
+  const _sg=scene.getObjectByName('_site'); if(_sg) scene.remove(_sg);
+  const sg=new THREE.Group(); sg.name='_site';
+  const sw=((plan.site&&plan.site.width)||16)/2, sd=((plan.site&&plan.site.depth)||16)/2;
+  const siteFill=new THREE.Mesh(new THREE.PlaneGeometry(sw*2,sd*2),new THREE.MeshStandardMaterial({color:0xc8d0c2,roughness:0.98}));
+  siteFill.rotation.x=-Math.PI/2; siteFill.position.y=0.004; siteFill.receiveShadow=true; sg.add(siteFill);
+  const bPts=[new THREE.Vector3(-sw,0.03,-sd),new THREE.Vector3(sw,0.03,-sd),new THREE.Vector3(sw,0.03,sd),new THREE.Vector3(-sw,0.03,sd),new THREE.Vector3(-sw,0.03,-sd)];
+  sg.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(bPts),new THREE.LineBasicMaterial({color:0x4fb6d6,transparent:true,opacity:0.9})));
+  // 角のマーカー
+  [[- 1,-1],[1,-1],[1,1],[-1,1]].forEach(([sx,sz])=>{
+    const mk=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.22,0.18),new THREE.MeshStandardMaterial({color:0x4fb6d6,roughness:0.4}));
+    mk.position.set(sx*sw,0.11,sz*sd); sg.add(mk);
+  });
+  scene.add(sg);
   document.getElementById('status').textContent=(plan.meta&&plan.meta.name?plan.meta.name+'｜':'')+(plan.modules||[]).length+'モジュール / 敷地'+(plan.site?`${plan.site.width}×${plan.site.depth}m`:'');
   document.getElementById('json').value=JSON.stringify(plan,null,2);
   if(typeof refreshSelection==='function') refreshSelection();
