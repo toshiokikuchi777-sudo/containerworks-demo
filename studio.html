@@ -46,7 +46,7 @@
   .etool .erow{display:flex;gap:6px;margin-top:8px}
   .etool .erow .esm{flex:1;background:#1a222b;border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:8px 4px;font-size:11px;cursor:pointer;font-family:inherit}
   .etool .ehint{font-size:10px;color:#6f8090;margin-top:8px;line-height:1.5}
-  #panel{width:340px;background:var(--panel);color:var(--txt);display:flex;flex-direction:column;border-left:1px solid var(--line)}
+  #panel{width:340px;background:var(--panel);color:var(--txt);display:flex;flex-direction:column;border-right:1px solid var(--line)}
   #panel header{padding:16px 16px 10px;border-bottom:1px solid var(--line)}
   #panel header h1{margin:0;font-size:14px;letter-spacing:.08em}
   #panel header p{margin:4px 0 0;font-size:11px;color:var(--sub);line-height:1.5}
@@ -77,13 +77,50 @@
   .exadd input{flex:1}
   .exadd button{flex:0 0 auto;padding:8px 12px}
   #err{color:#ff8a7a;font-size:11px;margin-top:8px;white-space:pre-wrap;line-height:1.5}
-  @media(max-width:760px){ #panel{position:absolute;right:0;top:0;bottom:0;width:88%;max-width:340px;box-shadow:-8px 0 30px rgba(0,0,0,.3)} }
+  @media(max-width:760px){ #panel{position:absolute;left:0;top:0;bottom:0;width:88%;max-width:340px;box-shadow:8px 0 30px rgba(0,0,0,.3)} }
   #bridgeBanner{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;background:rgba(27,31,36,.92);color:#fff;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;letter-spacing:.02em;box-shadow:0 4px 16px rgba(0,0,0,.35);display:none}
   body.bridging #view,body.bridging #view canvas{cursor:crosshair}
 </style>
 </head>
 <body>
 <div id="app">
+  <aside id="panel">
+    <header>
+      <h1>CONTAINER DESIGN STUDIO</h1>
+      <p>コンテナを配置して3D設計を確認できます。<br>コンテナは規格寸法(20/40ft)で破綻なく組まれます。</p>
+    </header>
+    <div class="body">
+      <div class="etool">
+        <button id="addC" class="ebig">＋ コンテナを置く</button>
+        <button id="autoDecorate" class="ebig" style="margin-top:8px;background:linear-gradient(90deg,#2b7a78,#3f8a8a)">✨ おまかせ装飾（一括生成）</button>
+        <button id="undoBtn" class="ebig" style="margin-top:8px;background:#1a222b;border:1px solid var(--line);font-size:12px">↩ 元に戻す (⌘Z / Ctrl+Z)</button>
+        <div class="erow"><button id="addDeck" class="esm">＋ウッドデッキ</button><button id="addStair" class="esm">＋階段(2F)</button><button id="addStair3" class="esm">＋階段(3F)</button><button id="addRail" class="esm">＋手すり</button></div>
+        <div class="erow"><button id="addRoof" class="esm">＋屋上デッキ</button><button id="addBridge" class="esm">＋橋</button><button id="addCanopy" class="esm">＋連結屋根</button><button id="addChimney" class="esm">＋煙突</button></div>
+        <div class="erow"><button id="makeLoop" class="esm" style="flex:1">🔁 回遊化（屋上＋橋＋階段を自動生成）</button></div>
+        <div class="ehint" style="margin-top:8px;padding-top:6px;border-top:1px solid var(--line)">■ 外構・植栽</div>
+        <div class="erow"><button id="addTreePine" class="esm">＋松の木</button><button id="addTreePalm" class="esm">＋ヤシの木</button><button id="addTreeBamboo" class="esm">＋竹</button><button id="addLampPost" class="esm">＋街灯</button></div>
+        <div class="erow"><button id="addPlanter" class="esm">＋プランター</button><button id="addFirePit" class="esm">＋焚き火</button><button id="addVending" class="esm">＋自販機</button></div>
+        <div class="erow"><button id="addBike" class="esm">＋自転車</button><button id="addCar" class="esm">＋自動車</button></div>
+        <div class="ehint" style="margin-top:8px;padding-top:6px;border-top:1px solid var(--line)">■ 内装・家具</div>
+        <div class="erow"><button id="addChair" class="esm">＋椅子</button><button id="addBarStool" class="esm">＋バーチェア</button><button id="addSofa" class="esm">＋ソファ</button><button id="addIndoorPlant" class="esm">＋観葉植物</button></div>
+        <div class="erow"><button id="addDiningTable" class="esm">＋テーブル</button><button id="addWorkDesk" class="esm">＋デスク</button><button id="addBookshelf" class="esm">＋本棚</button><button id="addCounterBar" class="esm">＋カウンター</button></div>
+        <div class="ehint">コンテナを左ドラッグ＝移動／何もない所を左ドラッグ＝視点回転・右ドラッグ＝平行移動・ホイール＝ズーム。選んだコンテナはサイズ/向き/色/業種を左の小窓で変更。</div>
+      </div>
+      <div style="display:none">
+        <input id="use" value="テイクアウトカフェ">
+        <div id="grade"><button data-g="ume" class="on">梅</button></div>
+        <input id="sw" type="number" value="16"><input id="sd" type="number" value="16">
+        <textarea id="notes"></textarea>
+        <div id="exchips"></div>
+        <input id="exnew"><button id="exaddbtn"></button>
+        <button id="go"></button>
+        <div id="err"></div>
+        <textarea id="json" spellcheck="false"></textarea>
+        <button id="render"></button>
+        <button id="sample"></button>
+      </div>
+    </div>
+  </aside>
   <div id="view">
     <div id="status">準備中…</div>
     <button id="walkBtn">🚶 中に入る</button>
@@ -131,43 +168,6 @@
       <div class="ig ibtnrow"><button id="fispDup">複製</button><button id="fispDel" class="del">削除</button></div>
     </div>
   </div>
-  <aside id="panel">
-    <header>
-      <h1>CONTAINER DESIGN STUDIO</h1>
-      <p>コンテナを配置して3D設計を確認できます。<br>コンテナは規格寸法(20/40ft)で破綻なく組まれます。</p>
-    </header>
-    <div class="body">
-      <div class="etool">
-        <button id="addC" class="ebig">＋ コンテナを置く</button>
-        <button id="autoDecorate" class="ebig" style="margin-top:8px;background:linear-gradient(90deg,#2b7a78,#3f8a8a)">✨ おまかせ装飾（一括生成）</button>
-        <button id="undoBtn" class="ebig" style="margin-top:8px;background:#1a222b;border:1px solid var(--line);font-size:12px">↩ 元に戻す (⌘Z / Ctrl+Z)</button>
-        <div class="erow"><button id="addDeck" class="esm">＋ウッドデッキ</button><button id="addStair" class="esm">＋階段(2F)</button><button id="addStair3" class="esm">＋階段(3F)</button><button id="addRail" class="esm">＋手すり</button></div>
-        <div class="erow"><button id="addRoof" class="esm">＋屋上デッキ</button><button id="addBridge" class="esm">＋橋</button><button id="addCanopy" class="esm">＋連結屋根</button><button id="addChimney" class="esm">＋煙突</button></div>
-        <div class="erow"><button id="makeLoop" class="esm" style="flex:1">🔁 回遊化（屋上＋橋＋階段を自動生成）</button></div>
-        <div class="ehint" style="margin-top:8px;padding-top:6px;border-top:1px solid var(--line)">■ 外構・植栽</div>
-        <div class="erow"><button id="addTreePine" class="esm">＋松の木</button><button id="addTreePalm" class="esm">＋ヤシの木</button><button id="addTreeBamboo" class="esm">＋竹</button><button id="addLampPost" class="esm">＋街灯</button></div>
-        <div class="erow"><button id="addPlanter" class="esm">＋プランター</button><button id="addFirePit" class="esm">＋焚き火</button><button id="addVending" class="esm">＋自販機</button></div>
-        <div class="erow"><button id="addBike" class="esm">＋自転車</button><button id="addCar" class="esm">＋自動車</button></div>
-        <div class="ehint" style="margin-top:8px;padding-top:6px;border-top:1px solid var(--line)">■ 内装・家具</div>
-        <div class="erow"><button id="addChair" class="esm">＋椅子</button><button id="addBarStool" class="esm">＋バーチェア</button><button id="addSofa" class="esm">＋ソファ</button><button id="addIndoorPlant" class="esm">＋観葉植物</button></div>
-        <div class="erow"><button id="addDiningTable" class="esm">＋テーブル</button><button id="addWorkDesk" class="esm">＋デスク</button><button id="addBookshelf" class="esm">＋本棚</button><button id="addCounterBar" class="esm">＋カウンター</button></div>
-        <div class="ehint">コンテナを左ドラッグ＝移動／何もない所を左ドラッグ＝視点回転・右ドラッグ＝平行移動・ホイール＝ズーム。選んだコンテナはサイズ/向き/色/業種を左の小窓で変更。</div>
-      </div>
-      <div style="display:none">
-        <input id="use" value="テイクアウトカフェ">
-        <div id="grade"><button data-g="ume" class="on">梅</button></div>
-        <input id="sw" type="number" value="16"><input id="sd" type="number" value="16">
-        <textarea id="notes"></textarea>
-        <div id="exchips"></div>
-        <input id="exnew"><button id="exaddbtn"></button>
-        <button id="go"></button>
-        <div id="err"></div>
-        <textarea id="json" spellcheck="false"></textarea>
-        <button id="render"></button>
-        <button id="sample"></button>
-      </div>
-    </div>
-  </aside>
 </div>
 
 <script type="importmap">
