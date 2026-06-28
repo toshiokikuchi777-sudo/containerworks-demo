@@ -39,6 +39,8 @@
   .ipanel .ibtnrow{display:flex;gap:6px;margin-top:11px}
   .ipanel .ibtnrow button{flex:1;background:#1a222b;border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:8px;font-size:12px;cursor:pointer;font-weight:600;font-family:inherit}
   .ipanel .ibtnrow .del{background:#3a1a1a;border-color:#5a2a2a;color:#ff8a7a}
+  .efbtn{flex:1;background:#0b0f14;border:1px solid var(--line);color:var(--sub);border-radius:6px;padding:5px 3px;font-size:10px;cursor:pointer;font-family:inherit}
+  .efbtn.on{background:var(--accent);border-color:var(--accent);color:#06222b;font-weight:700}
   .etool{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:14px;background:#0d1218}
   .etool .ebig{width:100%;background:var(--red);color:#fff;border:0;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
   .etool .erow{display:flex;gap:6px;margin-top:8px}
@@ -121,6 +123,11 @@
       <div class="ig" id="fOpenRow" style="display:none"><label>開放する辺（橋/階段の接続口）</label><div class="ib" data-g="openSide"><button data-v="front">前</button><button data-v="back">後</button><button data-v="left">左</button><button data-v="right">右</button></div></div>
       <div class="ig" id="fBridgeRow" style="display:none"><label>つなぐコンテナ（A → B）</label><div class="ib"><select id="fBrA"></select><select id="fBrB"></select></div></div>
       <div class="ig" id="fStairRow" style="display:none"><label>何階まで登るか</label><div class="ib" data-g="stairFloor"><button data-v="1">1階屋上(2F)</button><button data-v="2">2階屋上(3F)</button></div></div>
+      <div class="ig" id="fRotRow" style="display:none"><label>回転</label><div class="ib irot"><input type="range" id="fRot" min="0" max="355" step="5"><span id="fRotV">0°</span></div></div>
+      <div class="ig" id="fElevRow" style="display:none"><label>高さ（地面から）</label>
+        <div class="ib irot"><input type="range" id="fElev" min="0" max="8" step="0.05"><span id="fElevV">0.00m</span></div>
+        <div class="ib" style="margin-top:5px;gap:4px"><button data-elev="0" class="efbtn">地面</button><button data-elev="0.42" class="efbtn">1F床</button><button data-elev="3.01" class="efbtn">2F床</button><button data-elev="5.6" class="efbtn">3F床</button></div>
+      </div>
       <div class="ig ibtnrow"><button id="fispDup">複製</button><button id="fispDel" class="del">削除</button></div>
     </div>
   </div>
@@ -826,7 +833,14 @@ function buildFromPlan(plan,keepView){
   building=new THREE.Group(); scene.add(building);
   G=building;
   (plan.modules||[]).forEach((m,i)=>buildModule(m,i));
-  (plan.site_features||[]).forEach((f,i)=>{ const g=new THREE.Group(); const pv=G; G=g; buildFeature(f); G=pv; g.userData.featIndex=i; building.add(g); }); // パーツも選択できるよう各々グループ化
+  (plan.site_features||[]).forEach((f,i)=>{ const g=new THREE.Group(); const pv=G; G=g; buildFeature(f); G=pv;
+    const rot=f.rot||0, elev=f.elev||0;
+    if(rot||elev){ // ピボット：各子を feature の x,z を基準にしたローカル座標へ変換してからグループを移動・回転
+      const cx=f.x||0, cz=f.z||0;
+      Array.from(g.children).forEach(c=>{ c.position.x-=cx; c.position.z-=cz; });
+      g.position.set(cx,elev,cz); g.rotation.y=(rot*Math.PI)/180;
+    } else { g.position.y=0; }
+    g.userData.featIndex=i; building.add(g); }); // パーツも選択できるよう各々グループ化
   G=scene;
   toonify(building);
   walkColliders=genColliders(plan);                       // ウォークモード用の壁当たり判定＋床高
@@ -1008,6 +1022,14 @@ function showInspector(){ const o=selObj(); if(!o){hideInspector();return;}
     const fsr=document.getElementById('fStairRow'); fsr.style.display=(o.type==='stair')?'block':'none';
     if(o.type==='stair'){ const curTop=o.top||(FOUND+H), curFloor=curTop>FOUND+H*1.5?2:1;
       fsr.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===curFloor)); }
+    // 回転・高さ（アンカー型以外すべて）
+    const isAnchor=(o.type==='rooftop-deck'||o.type==='bridge'||o.type==='canopy');
+    document.getElementById('fRotRow').style.display=isAnchor?'none':'block';
+    document.getElementById('fElevRow').style.display=isAnchor?'none':'block';
+    if(!isAnchor){
+      const rv=o.rot||0; document.getElementById('fRot').value=rv; document.getElementById('fRotV').textContent=rv+'°';
+      const ev=+(o.elev||0).toFixed(2); document.getElementById('fElev').value=ev; document.getElementById('fElevV').textContent=ev.toFixed(2)+'m';
+      document.getElementById('fElevRow').querySelectorAll('.efbtn').forEach(b=>b.classList.toggle('on',Math.abs(+(b.dataset.elev)-ev)<0.02)); }
     return; }
   finsp.style.display='none'; const m=o; insp.style.display='block';
   document.getElementById('ispId').textContent=m.id||('#'+selIndex);
@@ -1260,6 +1282,12 @@ document.getElementById('fBrA').addEventListener('change',brChange);
 document.getElementById('fBrB').addEventListener('change',brChange);
 document.getElementById('fW').addEventListener('input',e=>{ if(selKind!=='feat')return; const f=selObj(); if(!f)return; f.w=+e.target.value; document.getElementById('fWV').textContent=f.w+'m'; editorRebuild(); });   // 幅
 document.getElementById('fD').addEventListener('input',e=>{ if(selKind!=='feat')return; const f=selObj(); if(!f)return; f.d=+e.target.value; document.getElementById('fDV').textContent=f.d+'m'; editorRebuild(); });   // 奥行
+document.getElementById('fRot').addEventListener('input',e=>{ if(selKind!=='feat')return; const f=selObj(); if(!f)return; f.rot=+e.target.value; document.getElementById('fRotV').textContent=f.rot+'°'; editorRebuild(); });   // 回転
+document.getElementById('fElev').addEventListener('input',e=>{ if(selKind!=='feat')return; const f=selObj(); if(!f)return; f.elev=+e.target.value; document.getElementById('fElevV').textContent=(+e.target.value).toFixed(2)+'m';
+  document.getElementById('fElevRow').querySelectorAll('.efbtn').forEach(b=>b.classList.toggle('on',Math.abs(+(b.dataset.elev)-(+e.target.value))<0.02)); editorRebuild(); });   // 高さ
+document.getElementById('fElevRow').addEventListener('click',ev=>{ const b=ev.target.closest('.efbtn'); if(!b||selKind!=='feat')return; const f=selObj(); if(!f)return;
+  f.elev=+(b.dataset.elev); document.getElementById('fElev').value=f.elev; document.getElementById('fElevV').textContent=f.elev.toFixed(2)+'m';
+  document.getElementById('fElevRow').querySelectorAll('.efbtn').forEach(x=>x.classList.toggle('on',x===b)); editorRebuild(); });   // 階プリセット
 document.getElementById('addC').onclick=addContainer;
 document.getElementById('autoDecorate').onclick=autoDecorate;
 document.getElementById('undoBtn').onclick=undo;
