@@ -1445,7 +1445,12 @@ function updateWalk(){
 /* ============ LOOP ============ */
 function resize(){ const w=view.clientWidth,h=view.clientHeight; renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }
 addEventListener('resize',resize); resize();
-buildFromPlan(SAMPLE); _histSnap=JSON.parse(JSON.stringify(EP));
+buildFromPlan({
+  meta:{name:"新規プラン",grade:"ume",use:"cafe"},
+  site:{width:16,depth:16},
+  modules:[{id:"A",size:"20ft",x:0,z:0,level:0,rot:0,color:"red",faces:{front:"wall",back:"wall",right:"cargo",left:"wall"}}],
+  site_features:[]
+}); _histSnap=JSON.parse(JSON.stringify(EP));
 (function loop(){ requestAnimationFrame(loop); if(walkMode) updateWalk(); else controls.update(); renderer.render(scene,camera); })();
 </script>
 </body>
