@@ -15,7 +15,11 @@
   #walkBtn{position:absolute;left:14px;top:14px;z-index:5;background:var(--red);color:#fff;border:0;border-radius:9px;padding:10px 15px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.28)}
   #walkBtn:hover{filter:brightness(1.08)}
   #walkHint{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;display:none;background:rgba(10,14,18,.8);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;z-index:5;white-space:nowrap}
-  .ipanel{display:none;border-top:1px solid var(--line);padding:11px 0;color:var(--txt);margin-top:8px}
+  .ipanel{display:none;padding:8px 0;color:var(--txt);}
+  #izone{padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0;max-height:52vh;overflow-y:auto}
+  #inspPlaceholder{padding:14px 0;color:var(--sub);font-size:12px;text-align:center}
+  #camReset{position:absolute;right:14px;top:14px;z-index:5;background:rgba(10,14,18,.72);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;letter-spacing:.02em}
+  #camReset:hover{background:rgba(10,14,18,.92)}
   .ipanel .ihead{font-size:12px;font-weight:700;letter-spacing:.03em;margin-bottom:4px;display:flex;align-items:center;gap:5px}
   .ipanel .ihead span{margin-left:auto;cursor:pointer;color:var(--sub);font-size:16px;line-height:1}
   .ipanel .ig{margin-top:9px}
@@ -86,6 +90,51 @@
       <h1>CONTAINER DESIGN STUDIO</h1>
       <p>コンテナを配置して3D設計を確認できます。<br>コンテナは規格寸法(20/40ft)で破綻なく組まれます。</p>
     </header>
+    <div id="izone">
+      <div id="inspPlaceholder" style="">コンテナまたはパーツをクリックして選択</div>
+      <div id="insp" class="ipanel">
+        <div class="ihead">🚛 コンテナ <b id="ispId"></b><span id="ispClose">×</span></div>
+        <div class="ig"><label>サイズ</label><div class="ib" data-g="size"><button data-v="5ft">5ft</button><button data-v="15ft">15ft</button><button data-v="20ft">20ft</button><button data-v="40ft">40ft</button></div></div>
+        <div class="ig"><label>向き</label><div class="ib"><button data-act="flat">横置き</button><button data-act="stand">縦に立てる</button><button data-act="rot">回転90°</button></div></div>
+        <div class="ig"><label>回転（自由角度）</label><div class="ib irot"><input type="range" id="ispRot" min="0" max="355" step="5"><span id="ispRotV">0°</span></div></div>
+        <div class="ig"><label>段（積み木のように積む）</label><div class="ib"><button data-act="lvdn">▼ 下げる</button><span id="ispLv" class="lvtxt">段 1</span><button data-act="lvup">▲ 上げる</button></div></div>
+        <div class="ig"><label>編集する面</label><div class="ib" data-g="faceSel"><button data-v="front">正面</button><button data-v="back">背面</button><button data-v="left">左</button><button data-v="right">右</button><button data-v="top">天面</button></div></div>
+        <div class="ig"><label>この面の地（壁/店舗/屋根…）</label><div class="ib" data-g="ftype"><button data-v="wall">壁</button><button data-v="storefront">ガラス店舗</button><button data-v="louver">ルーバー</button><button data-v="counter">大カウンター</button><button data-v="open">開口(全撤去)</button><button data-v="roof">屋根</button></div></div>
+        <div class="ig"><label>この面の開口（複数置ける）</label>
+          <div class="ib" id="opChips"></div>
+          <div class="ib" data-g="opAdd" style="margin-top:4px"><button data-v="window">＋窓</button><button data-v="door">＋扉</button><button data-v="counter">＋受渡し</button><button data-v="skylight">＋天窓</button></div></div>
+        <div class="ig" id="opOpts" style="display:none">
+          <label>選択中の開口：位置 / 幅 / 高さ / 下端</label>
+          <div class="ib irot"><span class="rl">位置</span><input type="range" id="opU" min="0" max="1" step="0.02"><span id="opUV">中央</span></div>
+          <div class="ib irot"><span class="rl">幅</span><input type="range" id="opW" min="0.4" max="4" step="0.05"><span id="opWV">2.0m</span></div>
+          <div class="ib irot" id="opHrow"><span class="rl">高さ</span><input type="range" id="opH" min="0.3" max="2.4" step="0.05"><span id="opHV">0.6m</span></div>
+          <div class="ib irot" id="opSrow"><span class="rl">下端</span><input type="range" id="opSill" min="0" max="2" step="0.05"><span id="opSillV">1.10m</span></div>
+          <div class="ib" data-g="opShape" style="margin-top:4px"><button data-v="strip">横長</button><button data-v="square">四角</button></div>
+          <div class="ib" data-g="opStyle" style="margin-top:4px"><button data-v="double">観音</button><button data-v="single">普通</button><button data-v="sliding">スライド</button><button data-v="marine">マリン</button></div>
+          <div class="ib" data-g="opAwn" style="margin-top:4px"><button data-v="awn" id="opAwnBtn">☂ ひさし（日除け）</button></div>
+          <div class="ib ibtnrow" style="margin-top:4px"><button id="opDel" class="del">この開口を削除</button></div>
+        </div>
+        <div class="ig"><label>色</label><div class="ib swrow" id="ispCol"></div></div>
+        <div class="ig"><label>業種（選ぶと内装を自動配置）</label><select id="ispUse"><option value="">— 選択 —</option><option value="飲食">飲食店（厨房あり）</option><option value="カフェ">カフェ（軽飲食）</option><option value="物販">物販・雑貨</option><option value="WS">ワークショップ・体験</option><option value="管理">管理・事務所</option><option value="トイレ">トイレ・倉庫</option></select></div>
+        <div class="ig ibtnrow"><button id="ispDup">複製</button><button id="ispDel" class="del">削除</button></div>
+      </div>
+      <div id="finsp" class="ipanel">
+        <div class="ihead">🧩 パーツ：<b id="fispType"></b><span id="fispClose">×</span></div>
+        <div class="ehint" id="fispHint" style="margin:6px 0 2px">左ドラッグで移動できます。</div>
+        <div class="ig" id="fSizeRow" style="display:none"><label>大きさ（幅 / 奥行）</label>
+          <div class="ib irot"><span class="rl">幅</span><input type="range" id="fW" min="1" max="14" step="0.5"><span id="fWV">5m</span></div>
+          <div class="ib irot" id="fDRow"><span class="rl">奥行</span><input type="range" id="fD" min="0.5" max="14" step="0.5"><span id="fDV">2.4m</span></div></div>
+        <div class="ig" id="fOpenRow" style="display:none"><label>開放する辺</label><div class="ib" data-g="openSide"><button data-v="front">前</button><button data-v="back">後</button><button data-v="left">左</button><button data-v="right">右</button></div></div>
+        <div class="ig" id="fBridgeRow" style="display:none"><label>つなぐコンテナ（A → B）</label><div class="ib"><select id="fBrA"></select><select id="fBrB"></select></div></div>
+        <div class="ig" id="fStairRow" style="display:none"><label>何階まで登るか</label><div class="ib" data-g="stairFloor"><button data-v="1">1階屋上(2F)</button><button data-v="2">2階屋上(3F)</button></div></div>
+        <div class="ig" id="fRotRow" style="display:none"><label>回転</label><div class="ib irot"><input type="range" id="fRot" min="0" max="355" step="5"><span id="fRotV">0°</span></div></div>
+        <div class="ig" id="fElevRow" style="display:none"><label>高さ（地面から）</label>
+          <div class="ib irot"><input type="range" id="fElev" min="0" max="8" step="0.05"><span id="fElevV">0.00m</span></div>
+          <div class="ib" style="margin-top:5px;gap:4px"><button data-elev="0" class="efbtn">地面</button><button data-elev="0.42" class="efbtn">1F床</button><button data-elev="3.01" class="efbtn">2F床</button><button data-elev="5.6" class="efbtn">3F床</button></div>
+        </div>
+        <div class="ig ibtnrow"><button id="fispDup">複製</button><button id="fispDel" class="del">削除</button></div>
+      </div>
+    </div>
     <div class="body">
       <div class="etool">
         <button id="addC" class="ebig">＋ コンテナを置く</button>
@@ -116,54 +165,12 @@
         <button id="render"></button>
         <button id="sample"></button>
       </div>
-      <div id="inspPlaceholder" style="padding:16px 0;color:var(--sub);font-size:12px;text-align:center;border-top:1px solid var(--line);margin-top:8px">コンテナまたはパーツをクリックして選択</div>
-      <div id="insp" class="ipanel">
-        <div class="ihead">🚛 コンテナ <b id="ispId"></b><span id="ispClose">×</span></div>
-        <div class="ig"><label>サイズ</label><div class="ib" data-g="size"><button data-v="5ft">5ft</button><button data-v="15ft">15ft</button><button data-v="20ft">20ft</button><button data-v="40ft">40ft</button></div></div>
-        <div class="ig"><label>向き</label><div class="ib"><button data-act="flat">横置き</button><button data-act="stand">縦に立てる</button><button data-act="rot">回転90°</button></div></div>
-        <div class="ig"><label>回転（自由角度）</label><div class="ib irot"><input type="range" id="ispRot" min="0" max="355" step="5"><span id="ispRotV">0°</span></div></div>
-        <div class="ig"><label>段（積み木のように積む）</label><div class="ib"><button data-act="lvdn">▼ 下げる</button><span id="ispLv" class="lvtxt">段 1</span><button data-act="lvup">▲ 上げる</button></div></div>
-        <div class="ig"><label>編集する面</label><div class="ib" data-g="faceSel"><button data-v="front">正面</button><button data-v="back">背面</button><button data-v="left">左</button><button data-v="right">右</button><button data-v="top">天面</button></div></div>
-        <div class="ig"><label>この面の地（壁/店舗/屋根…）</label><div class="ib" data-g="ftype"><button data-v="wall">壁</button><button data-v="storefront">ガラス店舗</button><button data-v="louver">ルーバー</button><button data-v="counter">大カウンター</button><button data-v="open">開口(全撤去)</button><button data-v="roof">屋根</button></div></div>
-        <div class="ig"><label>この面の開口（複数置ける）</label>
-          <div class="ib" id="opChips"></div>
-          <div class="ib" data-g="opAdd" style="margin-top:4px"><button data-v="window">＋窓</button><button data-v="door">＋扉</button><button data-v="counter">＋受渡し</button><button data-v="skylight">＋天窓</button></div></div>
-        <div class="ig" id="opOpts" style="display:none">
-          <label>選択中の開口：位置 / 幅 / 高さ / 下端</label>
-          <div class="ib irot"><span class="rl">位置</span><input type="range" id="opU" min="0" max="1" step="0.02"><span id="opUV">中央</span></div>
-          <div class="ib irot"><span class="rl">幅</span><input type="range" id="opW" min="0.4" max="4" step="0.05"><span id="opWV">2.0m</span></div>
-          <div class="ib irot" id="opHrow"><span class="rl">高さ</span><input type="range" id="opH" min="0.3" max="2.4" step="0.05"><span id="opHV">0.6m</span></div>
-          <div class="ib irot" id="opSrow"><span class="rl">下端</span><input type="range" id="opSill" min="0" max="2" step="0.05"><span id="opSillV">1.10m</span></div>
-          <div class="ib" data-g="opShape" style="margin-top:4px"><button data-v="strip">横長</button><button data-v="square">四角</button></div>
-          <div class="ib" data-g="opStyle" style="margin-top:4px"><button data-v="double">観音</button><button data-v="single">普通</button><button data-v="sliding">スライド</button><button data-v="marine">マリン</button></div>
-          <div class="ib" data-g="opAwn" style="margin-top:4px"><button data-v="awn" id="opAwnBtn">☂ ひさし（日除け）</button></div>
-          <div class="ib ibtnrow" style="margin-top:4px"><button id="opDel" class="del">この開口を削除</button></div>
-        </div>
-        <div class="ig"><label>色</label><div class="ib swrow" id="ispCol"></div></div>
-        <div class="ig"><label>業種（選ぶと内装を自動配置）</label><select id="ispUse"><option value="">— 選択 —</option><option value="飲食">飲食店（厨房あり）</option><option value="カフェ">カフェ（軽飲食）</option><option value="物販">物販・雑貨</option><option value="WS">ワークショップ・体験</option><option value="管理">管理・事務所</option><option value="トイレ">トイレ・倉庫</option></select></div>
-        <div class="ig ibtnrow"><button id="ispDup">複製</button><button id="ispDel" class="del">削除</button></div>
-      </div>
-      <div id="finsp" class="ipanel">
-        <div class="ihead">🧩 パーツ：<b id="fispType"></b><span id="fispClose">×</span></div>
-        <div class="ehint" id="fispHint" style="margin:6px 0 2px">左ドラッグで移動できます。階段は近くのコンテナに合わせて高さが付きます。</div>
-        <div class="ig" id="fSizeRow" style="display:none"><label>大きさ（幅 / 奥行）</label>
-          <div class="ib irot"><span class="rl">幅</span><input type="range" id="fW" min="1" max="14" step="0.5"><span id="fWV">5m</span></div>
-          <div class="ib irot" id="fDRow"><span class="rl">奥行</span><input type="range" id="fD" min="0.5" max="14" step="0.5"><span id="fDV">2.4m</span></div></div>
-        <div class="ig" id="fOpenRow" style="display:none"><label>開放する辺（橋/階段の接続口）</label><div class="ib" data-g="openSide"><button data-v="front">前</button><button data-v="back">後</button><button data-v="left">左</button><button data-v="right">右</button></div></div>
-        <div class="ig" id="fBridgeRow" style="display:none"><label>つなぐコンテナ（A → B）</label><div class="ib"><select id="fBrA"></select><select id="fBrB"></select></div></div>
-        <div class="ig" id="fStairRow" style="display:none"><label>何階まで登るか</label><div class="ib" data-g="stairFloor"><button data-v="1">1階屋上(2F)</button><button data-v="2">2階屋上(3F)</button></div></div>
-        <div class="ig" id="fRotRow" style="display:none"><label>回転</label><div class="ib irot"><input type="range" id="fRot" min="0" max="355" step="5"><span id="fRotV">0°</span></div></div>
-        <div class="ig" id="fElevRow" style="display:none"><label>高さ（地面から）</label>
-          <div class="ib irot"><input type="range" id="fElev" min="0" max="8" step="0.05"><span id="fElevV">0.00m</span></div>
-          <div class="ib" style="margin-top:5px;gap:4px"><button data-elev="0" class="efbtn">地面</button><button data-elev="0.42" class="efbtn">1F床</button><button data-elev="3.01" class="efbtn">2F床</button><button data-elev="5.6" class="efbtn">3F床</button></div>
-        </div>
-        <div class="ig ibtnrow"><button id="fispDup">複製</button><button id="fispDel" class="del">削除</button></div>
-      </div>
     </div>
   </aside>
   <div id="view">
     <div id="status">準備中…</div>
     <button id="walkBtn">🚶 中に入る</button>
+    <button id="camReset">⟳ リセット</button>
     <div id="walkHint">WASD / 矢印キー：移動　・　画面ドラッグ：見回す　・　ESC：設計に戻る</div>
   </div>
 </div>
@@ -196,13 +203,14 @@ scene.add(new THREE.HemisphereLight(0xeef1f4,0x595960,0.55));
 scene.add(new THREE.AmbientLight(0xffffff,0.4));
 const sun=new THREE.DirectionalLight(0xffffff,1.6); sun.position.set(18,26,12); sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.near=1; sun.shadow.camera.far=120;
-sun.shadow.camera.left=-40; sun.shadow.camera.right=40; sun.shadow.camera.top=40; sun.shadow.camera.bottom=-40;
+sun.shadow.camera.left=-40; sun.shadow.camera.right=40; sun.shadow.camera.top=40; sun.shadow.camera.bottom=-40; sun.shadow.bias=-0.001;
 scene.add(sun);
 const fill=new THREE.DirectionalLight(0xcdd6de,0.32); fill.position.set(-14,10,-10); scene.add(fill);
 
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(300,300),new THREE.MeshStandardMaterial({color:0xd7ddd9,roughness:0.97}));
 ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
 const grid=new THREE.GridHelper(120,120,0xc3c3bf,0xcdcdc9); grid.position.y=0.012; grid.material.transparent=true; grid.material.opacity=0.18; scene.add(grid);
+const gridMaj=new THREE.GridHelper(120,20,0x4fb6d6,0x4fb6d6); gridMaj.position.y=0.015; gridMaj.material.transparent=true; gridMaj.material.opacity=0.07; scene.add(gridMaj);
 
 /* ============ MATERIALS（既存index.htmlのパレットを踏襲）============ */
 const _grad=(s=>{const a=new Uint8Array(s);for(let i=0;i<s;i++)a[i]=Math.round(255*(i/(s-1)));const t=new THREE.DataTexture(a,s,1,THREE.RedFormat);t.needsUpdate=true;t.minFilter=t.magFilter=THREE.NearestFilter;return t;})(3);
@@ -953,7 +961,11 @@ function groundPoint(ev){ const r=renderer.domElement.getBoundingClientRect();
   _ray.setFromCamera(_m,camera); const t=-_ray.ray.origin.y/_ray.ray.direction.y; if(t<=0) return null;
   return _ray.ray.origin.clone().addScaledVector(_ray.ray.direction,t); }
 function refreshSelection(){ if(selBox){scene.remove(selBox);selBox=null;}
-  if(!selObj()){ hideInspector(); return; }
+  const st=document.getElementById('status');
+  if(!selObj()){ hideInspector(); if(st) st.textContent='コンテナをクリックして選択 / ドラッグで移動'; return; }
+  const o=selObj();
+  if(st){ if(selKind==='mod') st.textContent=`選択中: ${o.size||'20ft'} コンテナ #${o.id} — Delete:削除 ⌘D:複製`;
+    else st.textContent=`選択中: パーツ [${o.type}] — Delete:削除 ⌘D:複製`; }
   const key=selKind==='feat'?'featIndex':'modIndex'; let grp=null;
   building.children.forEach(c=>{ if(c.userData[key]===selIndex) grp=c; });
   if(grp){ try{ selBox=new THREE.BoxHelper(grp,0xffd23f); selBox.material.depthTest=false; scene.add(selBox);}catch(e){} }
@@ -1186,7 +1198,7 @@ renderer.domElement.addEventListener('pointerdown',ev=>{ if(walkMode||ev.button!
   const o=pickObject(ev);
   if(o){ ev.stopPropagation(); select(o.kind,o.index); dragging=true; dragMoved=false; controls.enabled=false; }
   else deselect(); }, true);
-renderer.domElement.addEventListener('pointermove',ev=>{ if(walkMode||!dragging) return; const o=selObj(); if(!o) return;
+renderer.domElement.addEventListener('pointermove',ev=>{ if(!walkMode&&!dragging){ const h=pickObject(ev); renderer.domElement.style.cursor=h?'pointer':'default'; } if(walkMode||!dragging) return; const o=selObj(); if(!o) return;
   if(o.type==='rooftop-deck'||o.type==='bridge'||o.type==='canopy') return;   // anchor部品は親コンテナ追従＝直接移動不可
   const p=groundPoint(ev); if(!p) return;
   const nx=Math.round(p.x/0.5)*0.5, nz=Math.round(p.z/0.5)*0.5;
@@ -1292,8 +1304,13 @@ document.getElementById('fStairRow').addEventListener('click',ev=>{
 /* ============ WALK MODE（アバターで中に入って歩く）============ */
 let walkColliders=[], walkFloors=[], walkRamps=[], walkMode=false, avatar=null, camYaw=Math.PI, camPitch=0.16, _spawn={x:0,z:6}, _moving=0, _walkPhase=0;
 const keys={};
-addEventListener('keydown',e=>{ keys[e.code]=true; if(e.code==='Escape'){ if(walkMode) exitWalk(); else if(connectPick) exitConnectPick(); }
+function deleteSelected(){ const o=selObj(); if(!o) return; if(selKind==='mod') EP.modules.splice(selIndex,1); else (EP.site_features||[]).splice(selIndex,1); deselect(); editorRebuild(); }
+addEventListener('keydown',e=>{
+  keys[e.code]=true;
+  if(e.code==='Escape'){ if(walkMode) exitWalk(); else if(connectPick) exitConnectPick(); else deselect(); }
   if((e.ctrlKey||e.metaKey)&&e.code==='KeyZ'&&!walkMode){e.preventDefault();undo();return;}
+  if(!walkMode&&(e.code==='Delete'||e.code==='Backspace')&&selObj()&&e.target.tagName!=='INPUT'&&e.target.tagName!=='TEXTAREA'&&e.target.tagName!=='SELECT'){ e.preventDefault(); deleteSelected(); }
+  if(!walkMode&&(e.ctrlKey||e.metaKey)&&e.code==='KeyD'&&selObj()){ e.preventDefault(); const btn=selKind==='mod'?document.getElementById('ispDup'):document.getElementById('fispDup'); if(btn) btn.click(); }
   if(walkMode&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault(); });
 addEventListener('keyup',e=>{ keys[e.code]=false; });
 
@@ -1378,6 +1395,7 @@ function exitWalk(){ walkMode=false; controls.enabled=true; if(avatar)avatar.vis
   document.getElementById('walkBtn').textContent='🚶 中に入る'; document.getElementById('walkHint').style.display='none';
   try{ buildFromPlan(JSON.parse(document.getElementById('json').value)); }catch(e){} }
 document.getElementById('walkBtn').onclick=()=>{ walkMode?exitWalk():enterWalk(); };
+document.getElementById('camReset').onclick=()=>{ if(EP&&building){ const box3=new THREE.Box3().setFromObject(building); const c=box3.getCenter(new THREE.Vector3()),sz=box3.getSize(new THREE.Vector3()); controls.target.set(c.x,Math.max(1.6,sz.y*0.45),c.z); const r=Math.max(sz.x,sz.z,6); camera.position.set(c.x+r*1.1,sz.y*0.9+6,c.z+r*1.25); controls.update(); } else { camera.position.set(16,12,20); controls.target.set(0,1.6,0); controls.update(); } };
 
 // 見回し（ウォーク中のドラッグ）
 let _drag=false,_px=0,_py=0;
