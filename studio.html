@@ -1633,15 +1633,15 @@ const PRESETS={
      A: x[-7.03,-0.97] z[-2.72,-0.28]  B: x[0.97,7.03] z[-2.72,-0.28]
   ═══════════════════════════════════════════════════════════════════════════ */
   cafe:{
-    meta:{name:'COFFEE WORKS'},
+    meta:{name:'COFFEE WORKS',time:'morning'},
     site:{width:20,depth:16},
     modules:[
-      /* バリスタサイド：内部はキッチン＋カウンター、前面にカウンター窓 */
-      {id:'A',size:'20ft',x:-4.0,z:-1.5,level:0,rot:0,color:'white',
+      /* バリスタサイド：キッチン＋カウンター。カウンター窓には庇（awn）付き */
+      {id:'A',size:'20ft',x:-4.0,z:-1.5,level:0,rot:0,color:'charcoal',
         faces:{
           front:{base:'wall',openings:[
-            {type:'counter',u:0.42,w:3.5,h:0.88,sill:0.84},
-            {type:'window',u:0.88,w:0.7,h:0.9,sill:1.35}
+            {type:'counter',u:0.42,w:3.5,h:0.88,sill:0.84,awn:true},
+            {type:'window',u:0.88,w:0.7,h:0.9,sill:1.35,awn:true}
           ]},
           back:'wall',left:'cargo',right:'cargo'
         },
@@ -1651,8 +1651,8 @@ const PRESETS={
           {family:'shelf',x:2.4,z:-0.62,w:1.0,d:0.28},
           {family:'plant',x:2.7,z:0.55,s:0.65}
         ]}},
-      /* イートイン＆ディスプレイサイド：棚＋バースツール、前面ストアフロント */
-      {id:'B',size:'20ft',x:4.0,z:-1.5,level:0,rot:0,color:'sand',
+      /* イートイン＆ディスプレイサイド：全面ガラス＋バースツール＋棚 */
+      {id:'B',size:'20ft',x:4.0,z:-1.5,level:0,rot:0,color:'orange',
         faces:{
           front:'storefront',
           back:{base:'wall',openings:[
@@ -1669,26 +1669,28 @@ const PRESETS={
     ],
     site_features:[
       {type:'canopy',a:'A',b:'B'},
-      {type:'deck',x:0,z:2.8,w:16.0,d:3.5,y:0.42},
-      {type:'pergola',x:0,z:3.0,w:9.0,d:3.0,y:0.42},
-      {type:'bench',x:-5.2,z:4.0,w:1.6,d:0.5},
-      {type:'bench',x:5.2,z:4.0,w:1.6,d:0.5},
-      {type:'bench',x:-1.5,z:4.0,w:1.6,d:0.5},
-      {type:'bench',x:1.5,z:4.0,w:1.6,d:0.5},
+      {type:'deck',x:0,z:3.0,w:16.0,d:4.0,y:0.42},
+      {type:'pergola',x:0,z:3.2,w:9.0,d:3.5,y:0.42},
+      {type:'terrace',x:-2.0,z:5.8,w:4.0,d:2.0},
+      {type:'bench',x:-5.5,z:4.2,w:1.6,d:0.5},
+      {type:'bench',x:5.5,z:4.2,w:1.6,d:0.5},
+      {type:'bench',x:-1.5,z:4.2,w:1.6,d:0.5},
+      {type:'bench',x:1.5,z:4.2,w:1.6,d:0.5},
       {type:'sign',x:0,z:-4.0,y:3.2,text:'COFFEE WORKS',size:0.82,bg:'#c0392b'},
-      {type:'lamp_post',x:-8.5,z:5.2,h:3.8},
-      {type:'lamp_post',x:8.5,z:5.2,h:3.8},
+      {type:'lamp_post',x:-8.5,z:5.5,h:3.8},
+      {type:'lamp_post',x:8.5,z:5.5,h:3.8},
       {type:'lamp_post',x:-8.5,z:-4.2,h:3.8},
       {type:'lamp_post',x:8.5,z:-4.2,h:3.8},
-      {type:'planter_box',x:-7.0,z:3.0,w:1.2,d:0.5},
-      {type:'planter_box',x:7.0,z:3.0,w:1.2,d:0.5},
-      {type:'planter_box',x:-2.5,z:5.5,w:0.8,d:0.4},
-      {type:'planter_box',x:2.5,z:5.5,w:0.8,d:0.4},
-      {type:'tree_bamboo',x:-9.0,z:-3.8,s:1.3},
-      {type:'tree_bamboo',x:9.0,z:-3.8,s:1.1},
-      {type:'tree_bamboo',x:-9.0,z:3.5,s:1.0},
-      {type:'bike',x:7.5,z:5.8},
-      {type:'bike',x:8.3,z:5.8}
+      {type:'planter_box',x:-7.0,z:3.2,w:1.2,d:0.5},
+      {type:'planter_box',x:7.0,z:3.2,w:1.2,d:0.5},
+      {type:'planter_box',x:-2.5,z:6.5,w:0.8,d:0.4},
+      {type:'planter_box',x:2.5,z:6.5,w:0.8,d:0.4},
+      {type:'tree_bamboo',x:-9.0,z:-4.0,s:1.3},
+      {type:'tree_bamboo',x:9.0,z:-4.0,s:1.1},
+      {type:'tree_bamboo',x:-9.0,z:3.8,s:1.0},
+      {type:'tree_bamboo',x:9.0,z:5.0,s:0.9},
+      {type:'bike',x:7.5,z:6.2},
+      {type:'bike',x:8.3,z:6.2}
     ]},
 
   /* ═══════════════════════════════════════════════════════════════════════════
@@ -1699,7 +1701,7 @@ const PRESETS={
      A(40ft): x[-6.095,6.095] z[-4.22,-1.78]   B(20ft): x[-3.03,3.03] z[1.78,4.22]
   ═══════════════════════════════════════════════════════════════════════════ */
   villa:{
-    meta:{name:'FOREST VILLA'},
+    meta:{name:'FOREST VILLA',time:'evening'},
     site:{width:28,depth:24},
     modules:[
       /* LDKコンテナ：大窓+スライドドア+後方小窓、内部にキッチン・ダイニング・リビング */
@@ -1745,7 +1747,7 @@ const PRESETS={
     site_features:[
       {type:'deck',x:0,z:-0.4,w:11.0,d:3.0,y:0.42},
       {type:'bridge',a:'A',b:'B'},
-      {type:'stair',x:7.2,z:-3.0,dir:'-x',d:3.0,top:2.59,land:'A'},
+      {type:'stair',x:7.2,z:-3.0,dir:'-x',d:3.0,top:3.01,land:'A'},
       {type:'rooftop-deck',on:'A',openSides:['right']},
       {type:'pergola',x:0,z:9.5,w:9.0,d:3.8,y:0.42},
       {type:'fire_pit',x:-5.5,z:9.0},
@@ -1761,10 +1763,10 @@ const PRESETS={
       {type:'tree_pine',x:-11.5,z:-5.5,s:1.3},
       {type:'tree_pine',x:12.0,z:4.5,s:1.1},
       {type:'tree_pine',x:-12.0,z:2.5,s:1.0},
+      {type:'tree_pine',x:-5.0,z:11.5,s:1.2},
+      {type:'tree_pine',x:5.0,z:11.5,s:1.0},
       {type:'tree_bamboo',x:-11.5,z:6.0,s:1.6},
       {type:'tree_bamboo',x:11.5,z:9.5,s:1.3},
-      {type:'tree_palm',x:-5.0,z:11.5,s:1.1},
-      {type:'tree_palm',x:5.0,z:11.5,s:1.2},
       {type:'planter_box',x:-5.0,z:-0.4,w:1.0,d:0.5},
       {type:'planter_box',x:5.0,z:-0.4,w:1.0,d:0.5},
       {type:'car',x:-8.0,z:-10.0,col:'white'}
@@ -1778,7 +1780,7 @@ const PRESETS={
      A(20ft): x[-3.03,3.03] z[-3.22,-0.78]  B(10ft): x[-1.495,1.495] z[1.005,3.995]
   ═══════════════════════════════════════════════════════════════════════════ */
   sauna:{
-    meta:{name:'FOREST SAUNA'},
+    meta:{name:'FOREST SAUNA',time:'night'},
     site:{width:16,depth:14},
     modules:[
       /* サウナ室：ドア1枚のみ、内部は全面ベンチ */
@@ -1793,8 +1795,7 @@ const PRESETS={
           {family:'counter',x:0,z:-0.62,w:4.8,d:0.62},
           {family:'seating',x:0,z:-0.55,n:5},
           {family:'counter',x:0,z:0.35,w:3.6,d:0.52},
-          {family:'seating',x:0,z:0.35,n:4},
-          {family:'plant',x:2.6,z:0.6,s:0.5}
+          {family:'seating',x:0,z:0.35,n:4}
         ]}},
       /* 脱衣・シャワー室：棚＋スツール */
       {id:'B',size:'10ft',x:0,z:2.5,level:0,rot:0,color:'timber',
@@ -1814,6 +1815,7 @@ const PRESETS={
     site_features:[
       {type:'chimney',x:2.2,z:-2.0,y:3.01,h:2.8},
       {type:'deck',x:0,z:0.3,w:6.0,d:2.8,y:0.42},
+      {type:'pergola',x:0,z:0.3,w:5.5,d:2.5,y:0.42},
       {type:'fire_pit',x:5.2,z:2.0},
       {type:'bench',x:-2.0,z:0.3,w:1.4,d:0.5},
       {type:'bench',x:2.5,z:0.3,w:1.4,d:0.5},
@@ -1840,7 +1842,7 @@ const PRESETS={
      B(20ft lv1): x[-3.03,3.03] z[1.78,4.22]
   ═══════════════════════════════════════════════════════════════════════════ */
   shop:{
-    meta:{name:'SELECT WORKS'},
+    meta:{name:'SELECT WORKS',time:'noon'},
     site:{width:22,depth:18},
     modules:[
       /* 1Fメインフロア：全面ガラス、内部に棚×3+試着台+レジカウンター */
@@ -1863,7 +1865,7 @@ const PRESETS={
           {family:'plant',x:-5.6,z:-0.5,s:0.75}
         ]}},
       /* 2Fギャラリー＆オフィス：帯窓＋内部にデスク・棚・植物 */
-      {id:'B',size:'20ft',x:0,z:4.0,level:1,rot:0,color:'white',
+      {id:'B',size:'20ft',x:0,z:4.0,level:1,rot:0,color:'teal',
         faces:{
           front:{base:'wall',openings:[
             {type:'window',u:0.18,w:2.2,h:1.3,sill:0.88,shape:'strip'},
@@ -1883,7 +1885,7 @@ const PRESETS={
     ],
     site_features:[
       {type:'canopy',a:'A',b:'B'},
-      {type:'stair',x:3.5,z:1.5,dir:'+z',d:2.4,top:2.59,land:'B'},
+      {type:'stair',x:2.5,z:1.5,dir:'+z',d:2.4,top:3.01,land:'B'},
       {type:'pergola',x:0,z:7.5,w:10.0,d:3.0,y:0.42},
       {type:'sign',x:0,z:-4.0,y:3.5,text:'SELECT WORKS',size:0.85,bg:'#1d1d22'},
       {type:'lamp_post',x:-9.5,z:6.5,h:3.8},
@@ -1910,7 +1912,7 @@ const PRESETS={
      A(20ft): x[-5.03,1.03] z[-1.22,1.22]  B(15ft rot:90): x[3.78,6.22] z[-2.275,2.275]
   ═══════════════════════════════════════════════════════════════════════════ */
   workspace:{
-    meta:{name:'CREATIVE STUDIO'},
+    meta:{name:'CREATIVE STUDIO',time:'morning'},
     site:{width:18,depth:16},
     modules:[
       /* メインオフィス：前面ルーバー+背面帯窓、内部はデスク2台+棚+植物 */
@@ -1930,7 +1932,7 @@ const PRESETS={
           {family:'plant',x:2.7,z:0.55,s:0.6}
         ]}},
       /* ミーティングポッド：両面ルーバー+側面帯窓、内部に会議テーブル＋椅子 */
-      {id:'B',size:'15ft',x:5.0,z:0,level:0,rot:90,color:'white',
+      {id:'B',size:'15ft',x:5.0,z:0,level:0,rot:90,color:'grass',
         faces:{
           front:'louver',
           back:'louver',
@@ -1962,6 +1964,7 @@ const PRESETS={
       {type:'lamp_post',x:2.5,z:6.0,h:3.4},
       {type:'lamp_post',x:7.5,z:-1.0,h:3.4},
       {type:'bike',x:6.5,z:6.2},
+      {type:'car',x:-7.5,z:-6.5,col:'red'},
       {type:'sign',x:-2.0,z:-2.8,y:3.3,text:'CREATIVE STUDIO',size:0.68,bg:'#3f8a8a'}
     ]}
 
@@ -1970,6 +1973,7 @@ document.querySelectorAll('.preset-btn').forEach(btn=>btn.addEventListener('clic
   const p=PRESETS[btn.dataset.p]; if(!p)return;
   buildFromPlan(JSON.parse(JSON.stringify(p)));
   const ni=document.getElementById('planNameInput'); if(ni&&p.meta&&p.meta.name) ni.value=p.meta.name;
+  if(p.meta&&p.meta.time&&typeof applyTimeMood==='function') applyTimeMood(p.meta.time);
 }));
 
 /* ============ PRICE ESTIMATE ============ */
