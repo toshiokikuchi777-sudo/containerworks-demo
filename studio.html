@@ -134,7 +134,7 @@
   <aside id="panel">
     <header>
       <h1>CONTAINER DESIGN STUDIO</h1>
-      <p>制約を入力 → AIが<b>設計案(JSON)</b>を生成 → その場で3D化。<br>コンテナは規格寸法(20/40ft)で破綻なく組まれます。</p>
+      <p>コンテナを配置して3D設計を確認できます。<br>コンテナは規格寸法(20/40ft)で破綻なく組まれます。</p>
     </header>
     <div class="body">
       <div class="etool">
@@ -153,53 +153,19 @@
         <div class="erow"><button id="addDiningTable" class="esm">＋テーブル</button><button id="addWorkDesk" class="esm">＋デスク</button><button id="addBookshelf" class="esm">＋本棚</button><button id="addCounterBar" class="esm">＋カウンター</button></div>
         <div class="ehint">コンテナを左ドラッグ＝移動／何もない所を左ドラッグ＝視点回転・右ドラッグ＝平行移動・ホイール＝ズーム。選んだコンテナはサイズ/向き/色/業種を左の小窓で変更。</div>
       </div>
-      <label>用途</label>
-      <input id="use" value="テイクアウトカフェ" placeholder="例：カフェ＋オフィス、サウナ、ギャラリー">
-
-      <label>グレード（松竹梅＝規模感）</label>
-      <div class="seg" id="grade">
-        <button data-g="ume" class="on">梅 1棟</button>
-        <button data-g="take">竹 2棟</button>
-        <button data-g="matsu">松 3棟2階</button>
+      <div style="display:none">
+        <input id="use" value="テイクアウトカフェ">
+        <div id="grade"><button data-g="ume" class="on">梅</button></div>
+        <input id="sw" type="number" value="16"><input id="sd" type="number" value="16">
+        <textarea id="notes"></textarea>
+        <div id="exchips"></div>
+        <input id="exnew"><button id="exaddbtn"></button>
+        <button id="go"></button>
+        <div id="err"></div>
+        <textarea id="json" spellcheck="false"></textarea>
+        <button id="render"></button>
+        <button id="sample"></button>
       </div>
-
-      <label>敷地サイズ（間口 × 奥行 m）</label>
-      <div class="row">
-        <input id="sw" type="number" value="16" min="6" max="60">
-        <input id="sd" type="number" value="16" min="6" max="60">
-      </div>
-
-      <label>要望・条件（自由入力）</label>
-      <textarea id="notes" rows="3" placeholder="例：南面を全面ガラスで開放。2棟をL字に連結してテラスを囲む。屋上に上がれる外階段。"></textarea>
-      <div class="exchips" id="exchips"></div>
-      <div class="exadd">
-        <input id="exnew" placeholder="自分の参考例を追加…" maxlength="60">
-        <button class="ghost" id="exaddbtn">＋追加</button>
-      </div>
-      <div class="hint">チップをタップ → 要望欄に追記。よく使う条件は「＋追加」で保存できます（このブラウザに記憶）。</div>
-
-      <button id="go" class="primary">⚡ AIで設計案を生成</button>
-      <div id="err"></div>
-
-      <details open>
-        <summary>設計JSON（編集して「JSONで再描画」可）</summary>
-        <textarea id="json" rows="12" spellcheck="false"></textarea>
-        <div class="row" style="margin-top:8px">
-          <button class="ghost" id="render">JSONで再描画</button>
-          <button class="ghost" id="sample">サンプル読込</button>
-        </div>
-        <div class="hint">AIサーバ未接続でも、このJSONを編集すれば3Dは動きます（=決定的コア）。</div>
-      </details>
-
-      <details>
-        <summary>このエンジンが理解する語彙</summary>
-        <div style="margin-top:8px">
-          <span class="tag">module:20ft / 40ft</span><span class="tag">level 段積み</span><span class="tag">rot 向き</span>
-          <span class="tag">face: storefront / cargo / wall / windows / open</span>
-          <span class="tag">family: counter / seating / kitchen / desk / bed / bath / shelf / plant</span>
-          <span class="tag">feature: terrace / stair / tree / sign / pad</span>
-        </div>
-      </details>
     </div>
   </aside>
 </div>
