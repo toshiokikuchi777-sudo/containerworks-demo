@@ -16,7 +16,7 @@
   #walkBtn:hover{filter:brightness(1.08)}
   #walkHint{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;display:none;background:rgba(10,14,18,.8);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;z-index:5;white-space:nowrap}
   .ipanel{display:none;padding:8px 0;color:var(--txt);}
-  #izone{padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0;max-height:52vh;overflow-y:auto}
+  #izone{padding:12px 14px;overflow-y:auto;flex:1}
   #inspPlaceholder{padding:14px 0;color:var(--sub);font-size:12px;text-align:center}
   #camReset{position:absolute;right:14px;top:14px;z-index:5;background:rgba(10,14,18,.72);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;letter-spacing:.02em}
   #camReset:hover{background:rgba(10,14,18,.92)}
@@ -47,11 +47,12 @@
   .etool .erow{display:flex;gap:6px;margin-top:8px}
   .etool .erow .esm{flex:1;background:#1a222b;border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:8px 4px;font-size:11px;cursor:pointer;font-family:inherit}
   .etool .ehint{font-size:10px;color:#6f8090;margin-top:8px;line-height:1.5}
-  #panel{width:340px;background:var(--panel);color:var(--txt);display:flex;flex-direction:column;border-right:1px solid var(--line)}
-  #panel header{padding:16px 16px 10px;border-bottom:1px solid var(--line)}
-  #panel header h1{margin:0;font-size:14px;letter-spacing:.08em}
-  #panel header p{margin:4px 0 0;font-size:11px;color:var(--sub);line-height:1.5}
-  .body{padding:14px 16px;overflow-y:auto;flex:1}
+  #lpanel{width:260px;background:var(--panel);color:var(--txt);display:flex;flex-direction:column;border-right:1px solid var(--line)}
+  #lpanel header{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+  #lpanel header h1{margin:0;font-size:13px;letter-spacing:.08em}
+  #lpanel header p{margin:4px 0 0;font-size:10px;color:var(--sub);line-height:1.5}
+  #rpanel{width:220px;background:var(--panel);color:var(--txt);display:flex;flex-direction:column;border-left:1px solid var(--line)}
+  .body{padding:12px 12px;overflow-y:auto;flex:1}
   label{display:block;font-size:11px;color:var(--sub);margin:12px 0 5px;letter-spacing:.04em}
   input,select,textarea{width:100%;background:#0b0f14;border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit}
   textarea{resize:vertical;line-height:1.45;font-family:ui-monospace,Menlo,monospace;font-size:11px}
@@ -78,17 +79,17 @@
   .exadd input{flex:1}
   .exadd button{flex:0 0 auto;padding:8px 12px}
   #err{color:#ff8a7a;font-size:11px;margin-top:8px;white-space:pre-wrap;line-height:1.5}
-  @media(max-width:760px){ #panel{position:absolute;left:0;top:0;bottom:0;width:88%;max-width:340px;box-shadow:8px 0 30px rgba(0,0,0,.3)} }
+  @media(max-width:760px){ #lpanel{position:absolute;left:0;top:0;bottom:0;width:80%;max-width:260px;z-index:10;box-shadow:8px 0 30px rgba(0,0,0,.3)} #rpanel{display:none} }
   #bridgeBanner{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;background:rgba(27,31,36,.92);color:#fff;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;letter-spacing:.02em;box-shadow:0 4px 16px rgba(0,0,0,.35);display:none}
   body.bridging #view,body.bridging #view canvas{cursor:crosshair}
 </style>
 </head>
 <body>
 <div id="app">
-  <aside id="panel">
+  <aside id="lpanel">
     <header>
       <h1>CONTAINER DESIGN STUDIO</h1>
-      <p>コンテナを配置して3D設計を確認できます。<br>コンテナは規格寸法(20/40ft)で破綻なく組まれます。</p>
+      <p>コンテナを配置して3D設計を確認できます。</p>
     </header>
     <div id="izone">
       <div id="inspPlaceholder" style="">コンテナまたはパーツをクリックして選択</div>
@@ -135,6 +136,14 @@
         <div class="ig ibtnrow"><button id="fispDup">複製</button><button id="fispDel" class="del">削除</button></div>
       </div>
     </div>
+  </aside>
+  <div id="view">
+    <div id="status">準備中…</div>
+    <button id="walkBtn">🚶 中に入る</button>
+    <button id="camReset">⟳ リセット</button>
+    <div id="walkHint">WASD / 矢印キー：移動　・　画面ドラッグ：見回す　・　ESC：設計に戻る</div>
+  </div>
+  <aside id="rpanel">
     <div class="body">
       <div class="etool">
         <button id="addC" class="ebig">＋ コンテナを置く</button>
@@ -167,12 +176,6 @@
       </div>
     </div>
   </aside>
-  <div id="view">
-    <div id="status">準備中…</div>
-    <button id="walkBtn">🚶 中に入る</button>
-    <button id="camReset">⟳ リセット</button>
-    <div id="walkHint">WASD / 矢印キー：移動　・　画面ドラッグ：見回す　・　ESC：設計に戻る</div>
-  </div>
 </div>
 
 <script type="importmap">
