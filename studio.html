@@ -90,6 +90,15 @@
   @media(max-width:760px){ #lpanel{position:absolute;left:0;top:0;bottom:0;width:80%;max-width:260px;z-index:10;box-shadow:8px 0 30px rgba(0,0,0,.3)} #rpanel{display:none} }
   #bridgeBanner{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;background:rgba(27,31,36,.92);color:#fff;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;letter-spacing:.02em;box-shadow:0 4px 16px rgba(0,0,0,.35);display:none}
   body.bridging #view,body.bridging #view canvas{cursor:crosshair}
+  .preset-btn{background:#16202a;border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:5px 7px;font-size:10px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:border-color .15s,color .15s}
+  .preset-btn:hover{border-color:var(--accent);color:var(--accent)}
+  #priceWidget{background:linear-gradient(135deg,#080f18,#0d1824);border-bottom:1px solid var(--line);padding:10px 14px}
+  .ttime{background:rgba(10,14,18,.82);border:1px solid var(--line);color:var(--sub);border-radius:7px;padding:7px 9px;font-size:14px;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px)}
+  .ttime.on{border-color:var(--accent);background:rgba(79,182,214,.18);color:#fff}
+  #ctaPanel{padding:10px 12px 12px;border-top:1px solid var(--line);background:#090e14;flex-shrink:0}
+  #planNameInput{width:100%;background:transparent;border:0;border-bottom:1px solid rgba(79,182,214,.3);color:var(--txt);padding:4px 0;font-size:12px;margin-top:6px;outline:none;font-family:inherit}
+  #planNameInput::placeholder{color:var(--sub)}
+  #planNameInput:focus{border-bottom-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -97,7 +106,7 @@
   <aside id="lpanel">
     <header>
       <h1>CONTAINER DESIGN STUDIO</h1>
-      <p>コンテナを配置して3D設計を確認できます。</p>
+      <input id="planNameInput" placeholder="設計名をつける…" value="新規プラン">
     </header>
     <div id="layerTree">
       <div class="ltHead">レイヤー</div>
@@ -154,9 +163,25 @@
     <button id="walkBtn">🚶 中に入る</button>
     <button id="camReset">⟳ リセット</button>
     <div id="walkHint">WASD / 矢印キー：移動　・　画面ドラッグ：見回す　・　ESC：設計に戻る</div>
+    <div id="timeCtrl" style="position:absolute;right:14px;bottom:50px;z-index:5;display:flex;gap:5px">
+      <button class="ttime on" data-t="noon" title="昼">☀️</button>
+      <button class="ttime" data-t="morning" title="朝">🌅</button>
+      <button class="ttime" data-t="evening" title="夕">🌆</button>
+      <button class="ttime" data-t="night" title="夜">🌙</button>
+    </div>
   </div>
   <aside id="rpanel">
     <div class="body">
+      <div style="padding:8px 12px;border-bottom:1px solid var(--line)">
+        <div style="font-size:10px;color:var(--sub);letter-spacing:.08em;font-weight:700;margin-bottom:6px">✨ シーンを選ぶ</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          <button class="preset-btn" data-p="cafe">☕ カフェ</button>
+          <button class="preset-btn" data-p="villa">🏕 別荘</button>
+          <button class="preset-btn" data-p="sauna">🧖 サウナ</button>
+          <button class="preset-btn" data-p="shop">🛍 ショップ</button>
+          <button class="preset-btn" data-p="workspace">💻 WS</button>
+        </div>
+      </div>
       <div style="padding:8px 14px 8px;border-bottom:1px solid var(--line)">
         <div style="font-size:10px;color:var(--sub);letter-spacing:.08em;font-weight:700;margin-bottom:6px">📐 敷地サイズ</div>
         <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)">
@@ -165,6 +190,17 @@
           <span>奥行</span><input id="siteD" type="number" min="4" max="200" step="1" value="16" style="width:50px;background:var(--bg2);border:1px solid var(--line);border-radius:4px;color:var(--txt);padding:3px 6px;font-size:12px;text-align:center">
           <span>m</span>
         </div>
+      </div>
+      <div id="priceWidget">
+        <div style="font-size:9px;color:var(--sub);letter-spacing:.08em;font-weight:700;margin-bottom:4px">💰 概算費用（参考値）</div>
+        <div style="display:flex;align-items:baseline;gap:5px">
+          <span id="priceMin" style="font-size:22px;font-weight:700;color:var(--accent)">—</span>
+          <span style="font-size:11px;color:var(--sub)">万〜</span>
+          <span id="priceMax" style="font-size:15px;font-weight:600;color:#7ecfe6"></span>
+          <span id="priceMaxUnit" style="font-size:10px;color:var(--sub)"></span>
+        </div>
+        <div id="areaDisplay" style="font-size:10px;color:var(--sub);margin-top:2px">延床面積 — ㎡</div>
+        <div style="font-size:8px;color:#566070;margin-top:3px">※現地調査・仕様により変動します</div>
       </div>
       <div class="etool">
         <button id="addC" class="ebig">＋ コンテナを置く</button>
@@ -200,6 +236,10 @@
         <button id="sample"></button>
       </div>
     </div>
+    <div id="ctaPanel">
+      <button id="ctaBtn" style="width:100%;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;border:0;border-radius:10px;padding:13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.03em;box-shadow:0 4px 16px rgba(192,57,43,.3)">📩 この設計でご相談する</button>
+      <div style="font-size:9px;color:var(--sub);margin-top:5px;text-align:center">無料 · 返信通常1営業日以内</div>
+    </div>
   </aside>
 </div>
 
@@ -227,7 +267,7 @@ const controls=new OrbitControls(camera,renderer.domElement);
 controls.enableDamping=true; controls.target.set(0,1.6,0); controls.maxPolarAngle=Math.PI*0.49;
 controls.mouseButtons={LEFT:THREE.MOUSE.ROTATE,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:THREE.MOUSE.PAN};  // 左=回転(空きスペース)/コンテナ上は移動 / 右=平行移動 / ホイール=ズーム
 
-scene.add(new THREE.HemisphereLight(0xeef1f4,0x595960,0.55));
+const hemi=new THREE.HemisphereLight(0xeef1f4,0x595960,0.55); scene.add(hemi);
 scene.add(new THREE.AmbientLight(0xffffff,0.4));
 const sun=new THREE.DirectionalLight(0xffffff,1.6); sun.position.set(18,26,12); sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.near=1; sun.shadow.camera.far=120;
@@ -880,6 +920,8 @@ function buildFromPlan(plan,keepView){
   document.getElementById('json').value=JSON.stringify(plan,null,2);
   if(typeof refreshSelection==='function') refreshSelection();
   if(typeof syncSiteUI==='function') syncSiteUI();
+  if(typeof updatePriceWidget==='function') updatePriceWidget();
+  const _ni=document.getElementById('planNameInput'); if(_ni&&plan.meta&&plan.meta.name) _ni.value=plan.meta.name;
   if(typeof _hist!=='undefined') _histSnap=JSON.parse(JSON.stringify(EP));
 }
 
@@ -1580,6 +1622,97 @@ function updateWalk(){
   camera.position.set(avatar.position.x-Math.sin(camYaw)*dist, hgt, avatar.position.z-Math.cos(camYaw)*dist);
   camera.lookAt(avatar.position.x, 1.5+fy, avatar.position.z);
 }
+
+/* ============ PRESETS ============ */
+const PRESETS={
+  cafe:{meta:{name:'テイクアウトカフェ'},site:{width:16,depth:16},
+    modules:[
+      {id:'A',size:'20ft',x:-3.6,z:0,level:0,rot:0,color:'white',faces:{front:'storefront',back:'wall',left:'cargo',right:'wall'},interior:false},
+      {id:'B',size:'20ft',x:3.6,z:0,level:0,rot:0,color:'navy',faces:{front:'storefront',back:'wall',left:'wall',right:'cargo'},interior:false}
+    ],
+    site_features:[{type:'deck',x:0,z:5,w:10,d:2.5,y:0.42},{type:'lamp_post',x:-6,z:6.5,h:3.2},{type:'lamp_post',x:6,z:6.5,h:3.2},{type:'tree_pine',x:-7,z:-4,s:1.0}]},
+  villa:{meta:{name:'週末の別荘'},site:{width:22,depth:22},
+    modules:[
+      {id:'A',size:'40ft',x:0,z:-2,level:0,rot:0,color:'forest',faces:{front:'wall',back:'wall',left:'cargo',right:'cargo'},interior:false},
+      {id:'B',size:'20ft',x:-4.7,z:3.5,level:0,rot:90,color:'white',faces:{front:'wall',back:'wall',left:'cargo',right:'cargo'},interior:false}
+    ],
+    site_features:[{type:'deck',x:0,z:5.5,w:8,d:3,y:0.42},{type:'fire_pit',x:4,z:9},{type:'tree_bamboo',x:-9,z:5,s:1.2},{type:'tree_pine',x:8,z:-4,s:1.0},{type:'tree_pine',x:-8,z:-6,s:0.9}]},
+  sauna:{meta:{name:'コンテナサウナ'},site:{width:12,depth:12},
+    modules:[{id:'A',size:'20ft',x:0,z:-1,level:0,rot:0,color:'brown',faces:{front:'wall',back:'wall',left:'cargo',right:'cargo'},interior:false}],
+    site_features:[{type:'deck',x:0,z:5,w:5,d:2.5,y:0.42},{type:'planter_box',x:-3.5,z:5.5,w:0.8,d:0.4},{type:'tree_pine',x:4.5,z:4,s:0.9},{type:'fire_pit',x:3.5,z:7}]},
+  shop:{meta:{name:'セレクトショップ'},site:{width:18,depth:16},
+    modules:[
+      {id:'A',size:'40ft',x:-3.1,z:0,level:0,rot:0,color:'black',faces:{front:'storefront',back:'wall',left:'cargo',right:'wall'},interior:false},
+      {id:'B',size:'20ft',x:7.5,z:0,level:0,rot:0,color:'white',faces:{front:'storefront',back:'wall',left:'wall',right:'cargo'},interior:false}
+    ],
+    site_features:[{type:'lamp_post',x:-7,z:6,h:3.2},{type:'lamp_post',x:7,z:6,h:3.2},{type:'tree_bamboo',x:-8,z:-3,s:1.1},{type:'tree_bamboo',x:-8,z:0,s:0.9}]},
+  workspace:{meta:{name:'ワークスペース'},site:{width:12,depth:12},
+    modules:[{id:'A',size:'20ft',x:0,z:0,level:0,rot:0,color:'teal',faces:{front:'storefront',back:'wall',left:'cargo',right:'cargo'},interior:false}],
+    site_features:[{type:'deck',x:0,z:4.5,w:5,d:2,y:0.42},{type:'tree_bamboo',x:4,z:4,s:0.8},{type:'planter_box',x:-3.5,z:5,w:0.8,d:0.4}]}
+};
+document.querySelectorAll('.preset-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  const p=PRESETS[btn.dataset.p]; if(!p)return;
+  buildFromPlan(JSON.parse(JSON.stringify(p)));
+  const ni=document.getElementById('planNameInput'); if(ni&&p.meta&&p.meta.name) ni.value=p.meta.name;
+}));
+
+/* ============ PRICE ESTIMATE ============ */
+function calcEstimate(){
+  if(!EP||!EP.modules) return {min:0,max:0,area:0};
+  let min=0,max=0,area=0;
+  (EP.modules||[]).forEach(m=>{
+    const l=m.len||SIZE_LEN[m.size]||L20;
+    const big=(m.size==='40ft'||m.size==='45ft');
+    min+=big?160:100; max+=big?240:160;
+    if(m.interior&&m.interior.ceiling){min+=60;max+=120;}
+    if(m.stand) area+=H*W; else area+=l*W;
+  });
+  (EP.site_features||[]).forEach(f=>{
+    if(f.type==='deck'||f.type==='rooftop-deck'){min+=18;max+=45;}
+    else if(f.type==='bridge'){min+=25;max+=55;}
+    else if(f.type==='stair'){min+=12;max+=28;}
+    else if(f.type==='canopy'){min+=18;max+=40;}
+  });
+  if((EP.modules||[]).length>0){min+=80;max+=150;}
+  return {min:Math.round(min/10)*10,max:Math.round(max/10)*10,area:Math.round(area*10)/10};
+}
+function updatePriceWidget(){
+  const {min,max,area}=calcEstimate();
+  const mn=document.getElementById('priceMin'),mx=document.getElementById('priceMax'),mu=document.getElementById('priceMaxUnit'),ar=document.getElementById('areaDisplay');
+  if(!mn) return;
+  if(min===0){mn.textContent='—';if(mx)mx.textContent='';if(mu)mu.textContent='';if(ar)ar.textContent='延床面積 — ㎡';}
+  else{ mn.textContent=min+'万';if(mx)mx.textContent=max+'万';if(mu)mu.textContent='円';if(ar)ar.textContent='延床面積 '+area+' ㎡'; }
+}
+
+/* ============ TIME OF DAY ============ */
+const TIME_MOODS={
+  noon:   {sp:[18,26,12],si:1.6,sc:0xffffff,ha:0xeef1f4,hb:0x595960,hi:0.55,fc:0xcdd6de,fi:0.32,fog:0xe7f1f7,bg:0xe7f1f7},
+  morning:{sp:[6,10,22], si:0.8,sc:0xfff0cc,ha:0xffeedd,hb:0x444444,hi:0.45,fc:0xffccaa,fi:0.15,fog:0xfce8d0,bg:0xfce8d0},
+  evening:{sp:[-22,7,5], si:0.65,sc:0xff8844,ha:0xffaa77,hb:0x222233,hi:0.35,fc:0xff6622,fi:0.10,fog:0xeea080,bg:0xeea080},
+  night:  {sp:[4,40,-6], si:0.05,sc:0x8899bb,ha:0x1a2840,hb:0x0a0d12,hi:0.25,fc:0x334466,fi:0.08,fog:0x090d14,bg:0x090d14}
+};
+function applyTimeMood(t){
+  const m=TIME_MOODS[t]; if(!m) return;
+  sun.position.set(...m.sp); sun.intensity=m.si; sun.color.setHex(m.sc);
+  hemi.color.setHex(m.ha); hemi.groundColor.setHex(m.hb); hemi.intensity=m.hi;
+  fill.color.setHex(m.fc); fill.intensity=m.fi;
+  scene.fog.color.setHex(m.fog); renderer.setClearColor(m.bg);
+  document.querySelectorAll('.ttime').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+}
+document.querySelectorAll('.ttime').forEach(b=>b.addEventListener('click',()=>applyTimeMood(b.dataset.t)));
+
+/* ============ PLAN NAME ============ */
+const _pni=document.getElementById('planNameInput');
+if(_pni) _pni.addEventListener('input',()=>{ if(EP){ EP.meta=EP.meta||{}; EP.meta.name=_pni.value; } });
+
+/* ============ CTA ============ */
+document.getElementById('ctaBtn').onclick=()=>{
+  const {min,max,area}=calcEstimate();
+  const name=(document.getElementById('planNameInput')||{}).value||'設計プラン';
+  const mods=(EP.modules||[]).map(m=>`  ・${m.size} コンテナ（${m.color}）`).join('\n');
+  const body=`コンテナワークス様\n\n以下の設計についてご相談させてください。\n\n【設計名】${name}\n【コンテナ構成】\n${mods||'  なし'}\n【敷地サイズ】${(EP.site&&EP.site.width)||16}m × ${(EP.site&&EP.site.depth)||16}m\n【延床面積】約${area}㎡\n【概算費用】¥${min}万〜${max}万（参考値）\n\nよろしくお願いいたします。`;
+  window.location.href='mailto:info@containerworks.jp?subject='+encodeURIComponent('設計相談：'+name)+'&body='+encodeURIComponent(body);
+};
 
 /* ============ SCREENSHOT / JSON APPLY ============ */
 document.getElementById('ssBtn').onclick=()=>{
