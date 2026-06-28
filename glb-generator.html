@@ -6,21 +6,31 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;background:#0d1218;color:#e9eef3}
-  h1{padding:18px 22px;font-size:15px;letter-spacing:.06em;border-bottom:1px solid #2a3542}
-  h1 span{color:#4fb6d6}
-  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;padding:16px}
-  .card{background:#11161c;border:1px solid #2a3542;border-radius:10px;overflow:hidden;cursor:pointer}
+  #header{padding:18px 24px 12px;border-bottom:1px solid #2a3542;display:flex;align-items:center;gap:16px}
+  #header h1{font-size:16px;letter-spacing:.07em;flex:1}
+  #header h1 span{color:#4fb6d6}
+  #header .dl-all{background:#4fb6d6;color:#06222b;border:0;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+  #header .dl-all:hover{filter:brightness(1.1)}
+  #status{padding:10px 24px;font-size:11px;color:#6f8090;border-bottom:1px solid #2a3542}
+  .cat-header{padding:14px 24px 8px;font-size:11px;font-weight:700;letter-spacing:.1em;color:#4fb6d6;text-transform:uppercase;border-top:1px solid #1a2430}
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;padding:0 16px 24px}
+  .card{background:#111922;border:1px solid #2a3542;border-radius:12px;overflow:hidden;transition:border-color .18s}
   .card:hover{border-color:#4fb6d6}
-  .card canvas{display:block;width:100%;height:160px}
-  .card .info{padding:10px 12px;display:flex;align-items:center;justify-content:space-between}
-  .card .name{font-size:12px;font-weight:600}
-  .card .dl{background:#4fb6d6;color:#06222b;border:0;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+  .card canvas{display:block;width:100%;height:220px;background:#0d1218}
+  .card .info{padding:10px 13px 12px;display:flex;align-items:center;gap:8px}
+  .card .names{flex:1;min-width:0}
+  .card .name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .sub{font-size:10px;color:#6f8090;margin-top:2px}
+  .card .dl{background:#4fb6d6;color:#06222b;border:0;border-radius:7px;padding:7px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
   .card .dl:hover{filter:brightness(1.1)}
-  #status{padding:10px 22px;font-size:11px;color:#6f8090}
+  .cat-divider{grid-column:1/-1;padding:10px 8px 2px;font-size:10px;font-weight:700;letter-spacing:.1em;color:#4fb6d6;border-top:1px solid #1a2430;margin-top:4px}
 </style>
 </head>
 <body>
-<h1>GLB Generator — <span>Container Studio Parts</span></h1>
+<div id="header">
+  <h1>GLB Generator — <span>Container Studio Parts</span></h1>
+  <button class="dl-all" id="dlAll">↓ 全部まとめてDL</button>
+</div>
 <div id="status">読み込み中…</div>
 <div id="grid"></div>
 
@@ -33,236 +43,390 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 /* ─ Materials ─ */
+const mk=(c,r=.55,m=.2)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+const mkE=(c,e,ei)=>new THREE.MeshStandardMaterial({color:c,roughness:.85,emissive:e,emissiveIntensity:ei});
 const M={
-  red:   new THREE.MeshStandardMaterial({color:0xc0392b,roughness:.5,metalness:.25}),
-  teal:  new THREE.MeshStandardMaterial({color:0x3f8a8a,roughness:.5,metalness:.25}),
-  orange:new THREE.MeshStandardMaterial({color:0xd98a3d,roughness:.55,metalness:.2}),
-  grass: new THREE.MeshStandardMaterial({color:0x6f9456,roughness:.55,metalness:.2}),
-  gray:  new THREE.MeshStandardMaterial({color:0x8d8b85,roughness:.62,metalness:.45}),
-  charcoal:new THREE.MeshStandardMaterial({color:0x4a4a4f,roughness:.55,metalness:.42}),
-  sand:  new THREE.MeshStandardMaterial({color:0xb8a98f,roughness:.72,metalness:.1}),
-  timber:new THREE.MeshStandardMaterial({color:0xc9ad82,roughness:.78,metalness:.04}),
-  steel: new THREE.MeshStandardMaterial({color:0x1f1f24,roughness:.35,metalness:.8}),
-  wood:  new THREE.MeshStandardMaterial({color:0xb4b1aa,roughness:.7,metalness:.05}),
-  white: new THREE.MeshStandardMaterial({color:0xeeeef0,roughness:.85,emissive:0xdfe2e8,emissiveIntensity:0.34}),
-  dark:  new THREE.MeshStandardMaterial({color:0x222228,roughness:.5,metalness:.4}),
-  glass: new THREE.MeshStandardMaterial({color:0xd9eaf2,transparent:true,opacity:0.4,roughness:.2}),
-  leaf:  new THREE.MeshStandardMaterial({color:0x6e776c,roughness:.85}),
-  leaf2: new THREE.MeshStandardMaterial({color:0x808a7c,roughness:.85}),
-  trunk: new THREE.MeshStandardMaterial({color:0x4e4a45,roughness:.8}),
-  pot:   new THREE.MeshStandardMaterial({color:0x8a8884,roughness:.7}),
-  purple:new THREE.MeshStandardMaterial({color:0x8a6fa8,roughness:.5,metalness:.25}),
+  red:mk(0xc0392b,.5,.25),  teal:mk(0x3f8a8a,.5,.25),  orange:mk(0xd98a3d,.55,.2),
+  grass:mk(0x6f9456,.55,.2), gray:mk(0x8d8b85,.62,.45), charcoal:mk(0x4a4a4f,.55,.42),
+  sand:mk(0xb8a98f,.72,.1),  timber:mk(0xc9ad82,.78,.04),steel:mk(0x1f1f24,.35,.8),
+  wood:mk(0xb4b1aa,.7,.05),  dark:mk(0x222228,.5,.4),   white:mkE(0xeeeef0,0xdfe2e8,.34),
+  glass:new THREE.MeshStandardMaterial({color:0xd9eaf2,transparent:true,opacity:.45,roughness:.15}),
+  leaf:mk(0x6e776c,.85,0),   leaf2:mk(0x808a7c,.85,0),  trunk:mk(0x4e4a45,.8,0),
+  pot:mk(0x8a8884,.7,0),     purple:mk(0x8a6fa8,.5,.25), blue:mk(0x2e6da4,.5,.25),
+  cream:mk(0xe8dfd0,.72,.05),navy:mk(0x253a5e,.5,.28),  pine:mk(0x4a7a50,.7,0),
+  bk:mk(0x18191f,.4,.5),     beige:mk(0xd4c4a8,.72,.04),olive:mk(0x7a8a5a,.6,.05),
 };
+const fireM=new THREE.MeshStandardMaterial({color:0xe86a10,emissive:0xd45608,emissiveIntensity:.9,roughness:.9});
+const innerM=new THREE.MeshStandardMaterial({color:0xfad06b,emissive:0xf0c020,emissiveIntensity:1.2,roughness:.9});
 
-/* ─ Builder helpers ─ */
+/* ─ Helpers ─ */
 let G=null;
-function box(w,h,d,mat,x,y,z){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
-  m.position.set(x,y,z); m.castShadow=true; G.add(m); return m;
-}
-function cyl(rt,rb,h,seg,mat,x,y,z){
-  const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat);
-  m.position.set(x,y,z); m.castShadow=true; G.add(m); return m;
-}
-function blob(r,mat,x,y,z){
-  const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),mat);
-  m.position.set(x,y,z); m.castShadow=true; G.add(m); return m;
-}
-function cone(r,h,seg,mat,x,y,z){
-  const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,seg),mat);
-  m.position.set(x,y,z); m.castShadow=true; G.add(m); return m;
-}
-function torus(R,r,seg,tseg,mat,x,y,z){
-  const m=new THREE.Mesh(new THREE.TorusGeometry(R,r,seg,tseg),mat);
-  m.position.set(x,y,z); G.add(m); return m;
-}
+const box=(w,h,d,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;G.add(m);return m;};
+const cyl=(rt,rb,h,seg,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat);m.position.set(x,y,z);m.castShadow=true;G.add(m);return m;};
+const cone=(r,h,seg,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,seg),mat);m.position.set(x,y,z);m.castShadow=true;G.add(m);return m;};
+const blob=(r,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),mat);m.position.set(x,y,z);m.castShadow=true;G.add(m);return m;};
+const tor=(R,r,s,t,mat,x,y,z,rx=0)=>{const m=new THREE.Mesh(new THREE.TorusGeometry(R,r,s,t),mat);m.position.set(x,y,z);if(rx)m.rotation.x=rx;G.add(m);return m;};
 
-/* ─ Part builders ─ */
-const PARTS = [
-  // 外構・植栽
-  { id:'tree_pine',   name:'松の木',    cat:'外構',
-    build(g){ G=g;
-      cyl(0.1,0.14,1.8,8,M.trunk,0,0.9,0);
-      [[1.1,0.55],[0.85,1.25],[0.6,1.9]].forEach(([r,cy])=>cone(r,1.0,8,M.leaf,0,cy,0)); } },
-  { id:'tree_palm',   name:'ヤシの木',  cat:'外構',
-    build(g){ G=g; const h=3.8;
-      cyl(0.06,0.14,h,8,M.trunk,0,h/2,0);
-      for(let i=0;i<3;i++){ const a=i*Math.PI*0.67; blob(0.1,M.dark,Math.cos(a)*0.12,h-0.05,Math.sin(a)*0.12); }
-      for(let i=0;i<7;i++){ const a=i*Math.PI*2/7, len=2.2;
-        const fr=box(len,0.05,0.14,M.leaf2,Math.cos(a)*len*0.5,h-0.25,Math.sin(a)*len*0.5);
-        fr.rotation.y=-a; fr.rotation.z=-0.3; } } },
-  { id:'tree_bamboo', name:'竹',        cat:'外構',
-    build(g){ G=g;
-      [[0,0,3.2],[0.15,0.1,3.8],[-.12,0.16,2.8],[0.07,-.14,3.5],[-.16,-.06,3.0]].forEach(([ox,oz,bh])=>{
-        cyl(0.03,0.035,bh,6,M.grass,ox,bh/2,oz);
-        const segs=Math.floor(bh/0.45);
-        for(let i=1;i<segs;i++) cyl(0.042,0.042,0.04,8,M.leaf,ox,i*0.45,oz);
-        box(0.5,0.02,0.05,M.leaf2,ox+0.25,bh-0.15,oz); }); } },
-  { id:'lamp_post',   name:'街灯',      cat:'外構',
-    build(g){ G=g; const h=3.2;
-      cyl(0.04,0.055,h,8,M.charcoal,0,h/2,0);
-      box(0.8,0.04,0.04,M.charcoal,0.4,h+0.04,0);
-      cyl(0.18,0.12,0.22,8,M.dark,0.8,h+0.04,0);
-      blob(0.12,M.white,0.8,h-0.06,0);
-      cyl(0.12,0.16,0.15,8,M.charcoal,0,0.075,0); } },
-  { id:'planter_box', name:'プランター',cat:'外構',
-    build(g){ G=g;
-      box(0.8,0.35,0.4,M.wood,0,0.175,0);
-      box(0.74,0.24,0.34,M.timber,0,0.24,0);
-      box(0.74,0.06,0.34,M.grass,0,0.39,0);
-      for(let i=-1;i<=1;i++) box(0.06,0.22,0.06,M.leaf,i*0.2,0.52,0); } },
-  { id:'fire_pit',    name:'焚き火',    cat:'外構',
-    build(g){ G=g;
-      cyl(0.55,0.35,0.22,12,M.charcoal,0,0.25,0);
-      for(let i=0;i<3;i++){ const a=i*Math.PI*2/3;
-        const lm=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.03,0.4,6),M.steel);
-        lm.position.set(Math.cos(a)*0.42,0.18,Math.sin(a)*0.42);
-        lm.rotation.x=Math.sin(a)*0.22; lm.rotation.z=-Math.cos(a)*0.22; g.add(lm); }
-      const fireM=new THREE.MeshStandardMaterial({color:0xe86a10,emissive:0xd45608,emissiveIntensity:0.9,roughness:.9});
-      cone(0.21,0.55,8,fireM,0,0.59,0);
-      const innerM=new THREE.MeshStandardMaterial({color:0xfad06b,emissive:0xf0c020,emissiveIntensity:1.2,roughness:.9});
-      cone(0.12,0.38,6,innerM,0,0.63,0); } },
-  { id:'vending',     name:'自販機',    cat:'外構',
-    build(g){ G=g;
-      box(0.82,1.78,0.56,M.teal,0,0.89,0);
-      box(0.68,1.05,0.02,M.glass,0,1.08,0.28);
-      box(0.68,0.36,0.02,M.dark,0,0.28,0.28);
-      for(let i=0;i<3;i++){ const bm=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.02,6),M.red);
-        bm.position.set(0.1+i*0.14,0.78,0.29); bm.rotation.x=Math.PI/2; g.add(bm); } } },
-  { id:'bike',        name:'自転車',    cat:'外構',
-    build(g){ G=g;
-      for(const wz of [-0.5,0.5]){ const wm=new THREE.Mesh(new THREE.TorusGeometry(0.28,0.04,8,16),M.dark); wm.position.set(0,0.29,wz); wm.rotation.x=Math.PI/2; g.add(wm); }
-      box(0.04,0.04,1.08,M.steel,0,0.6,0);
-      box(0.04,0.42,0.035,M.steel,0,0.44,0.38);
-      box(0.04,0.27,0.04,M.steel,0,0.64,-0.5);
-      box(0.3,0.04,0.04,M.steel,0,0.78,-0.5);
-      box(0.22,0.04,0.1,M.dark,0,0.74,0.38);
-      cyl(0.05,0.05,0.08,8,M.charcoal,0,0.29,0).rotation.x=Math.PI/2; } },
-  { id:'car',         name:'自動車',    cat:'外構',
-    build(g){ G=g;
-      box(2.0,0.72,4.6,M.red,0,0.55,0);
-      box(1.75,0.68,2.4,M.red,0,1.31,0.1);
-      box(1.6,0.52,0.04,M.glass,0,1.34,1.28);
-      box(1.6,0.52,0.04,M.glass,0,1.34,-1.1);
-      for(const [wx,wz] of [[-1,- 1.5],[-1,1.5],[1,-1.5],[1,1.5]]){
-        const wm=new THREE.Mesh(new THREE.CylinderGeometry(0.33,0.33,0.24,12),M.dark); wm.position.set(wx,0.33,wz); wm.rotation.z=Math.PI/2; g.add(wm);
-        const hm=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.26,8),M.steel); hm.position.set(wx,0.33,wz); hm.rotation.z=Math.PI/2; g.add(hm); }
-      box(0.25,0.16,0.04,M.white,-0.7,0.65,-2.31);
-      box(0.25,0.16,0.04,M.white,0.7,0.65,-2.31); } },
-  // 内装・家具
-  { id:'chair',       name:'椅子',      cat:'内装',
-    build(g){ G=g;
-      box(0.43,0.04,0.40,M.timber,0,0.45,0);
-      box(0.43,0.42,0.04,M.timber,0,0.67,0.18);
-      for(const [ex,ez] of [[-0.17,-0.16],[0.17,-0.16],[-0.17,0.14],[0.17,0.14]]) box(0.04,0.44,0.04,M.dark,ex,0.22,ez);
-      box(0.37,0.04,0.04,M.dark,0,0.22,-0.16); box(0.37,0.04,0.04,M.dark,0,0.22,0.14); } },
-  { id:'bar_stool',   name:'バーチェア', cat:'内装',
-    build(g){ G=g;
-      cyl(0.17,0.17,0.05,10,M.timber,0,0.75,0);
-      cyl(0.025,0.03,0.73,8,M.steel,0,0.365,0);
-      torus(0.15,0.015,6,12,M.steel,0,0.28,0);
-      for(let i=0;i<4;i++){ const a=i*Math.PI/2+Math.PI/4; box(0.22,0.025,0.025,M.steel,Math.cos(a)*0.11,0.025,Math.sin(a)*0.11); } } },
-  { id:'sofa',        name:'ソファ',    cat:'内装',
-    build(g){ G=g; const w=1.8;
-      box(w,0.38,0.72,M.gray,0,0.19,0);
-      box(w-0.08,0.16,0.58,M.sand,0,0.46,-0.04);
-      box(w,0.52,0.14,M.gray,0,0.69,0.29);
-      box(0.14,0.5,0.72,M.gray,-w/2+0.07,0.44,0); box(0.14,0.5,0.72,M.gray,w/2-0.07,0.44,0);
-      for(const [ex,ez] of [[-w/2+0.2,-0.3],[w/2-0.2,-0.3],[-w/2+0.2,0.3],[w/2-0.2,0.3]]) box(0.07,0.14,0.07,M.dark,ex,0.07,ez); } },
-  { id:'dining_table',name:'ダイニングテーブル', cat:'内装',
-    build(g){ G=g; const w=1.4,d=0.8;
-      box(w,0.05,d,M.timber,0,0.74,0);
-      for(const [ex,ez] of [[-w/2+0.1,-d/2+0.1],[w/2-0.1,-d/2+0.1],[-w/2+0.1,d/2-0.1],[w/2-0.1,d/2-0.1]]) box(0.06,0.73,0.06,M.dark,ex,0.365,ez); } },
-  { id:'work_desk',   name:'デスク',    cat:'内装',
-    build(g){ G=g; const w=1.4,d=0.65;
-      box(w,0.05,d,M.timber,0,0.72,0);
-      box(0.04,0.72,d-0.04,M.wood,-w/2+0.04,0.36,0); box(0.04,0.72,d-0.04,M.wood,w/2-0.04,0.36,0);
-      box(w*0.5,0.03,0.34,M.dark,0,0.64,-d/2+0.06);
-      box(0.56,0.38,0.03,M.dark,0,1.08,d/2-0.06);
-      box(0.06,0.18,0.03,M.dark,0,0.80,d/2-0.06);
-      box(0.24,0.04,0.12,M.dark,0,0.74,d/2-0.06); } },
-  { id:'bookshelf',   name:'本棚',      cat:'内装',
-    build(g){ G=g; const w=1.0,bsh=1.8;
-      box(0.04,bsh,0.28,M.timber,-w/2,bsh/2,0); box(0.04,bsh,0.28,M.timber,w/2,bsh/2,0);
-      box(w+0.04,0.04,0.28,M.timber,0,bsh-0.02,0); box(w+0.04,0.04,0.28,M.timber,0,0.02,0);
-      const sh=3; for(let i=1;i<=sh;i++) box(w-0.04,0.03,0.28,M.timber,0,i*(bsh/(sh+1)),0);
-      const bkc=[M.red,M.teal,M.orange,M.grass,M.purple,M.sand];
-      for(let si=1;si<=sh;si++){ const sy=si*(bsh/(sh+1))+0.04; let bx=-w/2+0.08;
-        bkc.forEach((bc,bi)=>{ if(bx+0.06>w/2-0.04) return; const bw=0.04+bi%2*0.02; box(bw,0.17,0.22,bc,bx+bw/2,sy+0.085,0); bx+=bw+0.015; }); } } },
-  { id:'counter_bar', name:'バーカウンター', cat:'内装',
-    build(g){ G=g; const w=2.0,d=0.55;
-      box(w,0.9,d,M.timber,0,0.45,0);
-      box(w+0.06,0.05,d+0.08,M.charcoal,0,0.905,0);
-      box(w,0.15,0.04,M.dark,0,0.075,-d/2+0.02);
-      box(w-0.1,0.04,d-0.12,M.timber,0,0.56,0); } },
-  { id:'indoor_plant',name:'観葉植物',  cat:'内装',
-    build(g){ G=g;
-      box(0.42,0.46,0.42,M.pot,0,0.23,0);
-      blob(0.44,M.leaf,0,0.78,0); blob(0.32,M.leaf2,0.13,1.05,0); } },
+/* ═══════════════════════════ PARTS ═══════════════════════════ */
+const PARTS=[
+
+/* ── 椅子 ── */
+{cat:'椅子',id:'chair_dining',name:'ダイニングチェア',sub:'木脚・背もたれ付き',build(g){G=g;
+  box(.43,.04,.4,M.timber,0,.45,0); box(.43,.42,.04,M.timber,0,.67,.18);
+  for(const[ex,ez]of[[-.17,-.16],[.17,-.16],[-.17,.14],[.17,.14]]) box(.04,.44,.04,M.dark,ex,.22,ez);
+  box(.37,.04,.04,M.dark,0,.22,-.16); box(.37,.04,.04,M.dark,0,.22,.14);}},
+
+{cat:'椅子',id:'chair_arm',name:'アームチェア',sub:'肘掛け・ファブリック',build(g){G=g;
+  box(.52,.04,.48,M.teal,0,.46,0);   // seat
+  box(.52,.48,.05,M.teal,0,.70,.22); // back
+  box(.07,.46,.48,M.teal,-.225,.42,0); box(.07,.46,.48,M.teal,.225,.42,0); // arms
+  for(const[ex,ez]of[[-.2,-.2],[.2,-.2],[-.2,.2],[.2,.2]]) box(.05,.4,.05,M.dark,ex,.2,ez);}},
+
+{cat:'椅子',id:'chair_folding',name:'折りたたみチェア',sub:'スチール・軽量',build(g){G=g;
+  box(.4,.03,.38,M.gray,0,.44,0);
+  box(.4,.38,.03,M.gray,0,.63,.18);
+  for(const[ex,ez]of[[-.16,-.15],[.16,-.15],[-.16,.15],[.16,.15]]) box(.03,.42,.03,M.steel,ex,.21,ez);}},
+
+{cat:'椅子',id:'chair_office',name:'オフィスチェア',sub:'キャスター・ハイバック',build(g){G=g;
+  box(.46,.04,.44,M.navy,0,.48,0); box(.46,.62,.05,M.navy,0,.80,.21);
+  box(.1,.06,.1,M.navy,-.18,.54,.21); box(.1,.06,.1,M.navy,.18,.54,.21); // armrests thin
+  cyl(.04,.04,.38,8,M.steel,0,.25,0);
+  cyl(.28,.28,.04,6,M.dark,0,.06,0); // base plate
+  for(let i=0;i<5;i++){const a=i*Math.PI*2/5; box(.18,.03,.03,M.dark,Math.cos(a)*.14,.03,Math.sin(a)*.14);}
+  const wg=new THREE.Mesh(new THREE.TorusGeometry(.035,.012,5,8),M.dark); wg.position.set(0,.03,0); g.add(wg);}},
+
+{cat:'椅子',id:'bar_stool_round',name:'バーチェア（丸座）',sub:'スチール脚・カウンター高',build(g){G=g;
+  cyl(.17,.17,.05,10,M.timber,0,.75,0); cyl(.025,.03,.73,8,M.steel,0,.365,0);
+  tor(.15,.015,6,12,M.steel,0,.28,0,Math.PI/2);
+  for(let i=0;i<4;i++){const a=i*Math.PI/2+Math.PI/4; box(.22,.025,.025,M.steel,Math.cos(a)*.11,.025,Math.sin(a)*.11);}}},
+
+{cat:'椅子',id:'bar_stool_back',name:'バーチェア（背もたれ）',sub:'木座・背付き',build(g){G=g;
+  cyl(.17,.17,.05,10,M.beige,0,.75,0); box(.36,.4,.04,M.beige,0,.97,.16);
+  for(const[ex]of[[-.13],[.13]]) box(.03,.73,.03,M.steel,ex,.365,0);
+  tor(.15,.015,6,12,M.steel,0,.28,0,Math.PI/2);}},
+
+/* ── テーブル ── */
+{cat:'テーブル',id:'table_dining',name:'ダイニングテーブル',sub:'長方形・木天板',build(g){G=g;const w=1.4,d=.8;
+  box(w,.05,d,M.timber,0,.74,0);
+  for(const[ex,ez]of[[-(w/2-.1),-(d/2-.1)],[w/2-.1,-(d/2-.1)],[-(w/2-.1),d/2-.1],[w/2-.1,d/2-.1]]) box(.06,.73,.06,M.dark,ex,.365,ez);}},
+
+{cat:'テーブル',id:'table_coffee',name:'コーヒーテーブル',sub:'低め・ガラス天板',build(g){G=g;const w=1.1,d=.6;
+  box(w,.04,d,M.glass,0,.42,0); // glass top
+  box(w-.04,.04,d-.04,M.steel,0,.38,0); // frame under glass
+  for(const[ex,ez]of[[-(w/2-.1),-(d/2-.1)],[w/2-.1,-(d/2-.1)],[-(w/2-.1),d/2-.1],[w/2-.1,d/2-.1]]) box(.05,.38,.05,M.steel,ex,.19,ez);}},
+
+{cat:'テーブル',id:'table_round',name:'ラウンドテーブル',sub:'丸天板・アイアン脚',build(g){G=g;
+  cyl(.55,.55,.05,16,M.timber,0,.74,0);
+  cyl(.04,.04,.7,8,M.steel,0,.35,0);
+  cyl(.45,.45,.03,16,M.steel,0,.07,0);}},
+
+{cat:'テーブル',id:'table_bar',name:'バーテーブル（ハイ）',sub:'スタンディング高さ',build(g){G=g;const w=.75,d=.5;
+  box(w,.05,d,M.timber,0,.92,0);
+  box(w-.04,.04,d-.04,M.steel,0,.88,0);
+  for(const[ex,ez]of[[-(w/2-.1),-(d/2-.1)],[w/2-.1,-(d/2-.1)],[-(w/2-.1),d/2-.1],[w/2-.1,d/2-.1]]) box(.04,.88,.04,M.steel,ex,.44,ez);
+  cyl(.28,.28,.03,12,M.steel,0,.03,0);}},
+
+{cat:'テーブル',id:'table_desk',name:'ワークデスク',sub:'パネル脚・モニター付き',build(g){G=g;const w=1.4,d=.65;
+  box(w,.05,d,M.timber,0,.72,0);
+  box(.04,.72,d-.04,M.wood,-(w/2-.04),.36,0); box(.04,.72,d-.04,M.wood,w/2-.04,.36,0);
+  box(w*.5,.03,.34,M.dark,0,.64,-(d/2-.06));
+  box(.56,.38,.03,M.dark,0,1.08,d/2-.06);
+  box(.06,.18,.03,M.dark,0,.8,d/2-.06); box(.24,.04,.12,M.dark,0,.74,d/2-.06);}},
+
+/* ── ソファ ── */
+{cat:'ソファ',id:'sofa_2p',name:'2人掛けソファ',sub:'グレー・コンパクト',build(g){G=g;const w=1.4;
+  box(w,.38,.72,M.gray,0,.19,0); box(w-.08,.16,.58,M.sand,0,.46,-.04);
+  box(w,.52,.14,M.gray,0,.69,.29);
+  box(.14,.5,.72,M.gray,-(w/2-.07),.44,0); box(.14,.5,.72,M.gray,w/2-.07,.44,0);
+  for(const[ex,ez]of[[-(w/2-.2),-.3],[w/2-.2,-.3],[-(w/2-.2),.3],[w/2-.2,.3]]) box(.07,.14,.07,M.dark,ex,.07,ez);}},
+
+{cat:'ソファ',id:'sofa_3p',name:'3人掛けソファ',sub:'ネイビー・ワイド',build(g){G=g;const w=2.1;
+  box(w,.38,.72,M.navy,0,.19,0); box(w-.08,.16,.58,M.sand,0,.46,-.04);
+  box(w,.52,.14,M.navy,0,.69,.29);
+  box(.14,.5,.72,M.navy,-(w/2-.07),.44,0); box(.14,.5,.72,M.navy,w/2-.07,.44,0);
+  for(const[ex,ez]of[[-(w/2-.2),-.3],[w/2-.2,-.3],[-(w/2-.2),.3],[w/2-.2,.3]]) box(.07,.14,.07,M.dark,ex,.07,ez);}},
+
+{cat:'ソファ',id:'sofa_l',name:'Lシェイプソファ',sub:'コーナーソファ',build(g){G=g;
+  // main section
+  box(1.7,.38,.72,M.teal,0,.19,.36);
+  box(1.62,.16,.58,M.sand,0,.46,.36);
+  box(1.7,.52,.14,M.teal,0,.69,.72);
+  // corner section
+  box(.72,.38,1.1,M.teal,.65,.19,-.2);
+  box(.58,.16,1.02,M.sand,.65,.46,-.2);
+  box(.72,.52,.14,M.teal,.65,.69,-.72);
+  // corner fill
+  box(.72,.38,.72,M.teal,.65,.19,.36);
+  // armrests
+  box(.14,.5,.72,M.teal,-(1.7/2-.07),.44,.36);
+  box(.72,.5,.14,M.teal,.65,.44,-.72-.07);
+  // legs
+  for(const[ex,ez]of[[-.8,0],[.8,0],[.65,-.72],[-.72,-.2]]) box(.07,.14,.07,M.dark,ex,.07,ez);}},
+
+/* ── 棚 ── */
+{cat:'棚',id:'shelf_tall',name:'本棚（ハイタイプ）',sub:'3段・カラフルな本付き',build(g){G=g;const w=1.0,bsh=1.8;
+  box(.04,bsh,.28,M.timber,-(w/2),bsh/2,0); box(.04,bsh,.28,M.timber,w/2,bsh/2,0);
+  box(w+.04,.04,.28,M.timber,0,bsh-.02,0); box(w+.04,.04,.28,M.timber,0,.02,0);
+  const sh=3; for(let i=1;i<=sh;i++) box(w-.04,.03,.28,M.timber,0,i*(bsh/(sh+1)),0);
+  const bkc=[M.red,M.teal,M.orange,M.grass,M.purple,M.sand];
+  for(let si=1;si<=sh;si++){const sy=si*(bsh/(sh+1))+.04;let bx=-(w/2)+.08;
+    bkc.forEach((bc,bi)=>{if(bx+.06>w/2-.04)return;const bw=.04+bi%2*.02;box(bw,.17,.22,bc,bx+bw/2,sy+.085,0);bx+=bw+.015;});}}},
+
+{cat:'棚',id:'shelf_low',name:'ローシェルフ',sub:'2段・オープン収納',build(g){G=g;const w=1.2,bsh=.85;
+  box(.04,bsh,.38,M.timber,-(w/2),bsh/2,0); box(.04,bsh,.38,M.timber,w/2,bsh/2,0);
+  box(w+.04,.04,.38,M.timber,0,bsh-.02,0); box(w+.04,.04,.38,M.timber,0,.02,0);
+  box(w-.04,.03,.38,M.timber,0,bsh/2,0);
+  // Decorative items
+  blob(.09,M.orange,-(w/2)+.22,.95,-.05); blob(.07,M.teal,-(w/2)+.42,.92,.05);}},
+
+{cat:'棚',id:'shelf_wall',name:'ウォールシェルフ',sub:'壁付け・フローティング',build(g){G=g;const w=.9;
+  box(w,.04,.22,M.timber,0,1.0,0); box(w,.04,.22,M.timber,0,.55,0);
+  // brackets
+  box(.03,.48,.18,M.steel,-(w/2)+.06,.77,-.01); box(.03,.48,.18,M.steel,w/2-.06,.77,-.01);
+  // items on shelf
+  blob(.07,M.red,-.25,1.1,0); box(.18,.22,.12,M.navy,.1,1.12,0); blob(.06,M.grass,.3,1.08,0);}},
+
+{cat:'棚',id:'display_shelf',name:'ディスプレイラック',sub:'5段・細ピッチ',build(g){G=g;const w=.7,bsh=1.6;
+  box(.04,bsh,.24,M.steel,-(w/2),bsh/2,0); box(.04,bsh,.24,M.steel,w/2,bsh/2,0);
+  box(w+.04,.04,.24,M.steel,0,bsh-.02,0); box(w+.04,.04,.24,M.steel,0,.02,0);
+  const sh=4; for(let i=1;i<=sh;i++) box(w-.04,.02,.24,M.steel,0,i*(bsh/(sh+1)),0);}},
+
+/* ── カウンター ── */
+{cat:'カウンター',id:'counter_bar',name:'バーカウンター',sub:'ストレート・2m',build(g){G=g;const w=2.0,d=.55;
+  box(w,.9,d,M.timber,0,.45,0); box(w+.06,.05,d+.08,M.charcoal,0,.905,0);
+  box(w,.15,.04,M.dark,0,.075,-(d/2-.02)); box(w-.1,.04,d-.12,M.timber,0,.56,0);}},
+
+{cat:'カウンター',id:'counter_l',name:'Lカウンター',sub:'コーナー付き',build(g){G=g;
+  box(1.8,.9,.55,M.timber,0,.45,.275);
+  box(.55,.9,.9,M.timber,.825,.45,-.175);
+  // top
+  box(1.86,.05,.61,M.charcoal,0,.905,.275); box(.61,.05,.96,M.charcoal,.825,.905,-.175);}},
+
+{cat:'カウンター',id:'counter_reception',name:'受付カウンター',sub:'フロント・高め前面',build(g){G=g;const w=1.6,d=.5;
+  box(w,.75,d,M.timber,0,.375,0); // main body
+  box(w,.04,d+.06,M.charcoal,0,.77,0); // top
+  box(w,.42,.04,M.timber,0,.21,-(d/2-.02)); // front panel
+  box(w,.06,.04,M.charcoal,0,.44,-(d/2-.02));}}, // front lip
+
+{cat:'カウンター',id:'counter_kitchen',name:'キッチンカウンター',sub:'シンク・コンロ付き',build(g){G=g;const w=2.4,d=.6;
+  box(w,.9,d,M.wood,0,.45,0); box(w+.04,.05,d+.04,M.steel,0,.925,0);
+  // sink
+  const sk=new THREE.Mesh(new THREE.BoxGeometry(.44,.14,.38),M.glass); sk.position.set(-(w/2)+.28,.925+.015,0); g.add(sk);
+  // cooktop rings
+  for(const[cx,cz]of[[.3,.12],[.3,-.12],[.65,.12],[.65,-.12]]){
+    const r=new THREE.Mesh(new THREE.TorusGeometry(.07,.012,6,12),M.dark); r.rotation.x=Math.PI/2; r.position.set(cx,.93,cz); g.add(r);}
+  // under cabinet
+  box(w,.7,d-.06,M.wood,0,.35,0);}},
+
+/* ── 植栽（外構） ── */
+{cat:'植栽',id:'tree_round',name:'丸い木（広葉樹）',sub:'スタンダード・中サイズ',build(g){G=g;
+  box(.24,1.4,.24,M.trunk,0,.7,0); blob(.95,M.leaf,0,1.7,0); blob(.72,M.leaf2,.35,2.1,-.1); blob(.66,M.leaf,-.3,2.15,.18);}},
+
+{cat:'植栽',id:'tree_pine_s',name:'松の木（小）',sub:'コニファー系',build(g){G=g;
+  cyl(.08,.12,1.4,8,M.trunk,0,.7,0);
+  [[.8,.5],[.62,1.1],[.44,1.65]].forEach(([r,cy])=>cone(r,.85,8,M.leaf,0,cy,0));}},
+
+{cat:'植栽',id:'tree_pine_l',name:'松の木（大）',sub:'3段・シンボルツリー',build(g){G=g;
+  cyl(.1,.16,2.4,8,M.trunk,0,1.2,0);
+  [[1.5,.7],[1.1,1.5],[.72,2.2]].forEach(([r,cy])=>cone(r,1.1,8,M.leaf,0,cy,0));}},
+
+{cat:'植栽',id:'tree_palm',name:'ヤシの木',sub:'トロピカル・3.8m',build(g){G=g;const h=3.8;
+  cyl(.06,.14,h,8,M.trunk,0,h/2,0);
+  for(let i=0;i<3;i++){const a=i*Math.PI*.67; blob(.1,M.dark,Math.cos(a)*.12,h-.05,Math.sin(a)*.12);}
+  for(let i=0;i<7;i++){const a=i*Math.PI*2/7,len=2.2;
+    const fr=box(len,.05,.14,M.leaf2,Math.cos(a)*len*.5,h-.25,Math.sin(a)*len*.5); fr.rotation.y=-a; fr.rotation.z=-.3;}}},
+
+{cat:'植栽',id:'tree_bamboo',name:'竹',sub:'細幹・密生群生',build(g){G=g;
+  [[0,0,3.2],[.15,.1,3.8],[-.12,.16,2.8],[.07,-.14,3.5],[-.16,-.06,3.0]].forEach(([ox,oz,bh])=>{
+    cyl(.03,.035,bh,6,M.grass,ox,bh/2,oz);
+    const segs=Math.floor(bh/.45); for(let i=1;i<segs;i++) cyl(.042,.042,.04,8,M.leaf,ox,i*.45,oz);
+    box(.5,.02,.05,M.leaf2,ox+.25,bh-.15,oz); box(.42,.02,.04,M.leaf2,ox-.2,bh-.35,oz);});}},
+
+{cat:'植栽',id:'tree_low',name:'低木（ブッシュ）',sub:'丸刈り・玄関向け',build(g){G=g;
+  cyl(.08,.08,.4,8,M.trunk,0,.2,0); blob(.48,M.pine,0,.72,0); blob(.35,M.pine,.28,.85,-.1); blob(.32,M.pine,-.22,.78,.18);}},
+
+{cat:'植栽',id:'pot_large',name:'大型鉢植え',sub:'室内・観葉植物',build(g){G=g;
+  box(.42,.46,.42,M.pot,0,.23,0); blob(.44,M.leaf,0,.78,0); blob(.32,M.leaf2,.13,1.05,0);}},
+
+{cat:'植栽',id:'pot_small',name:'ミニ鉢植え',sub:'卓上サイズ',build(g){G=g;
+  cyl(.1,.14,.2,10,M.pot,0,.1,0); cone(.12,.28,8,M.pine,0,.35,0);}},
+
+{cat:'植栽',id:'planter_box',name:'プランターボックス',sub:'ロングタイプ・花付き',build(g){G=g;
+  box(.8,.35,.4,M.wood,0,.175,0); box(.74,.24,.34,M.timber,0,.24,0);
+  box(.74,.06,.34,M.grass,0,.39,0);
+  const fc=[M.red,M.orange,M.teal];
+  for(let i=-1;i<=1;i++){const fi=fc[i+1]; blob(.09,fi,i*.22,.54,0); cyl(.025,.025,.18,6,M.grass,i*.22,.44,0);}}},
+
+/* ── 外構設備 ── */
+{cat:'外構設備',id:'bench_simple',name:'ベンチ（シンプル）',sub:'2本脚・木座',build(g){G=g;const w=1.6,d=.42;
+  box(w,.08,d,M.timber,0,.42,0);
+  box(.1,.42,d,M.timber,-(w/2)+.18,.21,0); box(.1,.42,d,M.timber,w/2-.18,.21,0);}},
+
+{cat:'外構設備',id:'bench_back',name:'ベンチ（背もたれ付き）',sub:'公園タイプ',build(g){G=g;const w=1.6;
+  box(w,.07,.38,M.timber,0,.44,0);
+  box(w,.07,.32,M.timber,0,.42,.01); // second board
+  box(w,.48,.06,M.timber,0,.69,.16); // back
+  box(.08,.44,.38,M.steel,-(w/2)+.06,.22,0); box(.08,.44,.38,M.steel,w/2-.06,.22,0); // legs
+  box(w,.04,.06,M.steel,0,.45,.16); // back support bar
+}},
+
+{cat:'外構設備',id:'lamp_single',name:'街灯（シングル）',sub:'アームタイプ',build(g){G=g;const h=3.2;
+  cyl(.04,.055,h,8,M.charcoal,0,h/2,0);
+  box(.8,.04,.04,M.charcoal,.4,h+.04,0);
+  cyl(.18,.12,.22,8,M.dark,.8,h+.04,0);
+  blob(.12,M.white,.8,h-.06,0);
+  cyl(.12,.16,.15,8,M.charcoal,0,.075,0);}},
+
+{cat:'外構設備',id:'lamp_double',name:'街灯（ダブルアーム）',sub:'左右対称',build(g){G=g;const h=3.5;
+  cyl(.04,.06,h,8,M.charcoal,0,h/2,0);
+  box(.04,.04,.8,M.charcoal,0,h,.3); box(.04,.04,.8,M.charcoal,0,h,-.3); // crossbar
+  for(const z of[.65,-.65]){
+    box(.55,.04,.04,M.charcoal,.28,h+.03,z);
+    cyl(.14,.1,.18,8,M.dark,.55,h+.03,z); blob(.1,M.white,.55,h-.04,z);}
+  cyl(.14,.18,.14,8,M.charcoal,0,.07,0);}},
+
+{cat:'外構設備',id:'fire_pit',name:'焚き火台',sub:'トライポッド脚',build(g){G=g;
+  cyl(.55,.35,.22,12,M.charcoal,0,.25,0);
+  for(let i=0;i<3;i++){const a=i*Math.PI*2/3;
+    const lm=new THREE.Mesh(new THREE.CylinderGeometry(.025,.03,.4,6),M.steel);
+    lm.position.set(Math.cos(a)*.42,.18,Math.sin(a)*.42); lm.rotation.x=Math.sin(a)*.22; lm.rotation.z=-Math.cos(a)*.22; g.add(lm);}
+  cone(.21,.55,8,fireM,0,.59,0); cone(.12,.38,6,innerM,0,.63,0);}},
+
+{cat:'外構設備',id:'vending',name:'自動販売機',sub:'ドリンク・ティールボディ',build(g){G=g;
+  box(.82,1.78,.56,M.teal,0,.89,0);
+  box(.68,1.05,.02,M.glass,0,1.08,.28);
+  box(.68,.36,.02,M.dark,0,.28,.28);
+  for(let i=0;i<3;i++){const bm=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.02,6),M.red); bm.position.set(.1+i*.14,.78,.29); bm.rotation.x=Math.PI/2; g.add(bm);} }},
+
+/* ── 乗り物 ── */
+{cat:'乗り物',id:'bike',name:'自転車',sub:'シティサイクル',build(g){G=g;
+  for(const wz of[-.5,.5]){const wm=new THREE.Mesh(new THREE.TorusGeometry(.28,.04,8,16),M.dark); wm.position.set(0,.29,wz); wm.rotation.x=Math.PI/2; g.add(wm);}
+  box(.04,.04,1.08,M.steel,0,.6,0); box(.04,.42,.035,M.steel,0,.44,.38);
+  box(.04,.27,.04,M.steel,0,.64,-.5); box(.3,.04,.04,M.steel,0,.78,-.5);
+  box(.22,.04,.1,M.dark,0,.74,.38);
+  cyl(.05,.05,.08,8,M.charcoal,0,.29,0).rotation.x=Math.PI/2;}},
+
+{cat:'乗り物',id:'car_sedan',name:'セダン',sub:'赤・4ドア',build(g){G=g;
+  box(2.0,.72,4.6,M.red,0,.55,0); box(1.75,.68,2.4,M.red,0,1.31,.1);
+  box(1.6,.52,.04,M.glass,0,1.34,1.28); box(1.6,.52,.04,M.glass,0,1.34,-1.1);
+  for(const[wx,wz]of[[-1,-1.5],[-1,1.5],[1,-1.5],[1,1.5]]){
+    const wm=new THREE.Mesh(new THREE.CylinderGeometry(.33,.33,.24,12),M.dark); wm.position.set(wx,.33,wz); wm.rotation.z=Math.PI/2; g.add(wm);
+    const hm=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.26,8),M.steel); hm.position.set(wx,.33,wz); hm.rotation.z=Math.PI/2; g.add(hm);}
+  box(.25,.16,.04,M.white,-.7,.65,-2.31); box(.25,.16,.04,M.white,.7,.65,-2.31);}},
+
+{cat:'乗り物',id:'car_suv',name:'SUV',sub:'ティール・背高',build(g){G=g;
+  box(2.1,.78,4.8,M.teal,0,.56,0); box(1.9,.9,3.1,M.teal,0,1.37,-.1);
+  box(1.7,.56,.04,M.glass,0,1.4,1.45); box(1.7,.56,.04,M.glass,0,1.4,-1.5);
+  for(const[wx,wz]of[[-1.0,-1.7],[-1.0,1.7],[1.0,-1.7],[1.0,1.7]]){
+    const wm=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,.26,12),M.dark); wm.position.set(wx,.35,wz); wm.rotation.z=Math.PI/2; g.add(wm);
+    const hm=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.28,8),M.steel); hm.position.set(wx,.35,wz); hm.rotation.z=Math.PI/2; g.add(hm);}
+  box(.28,.18,.04,M.white,-.75,.68,-2.41); box(.28,.18,.04,M.white,.75,.68,-2.41);}},
+
+{cat:'乗り物',id:'car_van',name:'バン（軽）',sub:'配送・ホワイト',build(g){G=g;
+  box(1.7,.95,3.6,M.wood,0,.6,0); // body
+  box(1.55,1.2,1.5,M.wood,0,1.2,.55); // cab area (same body height)
+  box(1.35,.65,.04,M.glass,0,1.25,1.3); // windshield
+  for(const[wx,wz]of[[-0.8,-1.2],[-0.8,1.2],[0.8,-1.2],[0.8,1.2]]){
+    const wm=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.22,12),M.dark); wm.position.set(wx,.3,wz); wm.rotation.z=Math.PI/2; g.add(wm);}
+  box(.2,.14,.04,M.white,-.6,.58,-1.81); box(.2,.14,.04,M.white,.6,.58,-1.81);}},
+
+/* ── その他 ── */
+{cat:'その他',id:'chimney',name:'煙突',sub:'サウナ用・スチール',build(g){G=g;const cy=0,ch=1.8,cr=.08;
+  cyl(cr,cr,ch,10,M.steel,0,ch/2,0); cyl(cr*2.8,cr*2.0,.07,12,M.dark,0,ch+.035,0);
+  cone(cr*2.8,.20,12,M.steel,0,ch+.17,0); cyl(cr*1.9,cr*1.9,.06,10,M.dark,0,.03,0);}},
+
+{cat:'その他',id:'sign_post',name:'サインポスト',sub:'スタンド看板',build(g){G=g;
+  cyl(.03,.03,1.4,8,M.steel,0,.7,0); cyl(.25,.25,.03,12,M.steel,0,.03,0);
+  box(.6,.35,.04,M.charcoal,0,1.2,0); box(.58,.33,.02,M.red,.01,1.2,.02);}},
+
+{cat:'その他',id:'trash_bin',name:'ゴミ箱',sub:'分別・屋外用',build(g){G=g;
+  cyl(.22,.18,.55,10,M.charcoal,0,.275,0);
+  cyl(.23,.23,.04,10,M.dark,0,.565,0); // lid
+  box(.06,.14,.06,M.steel,0,.56,-.2); // handle
+  box(.12,.04,.04,M.gray,0,.35,.22);} },  // label
+
 ];
 
 /* ─ Exporter ─ */
 const exporter = new GLTFExporter();
-function exportGLB(part){
-  const scene = new THREE.Scene();
-  G = scene;
-  part.build(scene);
-  exporter.parse(scene, gltf=>{
-    const blob = new Blob([gltf],{type:'application/octet-stream'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-    a.download=`cw_${part.id}.glb`; a.click();
+function exportGLB(part, cb){
+  const sc=new THREE.Scene(); G=sc; part.build(sc);
+  exporter.parse(sc,gltf=>{
+    const blob=new Blob([gltf],{type:'application/octet-stream'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`cw_${part.id}.glb`; a.click();
+    if(cb) cb();
   },err=>console.error(err),{binary:true});
 }
+
+/* ─ Download all sequentially ─ */
+document.getElementById('dlAll').onclick=async()=>{
+  for(const p of PARTS){
+    await new Promise(res=>{exportGLB(p,res); setTimeout(res,400);});
+    await new Promise(res=>setTimeout(res,250));
+  }
+};
 
 /* ─ Mini renderer per card ─ */
 function makeCard(part){
   const card=document.createElement('div'); card.className='card';
-  const canvas=document.createElement('canvas'); canvas.width=400; canvas.height=320;
+  const canvas=document.createElement('canvas'); canvas.width=540; canvas.height=440;
   card.appendChild(canvas);
 
-  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-  renderer.setPixelRatio(devicePixelRatio); renderer.shadowMap.enabled=true;
-  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   renderer.outputColorSpace=THREE.SRGBColorSpace;
-  renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.1;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15;
 
   const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0d1218);
-  const cam=new THREE.PerspectiveCamera(40,400/320,0.01,100);
-  const hemi=new THREE.HemisphereLight(0xeef1f4,0x595960,0.7); scene.add(hemi);
-  const sun=new THREE.DirectionalLight(0xffffff,1.8); sun.position.set(4,7,5); sun.castShadow=true; scene.add(sun);
-  const fill=new THREE.DirectionalLight(0x8ab0c0,0.4); fill.position.set(-4,3,-4); scene.add(fill);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:0x1a2028,roughness:.97}));
+  const cam=new THREE.PerspectiveCamera(38,540/440,.01,200);
+  scene.add(new THREE.HemisphereLight(0xeef1f4,0x595960,.75));
+  const sun=new THREE.DirectionalLight(0xffffff,2.0); sun.position.set(5,8,6); sun.castShadow=true;
+  sun.shadow.mapSize.set(1024,1024); scene.add(sun);
+  const fill=new THREE.DirectionalLight(0x8ab0c0,.5); fill.position.set(-5,4,-5); scene.add(fill);
+  const back=new THREE.DirectionalLight(0xffdcb0,.3); back.position.set(2,3,-7); scene.add(back);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:0x141a22,roughness:.97}));
   ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
 
   G=scene; part.build(scene);
 
-  // Auto-fit camera
   const box3=new THREE.Box3().setFromObject(scene);
   const center=box3.getCenter(new THREE.Vector3()), size=box3.getSize(new THREE.Vector3());
   const maxDim=Math.max(size.x,size.y,size.z);
-  const dist=maxDim*1.55;
-  cam.position.set(center.x+dist*0.9,center.y+dist*0.75,center.z+dist*1.1);
+  const dist=maxDim*1.7;
+  cam.position.set(center.x+dist*.85,center.y+dist*.7,center.z+dist*1.1);
   cam.lookAt(center);
 
   const controls=new OrbitControls(cam,canvas);
   controls.target.copy(center); controls.enableDamping=true;
-  controls.autoRotate=true; controls.autoRotateSpeed=0.8;
+  controls.autoRotate=true; controls.autoRotateSpeed=1.2;
+  controls.minDistance=maxDim*.5; controls.maxDistance=maxDim*4;
 
   function animate(){ requestAnimationFrame(animate); controls.update(); renderer.render(scene,cam); }
   animate();
 
   const info=document.createElement('div'); info.className='info';
-  const nm=document.createElement('span'); nm.className='name';
-  nm.textContent=`${part.name}（${part.cat}）`;
+  const names=document.createElement('div'); names.className='names';
+  const nm=document.createElement('div'); nm.className='name'; nm.textContent=part.name;
+  const sb=document.createElement('div'); sb.className='sub'; sb.textContent=part.sub;
+  names.appendChild(nm); names.appendChild(sb);
   const dl=document.createElement('button'); dl.className='dl'; dl.textContent='↓ GLB';
   dl.onclick=e=>{ e.stopPropagation(); exportGLB(part); };
-  info.appendChild(nm); info.appendChild(dl); card.appendChild(info);
+  info.appendChild(names); info.appendChild(dl); card.appendChild(info);
   return card;
 }
 
+/* ─ Render grouped by category ─ */
 const grid=document.getElementById('grid');
-PARTS.forEach(p=>grid.appendChild(makeCard(p)));
-document.getElementById('status').textContent=`${PARTS.length}種のパーツを表示。各カードで回転確認 → 「↓ GLB」でダウンロード`;
+let lastCat='';
+PARTS.forEach(p=>{
+  if(p.cat!==lastCat){
+    const div=document.createElement('div'); div.className='cat-divider'; div.textContent=`▸ ${p.cat}`; grid.appendChild(div);
+    lastCat=p.cat;
+  }
+  grid.appendChild(makeCard(p));
+});
+document.getElementById('status').textContent=`${PARTS.length}種のパーツ — カードをドラッグで回転確認 ／ 「↓ GLB」で個別ダウンロード ／「全部まとめてDL」で一括`;
 </script>
 </body>
 </html>
