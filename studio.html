@@ -1625,30 +1625,222 @@ function updateWalk(){
 
 /* ============ PRESETS ============ */
 const PRESETS={
-  cafe:{meta:{name:'テイクアウトカフェ'},site:{width:16,depth:16},
+
+  /* ---- 1. テイクアウトカフェ ------------------------------------------------
+     2 x 20ft (rot:0) 並列。前面にカウンター窓＋デッキ＋キャノピー。
+     A: x[-7.03,-0.97]  B: x[0.97,7.03]  z[-2.72,-0.28]（サイト18×18m）   */
+  cafe:{
+    meta:{name:'テイクアウトカフェ'},
+    site:{width:18,depth:16},
     modules:[
-      {id:'A',size:'20ft',x:-3.6,z:0,level:0,rot:0,color:'white',faces:{front:'storefront',back:'wall',left:'cargo',right:'wall'},interior:false},
-      {id:'B',size:'20ft',x:3.6,z:0,level:0,rot:0,color:'navy',faces:{front:'storefront',back:'wall',left:'wall',right:'cargo'},interior:false}
+      {id:'A',size:'20ft',x:-4.0,z:-1.5,level:0,rot:0,color:'white',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'counter',u:0.5,w:3.2,h:0.9,sill:0.85},
+            {type:'window',u:0.18,w:0.7,h:1.0,sill:1.3}
+          ]},
+          back:'wall',left:'cargo',right:'cargo'
+        }},
+      {id:'B',size:'20ft',x:4.0,z:-1.5,level:0,rot:0,color:'sand',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'counter',u:0.5,w:3.2,h:0.9,sill:0.85},
+            {type:'window',u:0.82,w:0.7,h:1.0,sill:1.3}
+          ]},
+          back:'wall',left:'cargo',right:'cargo'
+        }}
     ],
-    site_features:[{type:'deck',x:0,z:5,w:10,d:2.5,y:0.42},{type:'lamp_post',x:-6,z:6.5,h:3.2},{type:'lamp_post',x:6,z:6.5,h:3.2},{type:'tree_pine',x:-7,z:-4,s:1.0}]},
-  villa:{meta:{name:'週末の別荘'},site:{width:22,depth:22},
+    site_features:[
+      {type:'canopy',a:'A',b:'B'},
+      {type:'deck',x:0,z:2.5,w:14.0,d:3.0,y:0.42},
+      {type:'bench',x:-4.5,z:4.2,w:1.4,d:0.5},
+      {type:'bench',x:4.5,z:4.2,w:1.4,d:0.5},
+      {type:'sign',x:0,z:-3.8,y:2.8,text:'COFFEE WORKS',size:0.7,bg:'#c0392b'},
+      {type:'lamp_post',x:-7.5,z:4.8,h:3.5},
+      {type:'lamp_post',x:7.5,z:4.8,h:3.5},
+      {type:'lamp_post',x:-7.5,z:-4.0,h:3.5},
+      {type:'lamp_post',x:7.5,z:-4.0,h:3.5},
+      {type:'planter_box',x:-6.5,z:2.5,w:0.8,d:0.4},
+      {type:'planter_box',x:6.5,z:2.5,w:0.8,d:0.4},
+      {type:'tree_bamboo',x:-8.0,z:-3.5,s:1.1},
+      {type:'tree_bamboo',x:8.0,z:-3.5,s:1.0},
+      {type:'bike',x:6.8,z:5.5}
+    ]},
+
+  /* ---- 2. 週末の別荘 --------------------------------------------------------
+     40ft メインリビング（level:0）＋ 20ft 寝室ウィング（level:0 rot:90）。
+     屋上デッキ＋階段、ウッドデッキ、焚き火台、自然樹木で囲む。
+     A(40ft): x[-6.095,6.095] z[-4.22,-1.78]
+     B(20ft rot:90): x[-1.22,1.22] z[1.78,7.84]  → 調整: x=0,z=4.8          */
+  villa:{
+    meta:{name:'週末の別荘'},
+    site:{width:26,depth:22},
     modules:[
-      {id:'A',size:'40ft',x:0,z:-2,level:0,rot:0,color:'forest',faces:{front:'wall',back:'wall',left:'cargo',right:'cargo'},interior:false},
-      {id:'B',size:'20ft',x:-4.7,z:3.5,level:0,rot:90,color:'white',faces:{front:'wall',back:'wall',left:'cargo',right:'cargo'},interior:false}
+      {id:'A',size:'40ft',x:0,z:-3.0,level:0,rot:0,color:'timber',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'window',u:0.2,w:3.5,h:1.4,sill:0.85,shape:'strip'},
+            {type:'window',u:0.65,w:2.2,h:1.4,sill:0.85,shape:'strip'},
+            {type:'door',u:0.88,w:1.2,h:2.2,style:'single'}
+          ]},
+          back:'wall',left:'cargo',right:'cargo'
+        }},
+      {id:'B',size:'20ft',x:0,z:3.5,level:0,rot:0,color:'white',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'window',u:0.3,w:2.8,h:1.3,sill:1.0,shape:'strip'},
+            {type:'door',u:0.78,w:0.9,h:2.1,style:'single'}
+          ]},
+          back:'wall',left:'cargo',right:'cargo'
+        }}
     ],
-    site_features:[{type:'deck',x:0,z:5.5,w:8,d:3,y:0.42},{type:'fire_pit',x:4,z:9},{type:'tree_bamboo',x:-9,z:5,s:1.2},{type:'tree_pine',x:8,z:-4,s:1.0},{type:'tree_pine',x:-8,z:-6,s:0.9}]},
-  sauna:{meta:{name:'コンテナサウナ'},site:{width:12,depth:12},
-    modules:[{id:'A',size:'20ft',x:0,z:-1,level:0,rot:0,color:'brown',faces:{front:'wall',back:'wall',left:'cargo',right:'cargo'},interior:false}],
-    site_features:[{type:'deck',x:0,z:5,w:5,d:2.5,y:0.42},{type:'planter_box',x:-3.5,z:5.5,w:0.8,d:0.4},{type:'tree_pine',x:4.5,z:4,s:0.9},{type:'fire_pit',x:3.5,z:7}]},
-  shop:{meta:{name:'セレクトショップ'},site:{width:18,depth:16},
+    site_features:[
+      {type:'deck',x:0,z:-0.6,w:10.0,d:2.8,y:0.42},
+      {type:'stair',x:7.2,z:-3.0,dir:'-x',d:3.0,top:2.59,land:'A'},
+      {type:'rooftop-deck',on:'A',openSides:['right']},
+      {type:'fire_pit',x:-5.0,z:8.0},
+      {type:'pergola',x:0,z:8.5,w:6.0,d:3.5,y:0.42},
+      {type:'bench',x:-1.5,z:-0.3,w:1.4,d:0.5},
+      {type:'bench',x:1.5,z:-0.3,w:1.4,d:0.5},
+      {type:'lamp_post',x:-9.0,z:6.0,h:3.5},
+      {type:'lamp_post',x:9.0,z:6.0,h:3.5},
+      {type:'lamp_post',x:9.0,z:-5.5,h:3.5},
+      {type:'tree_pine',x:10.0,z:-5.0,s:1.3},
+      {type:'tree_pine',x:-10.0,z:-5.0,s:1.1},
+      {type:'tree_pine',x:11.0,z:3.0,s:0.9},
+      {type:'tree_bamboo',x:-10.0,z:5.0,s:1.4},
+      {type:'tree_bamboo',x:10.0,z:8.0,s:1.2},
+      {type:'tree_palm',x:-4.0,z:9.5,s:1.0},
+      {type:'tree_palm',x:4.0,z:9.5,s:1.0},
+      {type:'planter_box',x:-4.0,z:-0.5,w:0.8,d:0.4},
+      {type:'planter_box',x:4.0,z:-0.5,w:0.8,d:0.4},
+      {type:'car',x:-7.0,z:-8.5,col:'white'}
+    ]},
+
+  /* ---- 3. コンテナサウナ ----------------------------------------------------
+     20ft サウナ本体（charcoal）＋ 10ft 脱衣・シャワー室（timber）。
+     A(20ft): x[-3.03,3.03] z[-3.22,-0.78]
+     B(10ft): x[-1.495,1.495] z[1.005,3.995]                                 */
+  sauna:{
+    meta:{name:'コンテナサウナ'},
+    site:{width:14,depth:12},
     modules:[
-      {id:'A',size:'40ft',x:-3.1,z:0,level:0,rot:0,color:'black',faces:{front:'storefront',back:'wall',left:'cargo',right:'wall'},interior:false},
-      {id:'B',size:'20ft',x:7.5,z:0,level:0,rot:0,color:'white',faces:{front:'storefront',back:'wall',left:'wall',right:'cargo'},interior:false}
+      {id:'A',size:'20ft',x:0,z:-2.0,level:0,rot:0,color:'charcoal',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'door',u:0.5,w:0.9,h:2.1,style:'single'}
+          ]},
+          back:'wall',left:'cargo',right:'cargo'
+        }},
+      {id:'B',size:'10ft',x:0,z:2.5,level:0,rot:0,color:'timber',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'door',u:0.35,w:0.9,h:2.1,style:'single'},
+            {type:'window',u:0.8,w:0.5,h:0.6,sill:1.5}
+          ]},
+          back:'wall',left:'cargo',right:'cargo'
+        }}
     ],
-    site_features:[{type:'lamp_post',x:-7,z:6,h:3.2},{type:'lamp_post',x:7,z:6,h:3.2},{type:'tree_bamboo',x:-8,z:-3,s:1.1},{type:'tree_bamboo',x:-8,z:0,s:0.9}]},
-  workspace:{meta:{name:'ワークスペース'},site:{width:12,depth:12},
-    modules:[{id:'A',size:'20ft',x:0,z:0,level:0,rot:0,color:'teal',faces:{front:'storefront',back:'wall',left:'cargo',right:'cargo'},interior:false}],
-    site_features:[{type:'deck',x:0,z:4.5,w:5,d:2,y:0.42},{type:'tree_bamboo',x:4,z:4,s:0.8},{type:'planter_box',x:-3.5,z:5,w:0.8,d:0.4}]}
+    site_features:[
+      {type:'chimney',x:1.5,z:-2.0,y:3.01,h:2.2},
+      {type:'deck',x:0,z:0.25,w:5.0,d:2.5,y:0.42},
+      {type:'fire_pit',x:4.5,z:1.5},
+      {type:'bench',x:-1.5,z:0.25,w:1.4,d:0.5},
+      {type:'lamp_post',x:-5.5,z:4.5,h:3.2},
+      {type:'lamp_post',x:5.5,z:4.5,h:3.2},
+      {type:'lamp_post',x:5.5,z:-4.5,h:3.2},
+      {type:'tree_pine',x:-5.5,z:-3.5,s:1.2},
+      {type:'tree_pine',x:5.5,z:-4.0,s:1.0},
+      {type:'tree_pine',x:-5.5,z:3.0,s:0.9},
+      {type:'tree_bamboo',x:5.0,z:4.5,s:1.1},
+      {type:'planter_box',x:-2.0,z:4.5,w:0.8,d:0.4},
+      {type:'planter_box',x:2.0,z:4.5,w:0.8,d:0.4}
+    ]},
+
+  /* ---- 4. セレクトショップ ---------------------------------------------------
+     40ft 1F メインフロア（storefront）＋ 20ft 2F ギャラリー（level:1）。
+     キャノピーで連続感、外部ペルゴラ、照明、駐車場。
+     A(40ft): x[-6.095,6.095] z[-2.72,-0.28]
+     B(20ft level:1): x[-3.03,3.03] z[2.78,5.22]                             */
+  shop:{
+    meta:{name:'セレクトショップ'},
+    site:{width:20,depth:16},
+    modules:[
+      {id:'A',size:'40ft',x:0,z:-1.5,level:0,rot:0,color:'charcoal',
+        faces:{
+          front:'storefront',
+          back:'wall',left:'cargo',right:'cargo'
+        }},
+      {id:'B',size:'20ft',x:0,z:4.0,level:1,rot:0,color:'white',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'window',u:0.2,w:1.8,h:1.3,sill:0.9,shape:'strip'},
+            {type:'window',u:0.8,w:1.8,h:1.3,sill:0.9,shape:'strip'}
+          ]},
+          back:'wall',left:'cargo',right:'cargo'
+        }}
+    ],
+    site_features:[
+      {type:'canopy',a:'A',b:'B'},
+      {type:'stair',x:2.5,z:1.5,dir:'+z',d:2.2,top:2.59,land:'B'},
+      {type:'pergola',x:0,z:6.5,w:8.0,d:2.5,y:0.42},
+      {type:'sign',x:0,z:-3.5,y:3.2,text:'SELECT WORKS',size:0.75,bg:'#1d1d22'},
+      {type:'lamp_post',x:-8.0,z:5.5,h:3.5},
+      {type:'lamp_post',x:8.0,z:5.5,h:3.5},
+      {type:'lamp_post',x:-8.0,z:-5.5,h:3.5},
+      {type:'lamp_post',x:8.0,z:-5.5,h:3.5},
+      {type:'tree_bamboo',x:-8.5,z:-2.0,s:1.3},
+      {type:'tree_bamboo',x:-8.5,z:2.0,s:1.1},
+      {type:'tree_pine',x:8.5,z:-3.0,s:1.0},
+      {type:'planter_box',x:-3.5,z:6.0,w:0.8,d:0.4},
+      {type:'planter_box',x:3.5,z:6.0,w:0.8,d:0.4},
+      {type:'bike',x:7.5,z:1.5},
+      {type:'bike',x:7.5,z:2.5},
+      {type:'car',x:-5.0,z:-7.0,col:'red'}
+    ]},
+
+  /* ---- 5. ワークスペース ----------------------------------------------------
+     20ft オフィス（teal, louver長辺）＋ 15ft ミーティングポッド（white, rot:90）。
+     キャノピーでつなぎ、外デッキ、プランター、自然光重視の設計。
+     A(20ft): x[-5.03,1.03] z[-1.22,1.22]
+     B(15ft rot:90): x[3.78,6.22] z[-2.275,2.275]                            */
+  workspace:{
+    meta:{name:'ワークスペース'},
+    site:{width:16,depth:14},
+    modules:[
+      {id:'A',size:'20ft',x:-2.0,z:0,level:0,rot:0,color:'teal',
+        faces:{
+          front:{base:'louver'},
+          back:'wall',
+          left:'cargo',right:'cargo'
+        }},
+      {id:'B',size:'15ft',x:5.0,z:0,level:0,rot:90,color:'white',
+        faces:{
+          front:'louver',
+          back:'louver',
+          left:'cargo',
+          right:{base:'wall',openings:[
+            {type:'window',u:0.5,w:1.8,h:1.2,sill:0.9,shape:'strip'}
+          ]}
+        }}
+    ],
+    site_features:[
+      {type:'canopy',a:'A',b:'B'},
+      {type:'deck',x:-2.0,z:3.5,w:7.0,d:2.5,y:0.42},
+      {type:'bench',x:-3.5,z:3.5,w:1.4,d:0.5},
+      {type:'bench',x:-0.5,z:3.5,w:1.4,d:0.5},
+      {type:'planter_box',x:-6.0,z:3.5,w:0.8,d:0.4},
+      {type:'planter_box',x:1.5,z:3.5,w:0.8,d:0.4},
+      {type:'planter_box',x:-6.0,z:-3.0,w:0.8,d:0.4},
+      {type:'tree_bamboo',x:-6.5,z:1.5,s:1.0},
+      {type:'tree_bamboo',x:6.5,z:2.5,s:0.9},
+      {type:'tree_pine',x:6.5,z:-4.5,s:1.0},
+      {type:'lamp_post',x:-6.5,z:5.5,h:3.2},
+      {type:'lamp_post',x:2.0,z:5.5,h:3.2},
+      {type:'bike',x:5.5,z:5.5},
+      {type:'sign',x:-2.0,z:-2.5,y:3.2,text:'STUDIO',size:0.65,bg:'#3f8a8a'}
+    ]}
+
 };
 document.querySelectorAll('.preset-btn').forEach(btn=>btn.addEventListener('click',()=>{
   const p=PRESETS[btn.dataset.p]; if(!p)return;
