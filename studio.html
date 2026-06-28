@@ -170,6 +170,10 @@
         <button id="addC" class="ebig">＋ コンテナを置く</button>
         <button id="autoDecorate" class="ebig" style="margin-top:8px;background:linear-gradient(90deg,#2b7a78,#3f8a8a)">✨ おまかせ装飾（一括生成）</button>
         <button id="undoBtn" class="ebig" style="margin-top:8px;background:#1a222b;border:1px solid var(--line);font-size:12px">↩ 元に戻す (⌘Z / Ctrl+Z)</button>
+        <div class="erow" style="margin-top:8px">
+          <button id="ssBtn" class="esm" style="flex:1;font-size:11px">📷 SS保存</button>
+          <button id="jsonApplyBtn" class="esm" style="flex:1;font-size:11px">📋 JSON適用</button>
+        </div>
         <div class="erow"><button id="addDeck" class="esm">＋ウッドデッキ</button><button id="addStair" class="esm">＋階段(2F)</button><button id="addStair3" class="esm">＋階段(3F)</button><button id="addRail" class="esm">＋手すり</button></div>
         <div class="erow"><button id="addRoof" class="esm">＋屋上デッキ</button><button id="addBridge" class="esm">＋橋</button><button id="addCanopy" class="esm">＋連結屋根</button><button id="addChimney" class="esm">＋煙突</button></div>
         <div class="erow"><button id="makeLoop" class="esm" style="flex:1">🔁 回遊化（屋上＋橋＋階段を自動生成）</button></div>
@@ -215,7 +219,7 @@ const scene=new THREE.Scene(); scene.background=new THREE.Color(0xe7f1f7);
 scene.fog=new THREE.Fog(0xe7f1f7,55,180);
 const camera=new THREE.PerspectiveCamera(55,1,0.05,500);
 camera.position.set(16,12,20);
-const renderer=new THREE.WebGLRenderer({antialias:true});
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
 renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 view.appendChild(renderer.domElement);
@@ -832,7 +836,10 @@ function toonify(group){
 let building=null;
 function buildFromPlan(plan,keepView){
   EP=plan;                                                // この設計が編集対象に
-  if(building){ scene.remove(building); building.traverse(o=>{o.geometry&&o.geometry.dispose&&o.geometry.dispose();}); }
+  if(building){ scene.remove(building); building.traverse(o=>{
+    if(o.geometry) o.geometry.dispose();
+    if(o.material&&o.material.isMeshToonMaterial) o.material.dispose();
+  }); }
   building=new THREE.Group(); scene.add(building);
   G=building;
   (plan.modules||[]).forEach((m,i)=>buildModule(m,i));
@@ -867,10 +874,13 @@ function buildFromPlan(plan,keepView){
     mk.position.set(sx*sw,0.11,sz*sd); sg.add(mk);
   });
   scene.add(sg);
+  const sw2=((plan.site&&plan.site.width)||16)/2+4, sd2=((plan.site&&plan.site.depth)||16)/2+4;
+  const sh=Math.max(sw2,sd2); sun.shadow.camera.left=-sh; sun.shadow.camera.right=sh; sun.shadow.camera.top=sh; sun.shadow.camera.bottom=-sh; sun.shadow.camera.updateProjectionMatrix();
   document.getElementById('status').textContent=(plan.meta&&plan.meta.name?plan.meta.name+'｜':'')+(plan.modules||[]).length+'モジュール / 敷地'+(plan.site?`${plan.site.width}×${plan.site.depth}m`:'');
   document.getElementById('json').value=JSON.stringify(plan,null,2);
   if(typeof refreshSelection==='function') refreshSelection();
   if(typeof syncSiteUI==='function') syncSiteUI();
+  if(typeof _hist!=='undefined') _histSnap=JSON.parse(JSON.stringify(EP));
 }
 
 /* ============ サンプル設計JSON（梅＝1棟テイクアウトカフェ を JSON で表現）============ */
@@ -1021,11 +1031,13 @@ function refreshLayerTree(){
   if((EP.modules||[]).length&&(EP.site_features||[]).length){
     const sep=document.createElement('div'); sep.className='ltSep'; sep.textContent='─ パーツ'; list.appendChild(sep);
   }
+  const _typeCount={};
   (EP.site_features||[]).forEach((f,i)=>{
+    _typeCount[f.type]=(_typeCount[f.type]||0)+1;
     const row=document.createElement('div');
     row.className='ltItem'+(selKind==='feat'&&selIndex===i?' on':'');
     const icon=_FEAT_ICON[f.type]||'🔧', label=_FEAT_LABEL[f.type]||f.type;
-    row.innerHTML=`<span>${icon}</span><span>${label}</span>`;
+    row.innerHTML=`<span>${icon}</span><span>${label} ${_typeCount[f.type]}</span>`;
     row.onclick=()=>select('feat',i);
     list.appendChild(row);
   });
@@ -1384,7 +1396,7 @@ document.getElementById('opDel').onclick=()=>{ if(selKind!=='mod')return; const 
   if(f.openings.length===0 && f.base==='wall') m.faces[editFace]='wall';   // 開口ゼロのwallは文字列に戻す
   editorRebuild(); syncFaceUI(); };
 document.getElementById('ispUse').addEventListener('change',e=>{ if(selKind!=='mod')return; const m=selObj(); if(!m)return; applyUse(m,e.target.value); editorRebuild(); });
-document.getElementById('ispDup').onclick=()=>{ if(selKind!=='mod')return; const m=selObj(); if(!m)return; const c=JSON.parse(JSON.stringify(m)); c.x+=2; c.id=(c.id||'C')+'b'; clampToSite(c,true); EP.modules.push(c); editorRebuild(); select('mod',EP.modules.length-1); };
+document.getElementById('ispDup').onclick=()=>{ if(selKind!=='mod')return; const m=selObj(); if(!m)return; const c=JSON.parse(JSON.stringify(m)); c.x+=2; c.id='C'+Date.now().toString(36).slice(-5); clampToSite(c,true); EP.modules.push(c); editorRebuild(); select('mod',EP.modules.length-1); };
 document.getElementById('ispDel').onclick=()=>{ if(selKind!=='mod'||selIndex<0)return; EP.modules.splice(selIndex,1); deselect(); editorRebuild(); };
 document.getElementById('ispClose').onclick=deselect;
 // パーツ・インスペクタ
@@ -1538,7 +1550,7 @@ function enterWalk(){ if(connectPick) exitConnectPick();   // 接続選択中に
   document.getElementById('walkBtn').textContent='✕ 設計に戻る'; document.getElementById('walkHint').style.display='block'; }
 function exitWalk(){ walkMode=false; controls.enabled=true; if(avatar)avatar.visible=false;
   document.getElementById('walkBtn').textContent='🚶 中に入る'; document.getElementById('walkHint').style.display='none';
-  try{ buildFromPlan(JSON.parse(document.getElementById('json').value)); }catch(e){} }
+  buildFromPlan(EP,true); }
 document.getElementById('walkBtn').onclick=()=>{ walkMode?exitWalk():enterWalk(); };
 document.getElementById('camReset').onclick=()=>{ if(EP&&building){ const box3=new THREE.Box3().setFromObject(building); const c=box3.getCenter(new THREE.Vector3()),sz=box3.getSize(new THREE.Vector3()); controls.target.set(c.x,Math.max(1.6,sz.y*0.45),c.z); const r=Math.max(sz.x,sz.z,6); camera.position.set(c.x+r*1.1,sz.y*0.9+6,c.z+r*1.25); controls.update(); } else { camera.position.set(16,12,20); controls.target.set(0,1.6,0); controls.update(); } };
 
@@ -1568,6 +1580,15 @@ function updateWalk(){
   camera.position.set(avatar.position.x-Math.sin(camYaw)*dist, hgt, avatar.position.z-Math.cos(camYaw)*dist);
   camera.lookAt(avatar.position.x, 1.5+fy, avatar.position.z);
 }
+
+/* ============ SCREENSHOT / JSON APPLY ============ */
+document.getElementById('ssBtn').onclick=()=>{
+  renderer.render(scene,camera);
+  const ts=new Date().toISOString().slice(0,16).replace('T','_').replace(':','h')+'m';
+  const a=document.createElement('a'); a.download='design_'+ts+'.png'; a.href=renderer.domElement.toDataURL('image/png'); a.click(); };
+document.getElementById('jsonApplyBtn').onclick=()=>{
+  try{ buildFromPlan(JSON.parse(document.getElementById('json').value)); document.getElementById('err').textContent=''; }
+  catch(e){ document.getElementById('err').textContent='JSONエラー: '+e.message; } };
 
 /* ============ SITE UI ============ */
 function syncSiteUI(){ const w=document.getElementById('siteW'),d=document.getElementById('siteD'); if(!w||!d||!EP||!EP.site) return; w.value=EP.site.width||16; d.value=EP.site.depth||16; }
