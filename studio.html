@@ -778,10 +778,10 @@ function buildFeature(f){
       const gm=new THREE.Mesh(new THREE.IcosahedronGeometry(0.12,0),M.white); gm.position.set(x+0.8,h-0.06,z); G.add(gm);
       const bm=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.16,0.15,8),M.charcoal); bm.position.set(x,0.075,z); bm.castShadow=true; G.add(bm);
       break; }
-    case 'planter_box':{ const x=f.x||0,z=f.z||0,w=f.w||0.8,d=f.d||0.4;
-      box(w,0.35,d,M.wood,x,0.175,z); box(w-0.06,0.24,d-0.06,M.timber,x,0.24,z);
-      box(w-0.06,0.06,d-0.06,M.grass,x,0.39,z);
-      for(let i=-1;i<=1;i++) box(0.06,0.22,0.06,M.leaf,x+i*(w/4),0.52,z); break; }
+    case 'planter_box':{ const x=f.x||0,z=f.z||0,w=f.w||0.8,d=f.d||0.4,y=f.y||0;
+      box(w,0.35,d,M.wood,x,y+0.175,z); box(w-0.06,0.24,d-0.06,M.timber,x,y+0.24,z);
+      box(w-0.06,0.06,d-0.06,M.grass,x,y+0.39,z);
+      for(let i=-1;i<=1;i++) box(0.06,0.22,0.06,M.leaf,x+i*(w/4),y+0.52,z); break; }
     case 'fire_pit':{ const x=f.x||0,z=f.z||0;
       const bm=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.35,0.22,12),M.charcoal); bm.position.set(x,0.25,z); bm.castShadow=true; G.add(bm);
       for(let i=0;i<3;i++){ const a=i*Math.PI*2/3;
@@ -797,13 +797,18 @@ function buildFeature(f){
       for(let i=0;i<3;i++){ const bm=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.02,6),M.red); bm.position.set(x+0.1+i*0.14,0.78,z+0.29); bm.rotation.x=Math.PI/2; G.add(bm); }
       box(0.14,0.06,0.02,M.charcoal,x+0.22,0.56,z+0.29); break; }
     case 'bike':{ const x=f.x||0,z=f.z||0;
-      for(const wz of [z-0.5,z+0.5]){ const wm=new THREE.Mesh(new THREE.TorusGeometry(0.28,0.04,8,16),M.dark); wm.position.set(x,0.29,wz); wm.rotation.x=Math.PI/2; wm.castShadow=true; G.add(wm); }
-      box(0.04,0.04,1.08,M.steel,x,0.6,z);
-      box(0.04,0.42,0.035,M.steel,x,0.44,z+0.38);
-      box(0.04,0.27,0.04,M.steel,x,0.64,z-0.5);
-      box(0.3,0.04,0.04,M.steel,x,0.78,z-0.5);
-      box(0.22,0.04,0.1,M.dark,x,0.74,z+0.38);
-      const cm=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.08,8),M.charcoal); cm.position.set(x,0.29,z); cm.rotation.x=Math.PI/2; G.add(cm); break; }
+      for(const wz of [z-0.44,z+0.44]){   // 前後ホイール（大径・リアル）
+        const wm=new THREE.Mesh(new THREE.TorusGeometry(0.30,0.04,8,18),M.dark); wm.position.set(x,0.31,wz); wm.rotation.x=Math.PI/2; wm.castShadow=true; G.add(wm);
+        const hb=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.07,8),M.steel); hb.position.set(x,0.31,wz); hb.rotation.x=Math.PI/2; G.add(hb); }
+      box(0.05,0.06,0.82,M.steel,x,0.76,z-0.02);  // トップチューブ（水平）
+      box(0.05,0.56,0.05,M.steel,x,0.58,z+0.22);  // シートチューブ（後・垂直）
+      box(0.05,0.46,0.05,M.steel,x,0.50,z-0.20);  // ヘッドチューブ＋フォーク
+      box(0.05,0.05,0.74,M.steel,x,0.32,z-0.01);  // チェーンステー
+      box(0.06,0.03,0.26,M.timber,x,0.87,z+0.13); // サドル
+      box(0.06,0.19,0.06,M.steel,x,0.80,z+0.22);  // シートポスト
+      box(0.06,0.22,0.06,M.steel,x,0.76,z-0.40);  // フロントステム
+      box(0.30,0.06,0.06,M.dark,x,0.87,z-0.38);   // ハンドルバー
+      const bm=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.08,8),M.charcoal); bm.position.set(x,0.32,z+0.04); bm.rotation.x=Math.PI/2; G.add(bm); break; }
     case 'car':{ const x=f.x||0,z=f.z||0,col=f.col||'red';
       const carMat=({red:M.red,blue:M.teal,green:M.grass,orange:M.orange}[col])||M.red;
       box(2.0,0.72,4.6,carMat,x,0.55,z); box(1.75,0.68,2.4,carMat,x,1.31,z+0.1);
@@ -812,6 +817,40 @@ function buildFeature(f){
         const wm=new THREE.Mesh(new THREE.CylinderGeometry(0.33,0.33,0.24,12),M.dark); wm.position.set(x+wx,0.33,z+wz2); wm.rotation.z=Math.PI/2; wm.castShadow=true; G.add(wm);
         const hm=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.26,8),M.steel); hm.position.set(x+wx,0.33,z+wz2); hm.rotation.z=Math.PI/2; G.add(hm); }
       box(0.25,0.16,0.04,M.white,x-0.7,0.65,z-2.31); box(0.25,0.16,0.04,M.white,x+0.7,0.65,z-2.31); break; }
+    case 'sun_lounger':{ const x=f.x||0,z=f.z||0,y=f.y||0;   // アウトドアラウンジャー
+      for(const[ex,ez] of [[-0.38,-0.88],[0.38,-0.88],[-0.38,0.92],[0.38,0.92]]) box(0.05,0.14,0.05,M.steel,x+ex,y+0.07,z+ez);
+      box(0.80,0.06,1.92,M.sand,x,y+0.20,z);           // 座面クッション
+      box(0.80,0.44,0.08,M.gray,x,y+0.40,z-0.85);      // 背もたれクッション
+      box(0.08,0.12,1.90,M.timber,x-0.40,y+0.16,z);    // 左フレームレール
+      box(0.08,0.12,1.90,M.timber,x+0.40,y+0.16,z);    // 右フレームレール
+      box(0.84,0.07,0.30,M.timber,x,y+0.14,z+0.95); break; }   // フットエンドバー
+    case 'outdoor_shower':{ const x=f.x||0,z=f.z||0;   // アウトドアシャワーポスト
+      const sp=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.045,2.55,8),M.steel); sp.position.set(x,1.28,z); sp.castShadow=true; G.add(sp);
+      box(0.04,0.04,0.52,M.steel,x,2.42,z-0.26);       // シャワーアーム（水平）
+      const hd=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.17,0.05,10),M.dark); hd.position.set(x,2.34,z-0.52); hd.castShadow=true; G.add(hd);
+      const bs=new THREE.Mesh(new THREE.CylinderGeometry(0.46,0.50,0.06,12),M.concrete); bs.position.set(x,0.03,z); G.add(bs);
+      box(0.04,0.55,0.04,M.steel,x,0.28,z-0.26); break; }
+    case 'terrace_lounge':{ const x=f.x||0,z=f.z||0,w=f.w||5.5,d=f.d||3.5;   // ラウンジテラス（ソファ＋ローテーブル）
+      box(w,0.10,d,M.wood,x,0.05,z);
+      const nl=Math.max(4,Math.round(w/0.35)); for(let i=1;i<nl;i++) box(0.025,0.02,d-0.06,M.dark,x-w/2+i*(w/nl),0.11,z);
+      box(w*0.55,0.34,0.72,M.gray,x-w*0.08,0.29,z-d*0.14);    // メインシート
+      box(w*0.55,0.48,0.10,M.sand,x-w*0.08,0.42,z-d*0.28);    // バックレスト
+      box(0.72,0.34,d*0.36,M.gray,x-w*0.33,0.29,z+d*0.06);    // サイドシート
+      box(0.10,0.48,d*0.36,M.sand,x-w*0.46,0.42,z+d*0.06);    // サイドバック
+      box(w*0.26,0.04,d*0.32,M.timber,x+w*0.10,0.36,z+d*0.06); // ローテーブル天板
+      for(const[dx,dz] of [[-1,-1],[1,-1],[-1,1],[1,1]]) box(0.05,0.36,0.05,M.dark,x+w*0.10+dx*(w*0.12),0.18,z+d*0.06+dz*(d*0.14));
+      potPlant(x+w/2-0.45,z-d/2+0.42,0.72); potPlant(x-w/2+0.45,z+d/2-0.42,0.60); break; }
+    case 'terrace_cafe':{ const x=f.x||0,z=f.z||0,w=f.w||5.5,d=f.d||3.2;   // カフェテラス（ビストロテーブル×3）
+      box(w,0.10,d,M.wood,x,0.05,z);
+      const nc=Math.max(4,Math.round(w/0.35)); for(let i=1;i<nc;i++) box(0.025,0.02,d-0.06,M.dark,x-w/2+i*(w/nc),0.11,z);
+      for(const[tx,tz] of [[-w*0.28,0],[0,0],[w*0.28,0]]){
+        box(0.64,0.04,0.64,M.timber,x+tx,0.72,z+tz);
+        const lg=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.03,0.72,8),M.dark); lg.position.set(x+tx,0.36,z+tz); G.add(lg);
+        for(const[cx,cz] of [[0,-0.42],[0,0.42]]){
+          box(0.40,0.04,0.38,M.timber,x+tx+cx,0.46,z+tz+cz);
+          box(0.40,0.36,0.04,M.gray,x+tx+cx,0.64,z+tz+cz+(cz>0?0.16:-0.16));
+          for(const[ex,ez] of [[-0.15,-0.14],[0.15,-0.14],[-0.15,0.14],[0.15,0.14]]) box(0.04,0.44,0.04,M.dark,x+tx+cx+ex,0.22,z+tz+cz+ez); } }
+      break; }
 
     /* ── 内装・家具 ────────────────────────── */
     case 'chair':{ const x=f.x||0,z=f.z||0;
@@ -1058,8 +1097,8 @@ function groundPoint(ev){ const r=renderer.domElement.getBoundingClientRect();
   _m.x=((ev.clientX-r.left)/r.width)*2-1; _m.y=-((ev.clientY-r.top)/r.height)*2+1;
   _ray.setFromCamera(_m,camera); const t=-_ray.ray.origin.y/_ray.ray.direction.y; if(t<=0) return null;
   return _ray.ray.origin.clone().addScaledVector(_ray.ray.direction,t); }
-const _FEAT_LABEL={'deck':'ウッドデッキ','rooftop-deck':'屋上デッキ','stair':'階段','rail':'手すり','bridge':'橋','canopy':'連結屋根','chimney':'煙突','tree_pine':'松の木','tree_palm':'ヤシの木','tree_bamboo':'竹','lamp_post':'街灯','planter_box':'プランター','fire_pit':'焚き火','vending':'自販機','bike':'自転車','car':'自動車','chair':'椅子','bar_stool':'バーチェア','sofa':'ソファ','indoor_plant':'観葉植物','dining_table':'テーブル','work_desk':'デスク','bookshelf':'本棚','counter_bar':'カウンター','sign':'サイン','terrace':'テラス','tree':'植栽','pad':'敷地パッド'};
-const _FEAT_ICON={'deck':'🪵','rooftop-deck':'🏠','stair':'🪜','rail':'🔩','bridge':'🌉','canopy':'⛺','chimney':'🏭','tree_pine':'🌲','tree_palm':'🌴','tree_bamboo':'🎋','lamp_post':'💡','planter_box':'🌱','fire_pit':'🔥','vending':'🥤','bike':'🚲','car':'🚗','chair':'🪑','bar_stool':'🪑','sofa':'🛋','indoor_plant':'🌿','dining_table':'🍽','work_desk':'🖥','bookshelf':'📚','counter_bar':'☕','sign':'📋','terrace':'☂','tree':'🌳','pad':'⬜'};
+const _FEAT_LABEL={'deck':'ウッドデッキ','rooftop-deck':'屋上デッキ','stair':'階段','rail':'手すり','bridge':'橋','canopy':'連結屋根','chimney':'煙突','tree_pine':'松の木','tree_palm':'ヤシの木','tree_bamboo':'竹','lamp_post':'街灯','planter_box':'プランター','fire_pit':'焚き火','vending':'自販機','bike':'自転車','car':'自動車','chair':'椅子','bar_stool':'バーチェア','sofa':'ソファ','indoor_plant':'観葉植物','dining_table':'テーブル','work_desk':'デスク','bookshelf':'本棚','counter_bar':'カウンター','sign':'サイン','terrace':'テラス','terrace_lounge':'ラウンジテラス','terrace_cafe':'カフェテラス','sun_lounger':'サンラウンジャー','outdoor_shower':'アウトドアシャワー','tree':'植栽','pad':'敷地パッド'};
+const _FEAT_ICON={'deck':'🪵','rooftop-deck':'🏠','stair':'🪜','rail':'🔩','bridge':'🌉','canopy':'⛺','chimney':'🏭','tree_pine':'🌲','tree_palm':'🌴','tree_bamboo':'🎋','lamp_post':'💡','planter_box':'🌱','fire_pit':'🔥','vending':'🥤','bike':'🚲','car':'🚗','chair':'🪑','bar_stool':'🪑','sofa':'🛋','indoor_plant':'🌿','dining_table':'🍽','work_desk':'🖥','bookshelf':'📚','counter_bar':'☕','sign':'📋','terrace':'☂','terrace_lounge':'🛋','terrace_cafe':'☕','sun_lounger':'🪑','outdoor_shower':'🚿','tree':'🌳','pad':'⬜'};
 function refreshLayerTree(){
   const list=document.getElementById('ltList'); if(!list||!EP) return;
   list.innerHTML='';
@@ -1651,10 +1690,14 @@ const PRESETS={
           {family:'shelf',x:2.4,z:-0.62,w:1.0,d:0.28},
           {family:'plant',x:2.7,z:0.55,s:0.65}
         ]}},
-      /* イートイン＆ディスプレイサイド：全面ガラス＋バースツール＋棚 */
+      /* イートイン＆ディスプレイサイド：大窓＋スライドドア＋小窓（リアルなカフェ正面） */
       {id:'B',size:'20ft',x:4.0,z:-1.5,level:0,rot:0,color:'orange',
         faces:{
-          front:'storefront',
+          front:{base:'wall',openings:[
+            {type:'window',u:0.25,w:3.2,h:1.55,sill:0.72,shape:'strip',awn:false},
+            {type:'door',u:0.65,w:0.98,h:2.15,style:'sliding'},
+            {type:'window',u:0.88,w:1.1,h:0.88,sill:1.22}
+          ]},
           back:{base:'wall',openings:[
             {type:'window',u:0.5,w:1.8,h:0.85,sill:1.3}
           ]},
@@ -1671,7 +1714,7 @@ const PRESETS={
       {type:'canopy',a:'A',b:'B'},
       {type:'deck',x:0,z:3.0,w:16.0,d:4.0,y:0.42},
       {type:'pergola',x:0,z:3.2,w:9.0,d:3.5,y:0.42},
-      {type:'terrace',x:-2.0,z:5.8,w:4.0,d:2.0},
+      {type:'terrace_cafe',x:2.0,z:6.2,w:5.5,d:2.8},
       {type:'bench',x:-5.5,z:4.2,w:1.6,d:0.5},
       {type:'bench',x:5.5,z:4.2,w:1.6,d:0.5},
       {type:'bench',x:-1.5,z:4.2,w:1.6,d:0.5},
@@ -1681,16 +1724,16 @@ const PRESETS={
       {type:'lamp_post',x:8.5,z:5.5,h:3.8},
       {type:'lamp_post',x:-8.5,z:-4.2,h:3.8},
       {type:'lamp_post',x:8.5,z:-4.2,h:3.8},
-      {type:'planter_box',x:-7.0,z:3.2,w:1.2,d:0.5},
-      {type:'planter_box',x:7.0,z:3.2,w:1.2,d:0.5},
-      {type:'planter_box',x:-2.5,z:6.5,w:0.8,d:0.4},
-      {type:'planter_box',x:2.5,z:6.5,w:0.8,d:0.4},
+      {type:'planter_box',x:-7.0,z:3.2,w:1.2,d:0.5,y:0.42},
+      {type:'planter_box',x:7.0,z:3.2,w:1.2,d:0.5,y:0.42},
+      {type:'planter_box',x:-3.0,z:7.4,w:0.8,d:0.4},
+      {type:'planter_box',x:3.0,z:7.4,w:0.8,d:0.4},
       {type:'tree_bamboo',x:-9.0,z:-4.0,s:1.3},
       {type:'tree_bamboo',x:9.0,z:-4.0,s:1.1},
       {type:'tree_bamboo',x:-9.0,z:3.8,s:1.0},
       {type:'tree_bamboo',x:9.0,z:5.0,s:0.9},
-      {type:'bike',x:7.5,z:6.2},
-      {type:'bike',x:8.3,z:6.2}
+      {type:'bike',x:7.5,z:6.0},
+      {type:'bike',x:7.5,z:7.4}
     ]},
 
   /* ═══════════════════════════════════════════════════════════════════════════
@@ -1747,8 +1790,10 @@ const PRESETS={
     site_features:[
       {type:'deck',x:0,z:-0.4,w:11.0,d:3.0,y:0.42},
       {type:'bridge',a:'A',b:'B'},
-      {type:'stair',x:7.2,z:-3.0,dir:'-x',d:3.0,top:3.01,land:'A'},
+      {type:'stair',x:9.9,z:-3.0,dir:'-x',d:3.5,top:3.01,land:'A'},
       {type:'rooftop-deck',on:'A',openSides:['right']},
+      {type:'sun_lounger',x:2.8,z:-2.8,y:3.13},
+      {type:'sun_lounger',x:-1.5,z:-2.8,y:3.13},
       {type:'pergola',x:0,z:9.5,w:9.0,d:3.8,y:0.42},
       {type:'fire_pit',x:-5.5,z:9.0},
       {type:'bench',x:-2.0,z:-0.2,w:1.6,d:0.5},
@@ -1767,8 +1812,8 @@ const PRESETS={
       {type:'tree_pine',x:5.0,z:11.5,s:1.0},
       {type:'tree_bamboo',x:-11.5,z:6.0,s:1.6},
       {type:'tree_bamboo',x:11.5,z:9.5,s:1.3},
-      {type:'planter_box',x:-5.0,z:-0.4,w:1.0,d:0.5},
-      {type:'planter_box',x:5.0,z:-0.4,w:1.0,d:0.5},
+      {type:'planter_box',x:-5.0,z:-0.4,w:1.0,d:0.5,y:0.42},
+      {type:'planter_box',x:5.0,z:-0.4,w:1.0,d:0.5,y:0.42},
       {type:'car',x:-8.0,z:-10.0,col:'white'}
     ]},
 
@@ -1816,7 +1861,10 @@ const PRESETS={
       {type:'chimney',x:2.2,z:-2.0,y:3.01,h:2.8},
       {type:'deck',x:0,z:0.3,w:6.0,d:2.8,y:0.42},
       {type:'pergola',x:0,z:0.3,w:5.5,d:2.5,y:0.42},
+      {type:'outdoor_shower',x:-4.2,z:0.3},
       {type:'fire_pit',x:5.2,z:2.0},
+      {type:'sun_lounger',x:4.2,z:3.5},
+      {type:'sun_lounger',x:4.2,z:5.2},
       {type:'bench',x:-2.0,z:0.3,w:1.4,d:0.5},
       {type:'bench',x:2.5,z:0.3,w:1.4,d:0.5},
       {type:'lamp_post',x:-6.5,z:5.0,h:3.0},
@@ -1845,10 +1893,15 @@ const PRESETS={
     meta:{name:'SELECT WORKS',time:'noon'},
     site:{width:22,depth:18},
     modules:[
-      /* 1Fメインフロア：全面ガラス、内部に棚×3+試着台+レジカウンター */
+      /* 1Fメインフロア：大型ショップウィンドウ×2＋スライドドア（リアルなブティック正面） */
       {id:'A',size:'40ft',x:0,z:-1.5,level:0,rot:0,color:'charcoal',
         faces:{
-          front:'storefront',
+          front:{base:'wall',openings:[
+            {type:'window',u:0.16,w:3.8,h:1.72,sill:0.65,shape:'strip'},
+            {type:'door',u:0.40,w:1.2,h:2.22,style:'sliding'},
+            {type:'window',u:0.62,w:3.2,h:1.72,sill:0.65,shape:'strip'},
+            {type:'window',u:0.86,w:3.0,h:1.72,sill:0.65,shape:'strip'}
+          ]},
           back:{base:'wall',openings:[
             {type:'window',u:0.3,w:2.0,h:0.9,sill:1.3},
             {type:'window',u:0.7,w:2.0,h:0.9,sill:1.3}
@@ -1885,7 +1938,8 @@ const PRESETS={
     ],
     site_features:[
       {type:'canopy',a:'A',b:'B'},
-      {type:'stair',x:2.5,z:1.5,dir:'+z',d:2.4,top:3.01,land:'B'},
+      {type:'stair',x:5.8,z:4.0,dir:'-x',d:2.4,top:3.01,land:'B'},
+      {type:'terrace_lounge',x:-3.0,z:7.8,w:5.0,d:3.2},
       {type:'pergola',x:0,z:7.5,w:10.0,d:3.0,y:0.42},
       {type:'sign',x:0,z:-4.0,y:3.5,text:'SELECT WORKS',size:0.85,bg:'#1d1d22'},
       {type:'lamp_post',x:-9.5,z:6.5,h:3.8},
@@ -1899,8 +1953,8 @@ const PRESETS={
       {type:'planter_box',x:-4.0,z:8.0,w:1.2,d:0.5},
       {type:'planter_box',x:4.0,z:8.0,w:1.2,d:0.5},
       {type:'planter_box',x:-7.5,z:3.5,w:1.0,d:0.4},
-      {type:'bike',x:8.0,z:2.0},
-      {type:'bike',x:8.0,z:3.0},
+      {type:'bike',x:8.2,z:1.6},
+      {type:'bike',x:8.2,z:3.2},
       {type:'car',x:-5.5,z:-8.0,col:'red'}
     ]},
 
@@ -1953,7 +2007,7 @@ const PRESETS={
       {type:'bench',x:-4.0,z:4.2,w:1.6,d:0.5},
       {type:'bench',x:-0.5,z:4.2,w:1.6,d:0.5},
       {type:'planter_box',x:-7.5,z:3.8,w:1.0,d:0.45},
-      {type:'planter_box',x:2.2,z:3.8,w:1.0,d:0.45},
+      {type:'planter_box',x:3.0,z:3.8,w:1.0,d:0.45},
       {type:'planter_box',x:-7.5,z:-3.2,w:1.0,d:0.45},
       {type:'planter_box',x:7.5,z:-3.2,w:1.0,d:0.45},
       {type:'tree_bamboo',x:-7.8,z:1.8,s:1.2},
