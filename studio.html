@@ -16,6 +16,14 @@
   #walkBtn:hover{filter:brightness(1.08)}
   #walkHint{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;display:none;background:rgba(10,14,18,.8);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;z-index:5;white-space:nowrap}
   .ipanel{display:none;padding:8px 0;color:var(--txt);}
+  #layerTree{border-bottom:1px solid var(--line);overflow-y:auto;max-height:220px;flex-shrink:0}
+  .ltHead{padding:8px 14px 4px;font-size:10px;color:var(--sub);letter-spacing:.08em;font-weight:700}
+  .ltItem{display:flex;align-items:center;gap:7px;padding:5px 14px;font-size:11px;cursor:pointer;color:var(--txt);user-select:none;white-space:nowrap;overflow:hidden}
+  .ltItem:hover{background:rgba(255,255,255,.05)}
+  .ltItem.on{background:rgba(79,182,214,.14);color:var(--accent)}
+  .ltItem span:first-child{font-size:13px;flex:0 0 auto}
+  .ltItem span:last-child{overflow:hidden;text-overflow:ellipsis}
+  .ltSep{padding:4px 14px 2px;font-size:9px;color:var(--sub);letter-spacing:.06em;opacity:.6}
   #izone{padding:12px 14px;overflow-y:auto;flex:1}
   #inspPlaceholder{padding:14px 0;color:var(--sub);font-size:12px;text-align:center}
   #camReset{position:absolute;right:14px;top:14px;z-index:5;background:rgba(10,14,18,.72);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;letter-spacing:.02em}
@@ -91,6 +99,10 @@
       <h1>CONTAINER DESIGN STUDIO</h1>
       <p>コンテナを配置して3D設計を確認できます。</p>
     </header>
+    <div id="layerTree">
+      <div class="ltHead">レイヤー</div>
+      <div id="ltList"></div>
+    </div>
     <div id="izone">
       <div id="inspPlaceholder" style="">コンテナまたはパーツをクリックして選択</div>
       <div id="insp" class="ipanel">
@@ -963,16 +975,40 @@ function groundPoint(ev){ const r=renderer.domElement.getBoundingClientRect();
   _m.x=((ev.clientX-r.left)/r.width)*2-1; _m.y=-((ev.clientY-r.top)/r.height)*2+1;
   _ray.setFromCamera(_m,camera); const t=-_ray.ray.origin.y/_ray.ray.direction.y; if(t<=0) return null;
   return _ray.ray.origin.clone().addScaledVector(_ray.ray.direction,t); }
+const _FEAT_LABEL={'deck':'ウッドデッキ','rooftop-deck':'屋上デッキ','stair':'階段','rail':'手すり','bridge':'橋','canopy':'連結屋根','chimney':'煙突','tree_pine':'松の木','tree_palm':'ヤシの木','tree_bamboo':'竹','lamp_post':'街灯','planter_box':'プランター','fire_pit':'焚き火','vending':'自販機','bike':'自転車','car':'自動車','chair':'椅子','bar_stool':'バーチェア','sofa':'ソファ','indoor_plant':'観葉植物','dining_table':'テーブル','work_desk':'デスク','bookshelf':'本棚','counter_bar':'カウンター','sign':'サイン','terrace':'テラス','tree':'植栽','pad':'敷地パッド'};
+const _FEAT_ICON={'deck':'🪵','rooftop-deck':'🏠','stair':'🪜','rail':'🔩','bridge':'🌉','canopy':'⛺','chimney':'🏭','tree_pine':'🌲','tree_palm':'🌴','tree_bamboo':'🎋','lamp_post':'💡','planter_box':'🌱','fire_pit':'🔥','vending':'🥤','bike':'🚲','car':'🚗','chair':'🪑','bar_stool':'🪑','sofa':'🛋','indoor_plant':'🌿','dining_table':'🍽','work_desk':'🖥','bookshelf':'📚','counter_bar':'☕','sign':'📋','terrace':'☂','tree':'🌳','pad':'⬜'};
+function refreshLayerTree(){
+  const list=document.getElementById('ltList'); if(!list||!EP) return;
+  list.innerHTML='';
+  (EP.modules||[]).forEach((m,i)=>{
+    const row=document.createElement('div');
+    row.className='ltItem'+(selKind==='mod'&&selIndex===i?' on':'');
+    row.innerHTML=`<span>🚛</span><span>${m.size||'20ft'} #${m.id}</span>`;
+    row.onclick=()=>select('mod',i);
+    list.appendChild(row);
+  });
+  if((EP.modules||[]).length&&(EP.site_features||[]).length){
+    const sep=document.createElement('div'); sep.className='ltSep'; sep.textContent='─ パーツ'; list.appendChild(sep);
+  }
+  (EP.site_features||[]).forEach((f,i)=>{
+    const row=document.createElement('div');
+    row.className='ltItem'+(selKind==='feat'&&selIndex===i?' on':'');
+    const icon=_FEAT_ICON[f.type]||'🔧', label=_FEAT_LABEL[f.type]||f.type;
+    row.innerHTML=`<span>${icon}</span><span>${label}</span>`;
+    row.onclick=()=>select('feat',i);
+    list.appendChild(row);
+  });
+}
 function refreshSelection(){ if(selBox){scene.remove(selBox);selBox=null;}
   const st=document.getElementById('status');
-  if(!selObj()){ hideInspector(); if(st) st.textContent='コンテナをクリックして選択 / ドラッグで移動'; return; }
+  if(!selObj()){ hideInspector(); if(st) st.textContent='コンテナをクリックして選択 / ドラッグで移動'; refreshLayerTree(); return; }
   const o=selObj();
   if(st){ if(selKind==='mod') st.textContent=`選択中: ${o.size||'20ft'} コンテナ #${o.id} — Delete:削除 ⌘D:複製`;
     else st.textContent=`選択中: パーツ [${o.type}] — Delete:削除 ⌘D:複製`; }
   const key=selKind==='feat'?'featIndex':'modIndex'; let grp=null;
   building.children.forEach(c=>{ if(c.userData[key]===selIndex) grp=c; });
   if(grp){ try{ selBox=new THREE.BoxHelper(grp,0xffd23f); selBox.material.depthTest=false; scene.add(selBox);}catch(e){} }
-  showInspector(); }
+  showInspector(); refreshLayerTree(); }
 function showInspector(){ const o=selObj(); if(!o){hideInspector();return;} const ph=document.getElementById('inspPlaceholder'); if(ph) ph.style.display='none';
   const insp=document.getElementById('insp'), finsp=document.getElementById('finsp');
   if(selKind==='feat'){ insp.style.display='none'; finsp.style.display='block';
