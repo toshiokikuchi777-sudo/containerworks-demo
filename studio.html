@@ -157,6 +157,15 @@
   </div>
   <aside id="rpanel">
     <div class="body">
+      <div style="padding:8px 14px 8px;border-bottom:1px solid var(--line)">
+        <div style="font-size:10px;color:var(--sub);letter-spacing:.08em;font-weight:700;margin-bottom:6px">📐 敷地サイズ</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)">
+          <span>幅</span><input id="siteW" type="number" min="4" max="200" step="1" value="16" style="width:50px;background:var(--bg2);border:1px solid var(--line);border-radius:4px;color:var(--txt);padding:3px 6px;font-size:12px;text-align:center">
+          <span>m ×</span>
+          <span>奥行</span><input id="siteD" type="number" min="4" max="200" step="1" value="16" style="width:50px;background:var(--bg2);border:1px solid var(--line);border-radius:4px;color:var(--txt);padding:3px 6px;font-size:12px;text-align:center">
+          <span>m</span>
+        </div>
+      </div>
       <div class="etool">
         <button id="addC" class="ebig">＋ コンテナを置く</button>
         <button id="autoDecorate" class="ebig" style="margin-top:8px;background:linear-gradient(90deg,#2b7a78,#3f8a8a)">✨ おまかせ装飾（一括生成）</button>
@@ -498,6 +507,13 @@ function modAABB(m){ const long=m.len||SIZE_LEN[m.size]||L20, cx=m.x||0, cz=m.z|
   const rN=(((m.rot||0)%360)+360)%360, r90=(rN===90||rN===270);
   const xr=(r90?W/2:long/2), zr=(r90?long/2:W/2);
   return {cx,cz,minX:cx-xr,maxX:cx+xr,minZ:cz-zr,maxZ:cz+zr,w:2*xr,d:2*zr}; }
+function clampToSite(m, isModule){
+  if(!EP||!EP.site) return;
+  const sw=(EP.site.width||16)/2, sd=(EP.site.depth||16)/2;
+  if(isModule){ const b=modAABB(m); const xr=b.w/2, zr=b.d/2;
+    m.x=Math.max(-sw+xr,Math.min(sw-xr,m.x||0));
+    m.z=Math.max(-sd+zr,Math.min(sd-zr,m.z||0));
+  } else { m.x=Math.max(-sw,Math.min(sw,m.x||0)); m.z=Math.max(-sd,Math.min(sd,m.z||0)); } }
 function roofable(m){ if(!m||m.stand) return false; const rN=(((m.rot||0)%360)+360)%360; return rN===0||rN===90||rN===180||rN===270; }
 function resolveFeat(f){ f._dead=false;   // anchor部品の座標をコンテナから逆算（解決不能なら_dead＝描画/床/コライダ全スキップ）
   if(f.type==='rooftop-deck'){ const m=modById(f.on); if(!m||!roofable(m)){ f._dead=true; return f; }
@@ -854,6 +870,7 @@ function buildFromPlan(plan,keepView){
   document.getElementById('status').textContent=(plan.meta&&plan.meta.name?plan.meta.name+'｜':'')+(plan.modules||[]).length+'モジュール / 敷地'+(plan.site?`${plan.site.width}×${plan.site.depth}m`:'');
   document.getElementById('json').value=JSON.stringify(plan,null,2);
   if(typeof refreshSelection==='function') refreshSelection();
+  if(typeof syncSiteUI==='function') syncSiteUI();
 }
 
 /* ============ サンプル設計JSON（梅＝1棟テイクアウトカフェ を JSON で表現）============ */
@@ -1079,6 +1096,7 @@ function applyUse(m,use){ const l=m.len||SIZE_LEN[m.size]||L20; m._use=use||unde
 function addContainer(){ const t=controls.target, off=(EP.modules.length%3)*1.0;
   const m={id:'C'+(EP.modules.length+1),size:'20ft',x:Math.round((t.x+off)/0.5)*0.5,z:Math.round(t.z/0.5)*0.5,level:0,rot:0,color:'red',
     faces:{front:'wall',back:'wall',left:'cargo',right:'cargo'},interior:false};   // 既定は素のコンテナ（内装・外装の装飾なし）→「おまかせ装飾」で一括生成
+  clampToSite(m,true);
   EP.modules.push(m); editorRebuild(); select('mod',EP.modules.length-1); }
 // ✨ おまかせ装飾＝素のコンテナ群を一括で「仕上げ」る（_dec/_auto で冪等：再クリックで重複せず、手編集は保持）
 function autoDecorate(){
@@ -1317,6 +1335,7 @@ renderer.domElement.addEventListener('pointermove',ev=>{
       _ray.setFromCamera(_m,camera); const pt=new THREE.Vector3(); if(!_ray.ray.intersectPlane(gizmoDragPlane,pt)) return;
       if(gizmoDragAxis==='gx') ob.x=Math.round((gizmoDragObjSnap.x+(pt.x-gizmoDragPt0.x))/0.5)*0.5;
       else ob.z=Math.round((gizmoDragObjSnap.z+(pt.z-gizmoDragPt0.z))/0.5)*0.5;
+      clampToSite(ob,selKind==='mod');
     } else if(gizmoDragAxis==='gy'){
       ob.elev=Math.max(0,Math.round((gizmoDragObjSnap.elev-(ev.clientY-gizmoDragStartY)*0.03)*20)/20);
     } else if(gizmoDragAxis==='gr'){
@@ -1328,7 +1347,7 @@ renderer.domElement.addEventListener('pointermove',ev=>{
   if(o.type==='rooftop-deck'||o.type==='bridge'||o.type==='canopy') return;   // anchor部品は親コンテナ追従＝直接移動不可
   const p=groundPoint(ev); if(!p) return;
   const nx=Math.round(p.x/0.5)*0.5, nz=Math.round(p.z/0.5)*0.5;
-  if(nx!==o.x||nz!==o.z){ o.x=nx; o.z=nz; dragMoved=true; editorRebuild(); } });
+  if(nx!==o.x||nz!==o.z){ o.x=nx; o.z=nz; clampToSite(o,selKind==='mod'); dragMoved=true; editorRebuild(); } });
 addEventListener('pointerup',()=>{ if(gizmoDragAxis){ gizmoDragAxis=null; controls.enabled=true; return; } if(dragging){ dragging=false; controls.enabled=true; if(dragMoved&&selKind==='mod'&&selObj()){ stackOnDrop(selIndex); editorRebuild(); } } });
 // コンテナ・インスペクタ
 document.getElementById('insp').addEventListener('click',ev=>{ const b=ev.target.closest('button'); if(!b||selKind!=='mod') return; const m=selObj(); if(!m) return;
@@ -1365,7 +1384,7 @@ document.getElementById('opDel').onclick=()=>{ if(selKind!=='mod')return; const 
   if(f.openings.length===0 && f.base==='wall') m.faces[editFace]='wall';   // 開口ゼロのwallは文字列に戻す
   editorRebuild(); syncFaceUI(); };
 document.getElementById('ispUse').addEventListener('change',e=>{ if(selKind!=='mod')return; const m=selObj(); if(!m)return; applyUse(m,e.target.value); editorRebuild(); });
-document.getElementById('ispDup').onclick=()=>{ if(selKind!=='mod')return; const m=selObj(); if(!m)return; const c=JSON.parse(JSON.stringify(m)); c.x+=2; c.id=(c.id||'C')+'b'; EP.modules.push(c); editorRebuild(); select('mod',EP.modules.length-1); };
+document.getElementById('ispDup').onclick=()=>{ if(selKind!=='mod')return; const m=selObj(); if(!m)return; const c=JSON.parse(JSON.stringify(m)); c.x+=2; c.id=(c.id||'C')+'b'; clampToSite(c,true); EP.modules.push(c); editorRebuild(); select('mod',EP.modules.length-1); };
 document.getElementById('ispDel').onclick=()=>{ if(selKind!=='mod'||selIndex<0)return; EP.modules.splice(selIndex,1); deselect(); editorRebuild(); };
 document.getElementById('ispClose').onclick=deselect;
 // パーツ・インスペクタ
@@ -1549,6 +1568,11 @@ function updateWalk(){
   camera.position.set(avatar.position.x-Math.sin(camYaw)*dist, hgt, avatar.position.z-Math.cos(camYaw)*dist);
   camera.lookAt(avatar.position.x, 1.5+fy, avatar.position.z);
 }
+
+/* ============ SITE UI ============ */
+function syncSiteUI(){ const w=document.getElementById('siteW'),d=document.getElementById('siteD'); if(!w||!d||!EP||!EP.site) return; w.value=EP.site.width||16; d.value=EP.site.depth||16; }
+['siteW','siteD'].forEach(id=>{ const el=document.getElementById(id); if(!el) return;
+  el.addEventListener('change',()=>{ if(!EP) return; EP.site=EP.site||{}; EP.site.width=+(document.getElementById('siteW').value)||16; EP.site.depth=+(document.getElementById('siteD').value)||16; editorRebuild(); }); });
 
 /* ============ LOOP ============ */
 function resize(){ const w=view.clientWidth,h=view.clientHeight; renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }
