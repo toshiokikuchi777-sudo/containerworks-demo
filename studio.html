@@ -2114,10 +2114,11 @@ const PRESETS={
   ═══════════════════════════════════════════════════════════════════════════ */
   hotel:{
     meta:{name:'HOTEL STAY',time:'evening'},
-    site:{width:32,depth:24},
+    site:{width:42,depth:26},
     modules:[
-      /* ロビー：フロント窓＋スライドドア、内部にレセプションカウンター */
-      {id:'L',size:'20ft',x:-9.75,z:-1.5,level:0,rot:0,color:'white',
+      /* ロビー：フロント窓＋スライドドア、内部にレセプションカウンター
+         L(white): x=-13.5  ← 9m間隔（隙間2.94m）で4棟分散配置 */
+      {id:'L',size:'20ft',x:-13.5,z:-1.5,level:0,rot:0,color:'white',
         faces:{
           front:{base:'wall',openings:[
             {type:'window',u:0.0,w:2.5,h:1.1,sill:0.88,shape:'strip'},
@@ -2131,8 +2132,8 @@ const PRESETS={
           {family:'seating',x:-0.8,z:0.50,n:2},
           {family:'plant',x:-2.6,z:0.50,s:0.75}
         ]}},
-      /* 客室A：ドア＋横長窓、内部にベッド・デスク・バス */
-      {id:'A',size:'20ft',x:-3.25,z:-1.5,level:0,rot:0,color:'sand',
+      /* 客室A：x=-4.5 */
+      {id:'A',size:'20ft',x:-4.5,z:-1.5,level:0,rot:0,color:'sand',
         faces:{
           front:{base:'wall',openings:[
             {type:'door',u:0.20,w:0.95,h:2.12,style:'single'},
@@ -2147,8 +2148,8 @@ const PRESETS={
           {family:'shelf',x:2.5,z:0.45,w:0.9,d:0.3},
           {family:'bath',x:-2.5,z:0.45,w:1.5,d:0.55}
         ]}},
-      /* 客室B */
-      {id:'B',size:'20ft',x:3.25,z:-1.5,level:0,rot:0,color:'sand',
+      /* 客室B：x=+4.5 */
+      {id:'B',size:'20ft',x:4.5,z:-1.5,level:0,rot:0,color:'sand',
         faces:{
           front:{base:'wall',openings:[
             {type:'door',u:0.20,w:0.95,h:2.12,style:'single'},
@@ -2163,8 +2164,8 @@ const PRESETS={
           {family:'shelf',x:2.5,z:0.45,w:0.9,d:0.3},
           {family:'bath',x:-2.5,z:0.45,w:1.5,d:0.55}
         ]}},
-      /* 客室C（プレミアム：charcoal）*/
-      {id:'C',size:'20ft',x:9.75,z:-1.5,level:0,rot:0,color:'charcoal',
+      /* 客室C（プレミアム）：x=+13.5 */
+      {id:'C',size:'20ft',x:13.5,z:-1.5,level:0,rot:0,color:'charcoal',
         faces:{
           front:{base:'wall',openings:[
             {type:'door',u:0.20,w:0.95,h:2.12,style:'single'},
@@ -2181,33 +2182,43 @@ const PRESETS={
         ]}}
     ],
     site_features:[
-      /* 全室前面の通路デッキ＋パーゴラ庇 */
-      {type:'deck',x:0,z:0.8,w:26.0,d:2.4,y:0.42},
-      {type:'pergola',x:0,z:0.8,w:27.5,d:2.6,y:0.42},
-      /* ホテルサイン */
-      {type:'sign',x:-9.75,z:-3.8,y:3.2,text:'HOTEL STAY',size:0.7,bg:'#2c3e50'},
-      /* 駐車場ライト */
-      {type:'lamp_post',x:-13.0,z:6.5,h:4.5},
-      {type:'lamp_post',x:0,z:6.5,h:4.5},
-      {type:'lamp_post',x:13.0,z:6.5,h:4.5},
-      {type:'lamp_post',x:-13.0,z:-4.5,h:4.5},
-      {type:'lamp_post',x:13.0,z:-4.5,h:4.5},
-      /* 駐車中の車 */
-      {type:'car',x:-9.0,z:8.0,col:'white'},
-      {type:'car',x:-3.0,z:8.0,col:'red'},
-      {type:'car',x:3.0,z:8.0,col:'white'},
-      {type:'car',x:9.0,z:8.0,col:'gray'},
-      {type:'car',x:-6.0,z:10.5,col:'white'},
-      {type:'car',x:6.0,z:10.5,col:'white'},
-      /* 通路沿いのプランター */
-      {type:'planter_box',x:-13.0,z:0.8,w:1.2,d:0.5,y:0.42},
-      {type:'planter_box',x:13.0,z:0.8,w:1.2,d:0.5,y:0.42},
+      /* 全室前面の通路デッキ＋パーゴラ庇（4棟分の幅） */
+      {type:'deck',x:0,z:0.8,w:34.0,d:2.4,y:0.42},
+      {type:'pergola',x:0,z:0.8,w:35.5,d:2.6,y:0.42},
+      /* ホテルサイン（ロビー上） */
+      {type:'sign',x:-13.5,z:-3.8,y:3.2,text:'HOTEL STAY',size:0.7,bg:'#2c3e50'},
+      /* 駐車場灯：間隔9mに合わせて計7本 */
+      {type:'lamp_post',x:-18.0,z:7.0,h:4.5},
+      {type:'lamp_post',x:-9.0,z:7.0,h:4.5},
+      {type:'lamp_post',x:0,z:7.0,h:4.5},
+      {type:'lamp_post',x:9.0,z:7.0,h:4.5},
+      {type:'lamp_post',x:18.0,z:7.0,h:4.5},
+      {type:'lamp_post',x:-18.0,z:-5.0,h:4.5},
+      {type:'lamp_post',x:18.0,z:-5.0,h:4.5},
+      /* 駐車中の車：各棟前＋棟間の隙間に分散 */
+      {type:'car',x:-13.5,z:6.5,col:'white'},
+      {type:'car',x:-9.0,z:6.5,col:'gray'},
+      {type:'car',x:-4.5,z:6.5,col:'red'},
+      {type:'car',x:0,z:6.5,col:'white'},
+      {type:'car',x:4.5,z:6.5,col:'white'},
+      {type:'car',x:9.0,z:6.5,col:'gray'},
+      {type:'car',x:13.5,z:6.5,col:'white'},
+      {type:'car',x:-9.0,z:9.5,col:'white'},
+      {type:'car',x:0,z:9.5,col:'red'},
+      {type:'car',x:9.0,z:9.5,col:'white'},
+      /* 棟間のプランター（仕切り演出） */
+      {type:'planter_box',x:-9.0,z:0.8,w:1.2,d:0.5,y:0.42},
       {type:'planter_box',x:0,z:0.8,w:1.2,d:0.5,y:0.42},
-      /* エントランス周辺の植栽 */
-      {type:'tree_pine',x:-14.0,z:-3.5,s:1.4},
-      {type:'tree_pine',x:14.0,z:-3.5,s:1.2},
-      {type:'tree_bamboo',x:-14.0,z:3.5,s:1.3},
-      {type:'tree_bamboo',x:14.0,z:3.5,s:1.1}
+      {type:'planter_box',x:9.0,z:0.8,w:1.2,d:0.5,y:0.42},
+      {type:'planter_box',x:-18.5,z:0.8,w:1.2,d:0.5,y:0.42},
+      {type:'planter_box',x:18.5,z:0.8,w:1.2,d:0.5,y:0.42},
+      /* 敷地端の植栽 */
+      {type:'tree_pine',x:-19.5,z:-4.0,s:1.4},
+      {type:'tree_pine',x:19.5,z:-4.0,s:1.2},
+      {type:'tree_bamboo',x:-19.5,z:4.0,s:1.3},
+      {type:'tree_bamboo',x:19.5,z:4.0,s:1.1},
+      {type:'tree_bamboo',x:-9.0,z:-4.5,s:1.0},
+      {type:'tree_bamboo',x:9.0,z:-4.5,s:0.9}
     ]}
 
 };
