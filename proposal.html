@@ -146,7 +146,9 @@
   .finalcta .wrap{padding:64px 24px}
   .finalcta h2{color:#fff}
   .finalcta p{margin:14px auto 0;max-width:48ch;color:#ffe6e0;font-size:15.5px}
-  .finalcta .btn-white{display:inline-flex;gap:9px;align-items:center;margin-top:28px;background:#fff;color:var(--accent);font-weight:700;font-size:16px;padding:16px 30px;border-radius:34px;text-decoration:none;box-shadow:0 14px 34px rgba(0,0,0,.18)}
+  .finalcta .cta2{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:28px}
+  .finalcta .btn-white{display:inline-flex;gap:9px;align-items:center;background:#fff;color:var(--accent);font-weight:700;font-size:16px;padding:16px 30px;border-radius:34px;text-decoration:none;box-shadow:0 14px 34px rgba(0,0,0,.18);transition:transform .15s}
+  .finalcta .btn-white:hover{transform:translateY(-2px)}
   .finalcta .url{margin-top:16px;font-family:var(--stencil);font-size:13px;color:#ffd9d1;letter-spacing:.02em;word-break:break-all}
 
   footer{background:var(--dark2);color:#9a9287;text-align:center;padding:34px 24px;font-size:12.5px;line-height:1.9}
@@ -171,10 +173,10 @@
   <p class="sub">バーチャル展示場 × AI接客 × CV導線を、<b>1つのURL</b>で完結。<br>体感 → 相談 → 来場/見積りまでを、スマホ一枚で繋ぎます。</p>
   <div class="meta">ご提案：MASTAR DESIGN ／ Vsw株式会社　｜　2026年6月</div>
   <div class="btns">
-    <a class="btn btn-main" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/" target="_blank" rel="noopener">▶ 動くデモを体験する</a>
-    <a class="btn btn-ghost" href="#solution">提案の要点を見る</a>
+    <a class="btn btn-main" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/" target="_blank" rel="noopener">▶ 歩けるデモを体験</a>
+    <a class="btn btn-ghost" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/studio.html" target="_blank" rel="noopener">🛠 設計＆見積りスタジオ</a>
   </div>
-  <div class="demohint">※アプリ不要・スマホ可。「歩いて・相談して・概算見積りが出る」ところまで、その場で体験できます。</div>
+  <div class="demohint">※2つの動くツール。アプリ不要・スマホ可。「歩いて・相談して・設計して・概算見積りが出る」まで、その場で体験できます。</div>
 </div></header>
 
 <!-- ONE MESSAGE -->
@@ -228,6 +230,23 @@
     <div class="step"><div class="n">04</div><h4>そのままCV</h4><p>来場予約／正式見積り／資料・CADデータ請求／LINE相談へ。</p></div>
   </div>
   <p class="note">※デモには 9プランの実例ベース展示場・自動ツアー（見るだけモード）・天気切替・GLB書き出しを実装済み。</p>
+</div></section>
+
+<div class="divider"></div>
+
+<!-- AI設計スタジオ -->
+<section><div class="wrap">
+  <div class="kicker">AI Design Studio ── もう一つの武器</div>
+  <h2>見るだけじゃない。<span class="accent">設計して、その場で概算見積り。</span></h2>
+  <p class="lead">コンテナを置く・連結する・2階を積む・ウッドデッキや階段を足す——操作するたびに、概算費用と延床面積が<b>リアルタイムで更新</b>。用途別プリセット（カフェ／別荘／サウナ／ショップ／ワークスペース／ホテル）から始めて、そのまま「この設計で相談」へ繋げられます。</p>
+  <div class="grid2">
+    <div class="ec"><h4><span class="accent">◢</span> リアルタイム概算見積り</h4><p>設計を変えるたびに「¥◯◯万〜」と延床面積が即更新。価格不安を、触りながら解消する。</p></div>
+    <div class="ec"><h4><span class="accent">◢</span> プリセットから即生成</h4><p>用途別プリセットをワンタップで設計化。ゼロから作らなくても、たたき台がすぐ立ち上がる。</p></div>
+    <div class="ec"><h4><span class="accent">◢</span> そのまま中をウォーク</h4><p>作った設計の「中に入る」で一人称ウォーク。設計 → 体感 → 相談が地続きに。</p></div>
+    <div class="ec"><h4><span class="accent">◢</span> 設計データを引き継ぐ</h4><p>JSONで設計を保存・適用。御社のCAD/実モデルと接続すれば“実在する組み合わせ”を即提案できる。</p></div>
+  </div>
+  <div style="margin-top:30px"><a class="btn btn-main" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/studio.html" target="_blank" rel="noopener">🛠 設計＆見積りスタジオを開く</a></div>
+  <p class="note">※プリセット・パーツ追加・概算見積り・ウォークは公開版でそのまま動作。AIへ文章で指示して設計を自動生成する機能は、専用バックエンドの接続で有効化します。</p>
 </div></section>
 
 <!-- 松竹梅 -->
@@ -327,9 +346,12 @@
 <!-- FINAL CTA -->
 <section class="finalcta"><div class="wrap">
   <h2>説明より、体験を。</h2>
-  <p>スマホでこのURLを開けば、コンテナの中を歩いて、AIに相談して、概算見積りが出ます。</p>
-  <a class="btn-white" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/" target="_blank" rel="noopener">▶ 動くデモを開く</a>
-  <div class="url">https://toshiokikuchi777-sudo.github.io/containerworks-demo/</div>
+  <p>スマホでこのURLを開けば、コンテナの中を歩いて・AIに相談して・自分で設計して・概算見積りが出ます。</p>
+  <div class="cta2">
+    <a class="btn-white" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/" target="_blank" rel="noopener">▶ 歩けるデモを開く</a>
+    <a class="btn-white" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/studio.html" target="_blank" rel="noopener">🛠 設計＆見積りスタジオを開く</a>
+  </div>
+  <div class="url">demo：/containerworks-demo/　｜　studio：/containerworks-demo/studio.html</div>
 </div></section>
 
 <footer>
