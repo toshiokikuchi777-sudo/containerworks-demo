@@ -87,7 +87,56 @@
   .exadd input{flex:1}
   .exadd button{flex:0 0 auto;padding:8px 12px}
   #err{color:#ff8a7a;font-size:11px;margin-top:8px;white-space:pre-wrap;line-height:1.5}
-  @media(max-width:760px){ #lpanel{position:absolute;left:0;top:0;bottom:0;width:80%;max-width:260px;z-index:10;box-shadow:8px 0 30px rgba(0,0,0,.3)} #rpanel{display:none} }
+  /* ── tablet: サイドパネルを隠す ── */
+  @media(max-width:760px){ #rpanel{display:none} }
+
+  /* ── モバイルTOPバー ── */
+  #mTopBar{display:none;position:fixed;top:0;left:0;right:0;height:52px;
+    background:var(--panel);border-bottom:1px solid var(--line);z-index:201;
+    align-items:center;padding:0 10px;gap:8px}
+  #mTopBar .mLogo{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--txt);white-space:nowrap;flex-shrink:0}
+  #mTopBar .mPresets{display:flex;gap:5px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0}
+  #mTopBar .mPresets::-webkit-scrollbar{display:none}
+  #mToggle{background:none;border:1px solid var(--line);color:var(--txt);border-radius:8px;
+    padding:7px 12px;font-size:17px;line-height:1;cursor:pointer;flex-shrink:0;
+    transition:border-color .15s,color .15s;font-family:inherit}
+  #mToggle.open{border-color:var(--accent);color:var(--accent)}
+  #mOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99;
+    -webkit-tap-highlight-color:transparent;cursor:pointer}
+  #mOverlay.on{display:block}
+  #mHandle{display:none;width:40px;height:4px;background:var(--line);border-radius:2px;
+    margin:10px auto 4px;flex-shrink:0;cursor:pointer}
+
+  /* ── スマホ：ボトムドロワー ── */
+  @media(max-width:640px){
+    #mTopBar{display:flex}
+    #mHandle{display:block}
+    #view{padding-top:52px}
+    #lpanel{
+      position:fixed!important;bottom:0!important;left:0!important;right:0!important;
+      top:auto!important;width:100%!important;max-width:none!important;height:80vh;
+      flex-direction:column;border-right:none;
+      border-top:1px solid var(--line);border-radius:16px 16px 0 0;
+      transform:translateY(102%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+      z-index:100;box-shadow:0 -10px 40px rgba(0,0,0,.5);overflow:hidden
+    }
+    #lpanel.mOpen{transform:translateY(0)}
+    #lpanel header{display:none}
+    #layerTree{max-height:150px}
+    #izone{overflow-y:auto;flex:1}
+    /* rpanelをドロワー内に取り込んだとき */
+    #rpanel.inDrawer{display:flex!important;width:100%!important;flex-direction:column;
+      border-left:none;border-top:1px solid var(--line);flex-shrink:0;overflow-y:auto;max-height:55vh}
+    /* ボタン配置を上部バーの下にずらす */
+    #walkBtn{top:62px}
+    #camReset{top:62px}
+    #timeCtrl{top:62px;bottom:auto}
+    /* タッチしやすい大きさに */
+    .preset-btn{padding:8px 10px;font-size:11px}
+    .ttime{padding:10px 11px}
+    /* undo/SSボタンなど小さいボタンも少し大きく */
+    .esm{padding:10px 4px;font-size:11px}
+  }
   #bridgeBanner{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;background:rgba(27,31,36,.92);color:#fff;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;letter-spacing:.02em;box-shadow:0 4px 16px rgba(0,0,0,.35);display:none}
   body.bridging #view,body.bridging #view canvas{cursor:crosshair}
   .preset-btn{background:#16202a;border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:5px 7px;font-size:10px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:border-color .15s,color .15s}
@@ -102,8 +151,23 @@
 </style>
 </head>
 <body>
+<!-- モバイル固定ヘッダー -->
+<div id="mTopBar">
+  <span class="mLogo">📦 CONTAINER</span>
+  <div class="mPresets">
+    <button class="preset-btn" data-p="cafe">☕ カフェ</button>
+    <button class="preset-btn" data-p="villa">🏕 別荘</button>
+    <button class="preset-btn" data-p="sauna">🧖 サウナ</button>
+    <button class="preset-btn" data-p="shop">🛍 ショップ</button>
+    <button class="preset-btn" data-p="workspace">💻 WS</button>
+    <button class="preset-btn" data-p="hotel">🏨 ホテル</button>
+  </div>
+  <button id="mToggle">☰</button>
+</div>
+<div id="mOverlay"></div>
 <div id="app">
   <aside id="lpanel">
+    <div id="mHandle"></div>
     <header>
       <h1>CONTAINER DESIGN STUDIO</h1>
       <input id="planNameInput" placeholder="設計名をつける…" value="新規プラン">
@@ -2236,6 +2300,51 @@ buildFromPlan({
   site_features:[]
 }); _histSnap=JSON.parse(JSON.stringify(EP));
 (function loop(){ requestAnimationFrame(loop); if(walkMode) updateWalk(); else controls.update(); updateGizmo(); renderer.render(scene,camera); })();
+
+/* ── モバイルドロワー ── */
+(function(){
+  const lp=document.getElementById('lpanel');
+  const ov=document.getElementById('mOverlay');
+  const tog=document.getElementById('mToggle');
+  const handle=document.getElementById('mHandle');
+  if(!lp||!tog) return;
+
+  function openDrawer(){
+    lp.classList.add('mOpen');
+    ov.classList.add('on');
+    tog.classList.add('open');
+    tog.textContent='✕';
+  }
+  function closeDrawer(){
+    lp.classList.remove('mOpen');
+    ov.classList.remove('on');
+    tog.classList.remove('open');
+    tog.textContent='☰';
+  }
+
+  tog.addEventListener('click', ()=> lp.classList.contains('mOpen') ? closeDrawer() : openDrawer());
+  if(ov) ov.addEventListener('click', closeDrawer);
+  if(handle) handle.addEventListener('click', closeDrawer);
+
+  /* rpanelをドロワー内に組み込む（スマホ時のみ） */
+  function setupMobileLayout(){
+    if(window.innerWidth > 640) return;
+    const rp=document.getElementById('rpanel');
+    if(rp && !rp.classList.contains('inDrawer')){
+      rp.classList.add('inDrawer');
+      lp.appendChild(rp);
+    }
+  }
+  setupMobileLayout();
+  window.addEventListener('resize', setupMobileLayout);
+
+  /* プリセット選択時にドロワーを閉じる（モバイル） */
+  document.addEventListener('click', e=>{
+    if(e.target.classList.contains('preset-btn') && window.innerWidth<=640){
+      setTimeout(closeDrawer, 200);
+    }
+  });
+})();
 </script>
 </body>
 </html>
