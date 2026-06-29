@@ -1813,7 +1813,7 @@ addEventListener('pointercancel',e=>{ if(e.pointerId===_lookId){_drag=false;_loo
 
 function updateWalk(){
   const sp=0.078; let mx=0,mz=0;
-  const f=[Math.sin(camYaw),Math.cos(camYaw)], s=[Math.sin(camYaw+Math.PI/2),Math.cos(camYaw+Math.PI/2)];
+  const f=[Math.sin(camYaw),Math.cos(camYaw)], s=[Math.sin(camYaw-Math.PI/2),Math.cos(camYaw-Math.PI/2)];   // s=画面右方向（カメラ背後基準）。+π/2だと左右反転するため-π/2
   if(keys.KeyW||keys.ArrowUp){mx+=f[0];mz+=f[1];} if(keys.KeyS||keys.ArrowDown){mx-=f[0];mz-=f[1];}
   if(keys.KeyD||keys.ArrowRight){mx+=s[0];mz+=s[1];} if(keys.KeyA||keys.ArrowLeft){mx-=s[0];mz-=s[1];}
   if(_joy.x||_joy.y){ mx+=f[0]*_joy.y+s[0]*_joy.x; mz+=f[1]*_joy.y+s[1]*_joy.x; }   // 仮想スティック（前後=y / 左右=x）
