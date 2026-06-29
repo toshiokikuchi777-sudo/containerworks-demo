@@ -347,6 +347,7 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
 /* ============ SCENE ============ */
 const view=document.getElementById('view');
@@ -1736,10 +1737,40 @@ function makeAvatar(){
   const arm=sx=>{const gp=new THREE.Group();gp.position.set(sx,1.46,0);P(gp,new THREE.BoxGeometry(0.12,0.42,0.14),top,-0.21);P(gp,new THREE.SphereGeometry(0.072,10,8),sk,-0.45);g.add(gp);return gp;};
   g.userData.limbs={legL:leg(-0.12),legR:leg(0.12),armL:arm(-0.30),armR:arm(0.30)}; g.scale.setScalar(0.96); return g;
 }
+/* ── Walking.fbx（Mixamoリグ＋歩行アニメ）アバター ── */
+let _mixer=null, _walkAction=null, _avatarLoaded=false, _avatarLoading=false;
+const _walkClock=new THREE.Clock();
+let _AVATAR_FACE=0;   // モデルの正面補正（0=進行方向に背を向ける＝カメラから見て背中）
+function loadFBXAvatar(){
+  if(_avatarLoaded||_avatarLoading) return;
+  _avatarLoading=true;
+  new FBXLoader().load('Walking.fbx', fbx=>{
+    // 身長 ~1.72m に合わせてスケール（Mixamoはcm単位で巨大）
+    let box=new THREE.Box3().setFromObject(fbx); const h=box.max.y-box.min.y;
+    const s=(h>0?1.72/h:0.01); fbx.scale.setScalar(s);
+    fbx.rotation.y=_AVATAR_FACE;
+    fbx.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=false; o.frustumCulled=false; } });
+    // 足を原点(y=0)に揃えるラッパー
+    const rig=new THREE.Group();
+    box=new THREE.Box3().setFromObject(fbx); fbx.position.y-=box.min.y;
+    rig.add(fbx);
+    _mixer=new THREE.AnimationMixer(fbx);
+    if(fbx.animations&&fbx.animations.length){ _walkAction=_mixer.clipAction(fbx.animations[0]); _walkAction.play(); }
+    _mixer.update(0);
+    rig.userData.mixer=_mixer; rig.userData.rigged=true;
+    _avatarLoaded=true; _avatarLoading=false;
+    // 既存の箱アバターからシームレスに差し替え
+    if(avatar){ rig.position.copy(avatar.position); rig.rotation.y=avatar.rotation.y; rig.visible=avatar.visible; scene.remove(avatar); }
+    else { rig.visible=false; }
+    avatar=rig; scene.add(avatar);
+  }, undefined, err=>{ console.warn('Walking.fbx 読み込み失敗 → 箱アバターを使用', err); _avatarLoading=false; });
+}
 function computeSpawn(){ if(!building) return; const b=new THREE.Box3().setFromObject(building);
   const z=b.max.z-3.0; _spawn={x:(b.min.x+b.max.x)/2, z:isFinite(z)?z:6}; }
 function enterWalk(){ if(connectPick) exitConnectPick();   // 接続選択中にウォーク開始したら選択を解除
+  loadFBXAvatar();   // Walking.fbx を読み込み（未ロードなら箱アバターで開始→完了後に自動差し替え）
   if(!avatar){ avatar=makeAvatar(); scene.add(avatar); }
+  _walkClock.getDelta();   // アニメ用クロックをリセット（前回からの経過を破棄）
   selIndex=-1; if(selBox){scene.remove(selBox);selBox=null;} hideInspector();   // 編集の選択を解除
   computeSpawn(); avatar.position.set(_spawn.x,0,_spawn.z); avatar.position.y=floorAt(avatar.position.x,avatar.position.z,99); avatar.rotation.y=Math.PI; avatar.visible=true;
   camYaw=Math.PI; camPitch=0.16; walkMode=true; controls.enabled=false;
@@ -1787,8 +1818,14 @@ function updateWalk(){
     if(!hits(nx,avatar.position.z,r,curY) && floorAt(nx,avatar.position.z,curY)<=curY+STEP) avatar.position.x=nx;
     if(!hits(avatar.position.x,nz,r,curY) && floorAt(avatar.position.x,nz,curY)<=curY+STEP) avatar.position.z=nz;
     avatar.rotation.y=Math.atan2(mx,mz); _walkPhase+=0.28; }
-  const L=avatar.userData.limbs, sw=_moving?Math.sin(_walkPhase)*0.5:0;
-  if(L){ L.legL.rotation.x=sw; L.legR.rotation.x=-sw; L.armL.rotation.x=-sw*0.8; L.armR.rotation.x=sw*0.8; }
+  const dt=_walkClock.getDelta();
+  if(avatar.userData.mixer){   // FBXリグ：移動中だけ歩行アニメを進める（停止時は先頭フレームで静止）
+    if(_moving){ avatar.userData.mixer.update(Math.min(dt,0.05)*1.6); }
+    else { if(_walkAction) _walkAction.time=0; avatar.userData.mixer.update(0); }
+  } else {   // 箱アバター：手足を振る
+    const L=avatar.userData.limbs, sw=_moving?Math.sin(_walkPhase)*0.5:0;
+    if(L){ L.legL.rotation.x=sw; L.legR.rotation.x=-sw; L.armL.rotation.x=-sw*0.8; L.armR.rotation.x=sw*0.8; }
+  }
   const targetY=floorAt(avatar.position.x,avatar.position.z,curY), dy=targetY-avatar.position.y;   // 多層：地上→階段→屋上→橋
   avatar.position.y += dy*(dy<0?0.3:0.5); if(Math.abs(avatar.position.y-targetY)<0.01) avatar.position.y=targetY;
   const fy=avatar.position.y, dist=4.2, hgt=2.5+camPitch*4+fy;
@@ -2361,6 +2398,8 @@ buildFromPlan({
   site_features:[]
 }); _histSnap=JSON.parse(JSON.stringify(EP));
 (function loop(){ requestAnimationFrame(loop); if(walkMode) updateWalk(); else controls.update(); updateGizmo(); renderer.render(scene,camera); })();
+/* 初期描画後にWalking.fbxをプリロード（初回「中に入る」を待たせない） */
+setTimeout(loadFBXAvatar, 1200);
 
 /* ── モバイルドロワー ── */
 (function(){
