@@ -180,6 +180,7 @@
           <button class="preset-btn" data-p="sauna">🧖 サウナ</button>
           <button class="preset-btn" data-p="shop">🛍 ショップ</button>
           <button class="preset-btn" data-p="workspace">💻 WS</button>
+          <button class="preset-btn" data-p="hotel">🏨 ホテル</button>
         </div>
       </div>
       <div style="padding:8px 14px 8px;border-bottom:1px solid var(--line)">
@@ -519,7 +520,14 @@ function furniture(f){
     case 'table': box(w,0.04,d,M.wood,x,0.72,z); for(const[dx,dz]of[[-1,-1],[1,-1],[-1,1],[1,1]])box(0.06,0.72,0.06,M.dark,x+dx*(w/2-0.1),0.36,z+dz*(d/2-0.1)); break;
     case 'desk': box(w,0.04,d,M.wood,x,0.74,z); box(w,0.5,0.04,M.dark,x,0.5,z-d/2); break;
     case 'shelf': box(w,1.05,d,M.wood,x,0.55,z); for(let i=0;i<3;i++)box(w-0.06,0.03,d-0.04,M.dark,x,0.3+i*0.35,z); break;
-    case 'bed': box(w,0.4,d,M.wood,x,0.2,z); box(w-0.1,0.16,d-0.1,M.white,x,0.46,z); break;
+    case 'bed':
+      box(w,0.38,d,M.wood,x,0.19,z);
+      box(w+0.04,0.62,0.08,M.timber,x,0.57,z-d/2+0.04);
+      box(w-0.08,0.12,d-0.08,M.white,x,0.44,z+0.02);
+      box(0.50,0.08,0.36,M.white,x-(w-0.2)*0.26,0.50,z-d/2+0.20);
+      if(w>1.1) box(0.50,0.08,0.36,M.white,x+(w-0.2)*0.26,0.50,z-d/2+0.20);
+      box(w-0.14,0.06,d*0.52,M.sand,x,0.47,z+d*0.10);
+      break;
     case 'bath': box(w,0.55,d,M.white,x,0.28,z); break;
     case 'plant': potPlant(x,z,f.s||0.8); break;
     default: box(w,0.6,d,M.dark,x,0.3,z);
@@ -704,8 +712,20 @@ function buildFeature(f){
       for(let i=0;i<=Math.round(d/0.5);i++) box(w,0.05,0.05,M.timber,x,y+2.34,z-d/2+i*0.5); break; }
     case 'gate':{ const w=f.w||6,x=f.x||0,z=f.z||0; box(0.2,3.2,0.2,M.charcoal,x-w/2,1.6,z); box(0.2,3.2,0.2,M.charcoal,x+w/2,1.6,z);
       box(w+0.3,0.7,0.22,M.charcoal,x,3.1,z); const s=sign(f.text||'CONTAINER COMMONS','#1d1d22',w*0.8); s.position.set(x,3.1,z+0.13); G.add(s); break; }
-    case 'bench':{ const w=f.w||1.6,d=f.d||0.42,x=f.x||0,z=f.z||0; box(w,0.08,d,M.timber,x,0.42,z);
-      box(0.1,0.42,d,M.timber,x-w/2+0.18,0.21,z); box(0.1,0.42,d,M.timber,x+w/2-0.18,0.21,z); break; }
+    case 'bench':{ const w=f.w||1.6,d=f.d||0.42,x=f.x||0,z=f.z||0,y=f.y||0;
+      const sY=Math.max(y,0.42);
+      box(w,0.08,d,M.timber,x,sY,z);
+      if(y<0.05){ box(0.1,0.42,d,M.timber,x-w/2+0.18,0.21,z); box(0.1,0.42,d,M.timber,x+w/2-0.18,0.21,z); }
+      else { box(0.1,0.06,d,M.dark,x-w/2+0.18,y+0.03,z); box(0.1,0.06,d,M.dark,x+w/2-0.18,y+0.03,z); }
+      break; }
+    case 'bed':{ const x=f.x||0,z=f.z||0,w=f.w||1.6,d=f.d||2.1,y=f.y||0;
+      box(w,0.38,d,M.wood,x,y+0.19,z);
+      box(w+0.04,0.62,0.08,M.timber,x,y+0.57,z-d/2+0.04);
+      box(w-0.08,0.12,d-0.08,M.white,x,y+0.44,z+0.02);
+      box(0.50,0.08,0.36,M.white,x-(w-0.2)*0.26,y+0.50,z-d/2+0.20);
+      box(0.50,0.08,0.36,M.white,x+(w-0.2)*0.26,y+0.50,z-d/2+0.20);
+      box(w-0.14,0.06,d*0.52,M.sand,x,y+0.47,z+d*0.10);
+      break; }
     case 'door':{ box(f.w||1.0,2.0,0.08,M.timber,f.x||0,1.0,f.z||0); box((f.w||1.0)+0.14,0.1,0.1,M.dark,f.x||0,2.05,f.z||0); break; }
     case 'plant': potPlant(f.x||0,f.z||0,f.s||0.8); break;
     case 'stair':{ const x0=f.x||0,z0=f.z||0,run=f.d||3,top=f.top||H,N=14,sw=f.w||1.2,dir=f.dir||'+z';   // 地上→屋上まで上る（両側手すり＋上端踊り場）
@@ -1097,8 +1117,8 @@ function groundPoint(ev){ const r=renderer.domElement.getBoundingClientRect();
   _m.x=((ev.clientX-r.left)/r.width)*2-1; _m.y=-((ev.clientY-r.top)/r.height)*2+1;
   _ray.setFromCamera(_m,camera); const t=-_ray.ray.origin.y/_ray.ray.direction.y; if(t<=0) return null;
   return _ray.ray.origin.clone().addScaledVector(_ray.ray.direction,t); }
-const _FEAT_LABEL={'deck':'ウッドデッキ','rooftop-deck':'屋上デッキ','stair':'階段','rail':'手すり','bridge':'橋','canopy':'連結屋根','chimney':'煙突','tree_pine':'松の木','tree_palm':'ヤシの木','tree_bamboo':'竹','lamp_post':'街灯','planter_box':'プランター','fire_pit':'焚き火','vending':'自販機','bike':'自転車','car':'自動車','chair':'椅子','bar_stool':'バーチェア','sofa':'ソファ','indoor_plant':'観葉植物','dining_table':'テーブル','work_desk':'デスク','bookshelf':'本棚','counter_bar':'カウンター','sign':'サイン','terrace':'テラス','terrace_lounge':'ラウンジテラス','terrace_cafe':'カフェテラス','sun_lounger':'サンラウンジャー','outdoor_shower':'アウトドアシャワー','tree':'植栽','pad':'敷地パッド'};
-const _FEAT_ICON={'deck':'🪵','rooftop-deck':'🏠','stair':'🪜','rail':'🔩','bridge':'🌉','canopy':'⛺','chimney':'🏭','tree_pine':'🌲','tree_palm':'🌴','tree_bamboo':'🎋','lamp_post':'💡','planter_box':'🌱','fire_pit':'🔥','vending':'🥤','bike':'🚲','car':'🚗','chair':'🪑','bar_stool':'🪑','sofa':'🛋','indoor_plant':'🌿','dining_table':'🍽','work_desk':'🖥','bookshelf':'📚','counter_bar':'☕','sign':'📋','terrace':'☂','terrace_lounge':'🛋','terrace_cafe':'☕','sun_lounger':'🪑','outdoor_shower':'🚿','tree':'🌳','pad':'⬜'};
+const _FEAT_LABEL={'deck':'ウッドデッキ','rooftop-deck':'屋上デッキ','stair':'階段','rail':'手すり','bridge':'橋','canopy':'連結屋根','chimney':'煙突','tree_pine':'松の木','tree_palm':'ヤシの木','tree_bamboo':'竹','lamp_post':'街灯','planter_box':'プランター','fire_pit':'焚き火','vending':'自販機','bike':'自転車','car':'自動車','chair':'椅子','bar_stool':'バーチェア','sofa':'ソファ','bench':'ベンチ','bed':'ベッド','indoor_plant':'観葉植物','dining_table':'テーブル','work_desk':'デスク','bookshelf':'本棚','counter_bar':'カウンター','sign':'サイン','terrace':'テラス','terrace_lounge':'ラウンジテラス','terrace_cafe':'カフェテラス','sun_lounger':'サンラウンジャー','outdoor_shower':'アウトドアシャワー','tree':'植栽','pad':'敷地パッド'};
+const _FEAT_ICON={'deck':'🪵','rooftop-deck':'🏠','stair':'🪜','rail':'🔩','bridge':'🌉','canopy':'⛺','chimney':'🏭','tree_pine':'🌲','tree_palm':'🌴','tree_bamboo':'🎋','lamp_post':'💡','planter_box':'🌱','fire_pit':'🔥','vending':'🥤','bike':'🚲','car':'🚗','chair':'🪑','bar_stool':'🪑','sofa':'🛋','bench':'🪑','bed':'🛏','indoor_plant':'🌿','dining_table':'🍽','work_desk':'🖥','bookshelf':'📚','counter_bar':'☕','sign':'📋','terrace':'☂','terrace_lounge':'🛋','terrace_cafe':'☕','sun_lounger':'🪑','outdoor_shower':'🚿','tree':'🌳','pad':'⬜'};
 function refreshLayerTree(){
   const list=document.getElementById('ltList'); if(!list||!EP) return;
   list.innerHTML='';
@@ -1679,8 +1699,8 @@ const PRESETS={
       {id:'A',size:'20ft',x:-4.0,z:-1.5,level:0,rot:0,color:'charcoal',
         faces:{
           front:{base:'wall',openings:[
-            {type:'counter',u:0.42,w:3.5,h:0.88,sill:0.84,awn:true},
-            {type:'window',u:0.88,w:0.7,h:0.9,sill:1.35,awn:true}
+            {type:'counter',u:0.0,w:3.5,h:0.88,sill:0.84,awn:true},
+            {type:'window',u:0.90,w:0.7,h:0.9,sill:1.35,awn:true}
           ]},
           back:'wall',left:'cargo',right:'cargo'
         },
@@ -1694,9 +1714,8 @@ const PRESETS={
       {id:'B',size:'20ft',x:4.0,z:-1.5,level:0,rot:0,color:'orange',
         faces:{
           front:{base:'wall',openings:[
-            {type:'window',u:0.25,w:3.2,h:1.55,sill:0.72,shape:'strip',awn:false},
-            {type:'door',u:0.65,w:0.98,h:2.15,style:'sliding'},
-            {type:'window',u:0.88,w:1.1,h:0.88,sill:1.22}
+            {type:'window',u:0.0,w:2.8,h:1.45,sill:0.72,shape:'strip'},
+            {type:'door',u:0.70,w:0.95,h:2.12,style:'sliding'}
           ]},
           back:{base:'wall',openings:[
             {type:'window',u:0.5,w:1.8,h:0.85,sill:1.3}
@@ -1715,10 +1734,10 @@ const PRESETS={
       {type:'deck',x:0,z:3.0,w:16.0,d:4.0,y:0.42},
       {type:'pergola',x:0,z:3.2,w:9.0,d:3.5,y:0.42},
       {type:'terrace_cafe',x:2.0,z:6.2,w:5.5,d:2.8},
-      {type:'bench',x:-5.5,z:4.2,w:1.6,d:0.5},
-      {type:'bench',x:5.5,z:4.2,w:1.6,d:0.5},
-      {type:'bench',x:-1.5,z:4.2,w:1.6,d:0.5},
-      {type:'bench',x:1.5,z:4.2,w:1.6,d:0.5},
+      {type:'bench',x:-5.5,z:4.2,w:1.6,d:0.5,y:0.42},
+      {type:'bench',x:5.5,z:4.2,w:1.6,d:0.5,y:0.42},
+      {type:'bench',x:-1.5,z:4.2,w:1.6,d:0.5,y:0.42},
+      {type:'bench',x:1.5,z:4.2,w:1.6,d:0.5,y:0.42},
       {type:'sign',x:0,z:-4.0,y:3.2,text:'COFFEE WORKS',size:0.82,bg:'#c0392b'},
       {type:'lamp_post',x:-8.5,z:5.5,h:3.8},
       {type:'lamp_post',x:8.5,z:5.5,h:3.8},
@@ -1751,9 +1770,9 @@ const PRESETS={
       {id:'A',size:'40ft',x:0,z:-3.0,level:0,rot:0,color:'timber',
         faces:{
           front:{base:'wall',openings:[
-            {type:'window',u:0.14,w:3.8,h:1.45,sill:0.82,shape:'strip'},
-            {type:'door',u:0.44,w:1.3,h:2.25,style:'sliding'},
-            {type:'window',u:0.74,w:3.0,h:1.45,sill:0.82,shape:'strip'}
+            {type:'window',u:0.0,w:3.8,h:1.45,sill:0.82,shape:'strip'},
+            {type:'door',u:0.46,w:1.3,h:2.25,style:'sliding'},
+            {type:'window',u:1.0,w:3.0,h:1.45,sill:0.82,shape:'strip'}
           ]},
           back:{base:'wall',openings:[
             {type:'window',u:0.28,w:1.6,h:0.95,sill:0.92,shape:'strip'},
@@ -1775,8 +1794,8 @@ const PRESETS={
         faces:{
           front:'louver',
           back:{base:'wall',openings:[
-            {type:'window',u:0.32,w:2.8,h:1.25,sill:0.9,shape:'strip'},
-            {type:'door',u:0.82,w:0.9,h:2.15,style:'single'}
+            {type:'window',u:0.20,w:2.8,h:1.25,sill:0.9,shape:'strip'},
+            {type:'door',u:0.85,w:0.9,h:2.15,style:'single'}
           ]},
           left:'cargo',right:'cargo'
         },
@@ -1796,8 +1815,8 @@ const PRESETS={
       {type:'sun_lounger',x:-1.5,z:-2.8,y:3.13},
       {type:'pergola',x:0,z:9.5,w:9.0,d:3.8,y:0.42},
       {type:'fire_pit',x:-5.5,z:9.0},
-      {type:'bench',x:-2.0,z:-0.2,w:1.6,d:0.5},
-      {type:'bench',x:2.0,z:-0.2,w:1.6,d:0.5},
+      {type:'bench',x:-2.0,z:-0.2,w:1.6,d:0.5,y:0.42},
+      {type:'bench',x:2.0,z:-0.2,w:1.6,d:0.5,y:0.42},
       {type:'bench',x:-3.5,z:9.8,w:1.6,d:0.5},
       {type:'bench',x:3.5,z:9.8,w:1.6,d:0.5},
       {type:'lamp_post',x:-11.0,z:7.5,h:3.6},
@@ -1865,8 +1884,8 @@ const PRESETS={
       {type:'fire_pit',x:5.2,z:2.0},
       {type:'sun_lounger',x:4.2,z:3.5},
       {type:'sun_lounger',x:4.2,z:5.2},
-      {type:'bench',x:-2.0,z:0.3,w:1.4,d:0.5},
-      {type:'bench',x:2.5,z:0.3,w:1.4,d:0.5},
+      {type:'bench',x:-2.0,z:0.3,w:1.4,d:0.5,y:0.42},
+      {type:'bench',x:2.5,z:0.3,w:1.4,d:0.5,y:0.42},
       {type:'lamp_post',x:-6.5,z:5.0,h:3.0},
       {type:'lamp_post',x:6.5,z:5.0,h:3.0},
       {type:'lamp_post',x:6.5,z:-5.0,h:3.0},
@@ -1897,10 +1916,9 @@ const PRESETS={
       {id:'A',size:'40ft',x:0,z:-1.5,level:0,rot:0,color:'charcoal',
         faces:{
           front:{base:'wall',openings:[
-            {type:'window',u:0.16,w:3.8,h:1.72,sill:0.65,shape:'strip'},
-            {type:'door',u:0.40,w:1.2,h:2.22,style:'sliding'},
-            {type:'window',u:0.62,w:3.2,h:1.72,sill:0.65,shape:'strip'},
-            {type:'window',u:0.86,w:3.0,h:1.72,sill:0.65,shape:'strip'}
+            {type:'window',u:0.0,w:4.5,h:1.72,sill:0.65,shape:'strip'},
+            {type:'door',u:0.52,w:1.2,h:2.22,style:'sliding'},
+            {type:'window',u:1.0,w:4.0,h:1.72,sill:0.65,shape:'strip'}
           ]},
           back:{base:'wall',openings:[
             {type:'window',u:0.3,w:2.0,h:0.9,sill:1.3},
@@ -1921,8 +1939,8 @@ const PRESETS={
       {id:'B',size:'20ft',x:0,z:4.0,level:1,rot:0,color:'teal',
         faces:{
           front:{base:'wall',openings:[
-            {type:'window',u:0.18,w:2.2,h:1.3,sill:0.88,shape:'strip'},
-            {type:'window',u:0.78,w:2.2,h:1.3,sill:0.88,shape:'strip'}
+            {type:'window',u:0.0,w:2.2,h:1.3,sill:0.88,shape:'strip'},
+            {type:'window',u:1.0,w:2.2,h:1.3,sill:0.88,shape:'strip'}
           ]},
           back:{base:'wall',openings:[
             {type:'window',u:0.5,w:2.8,h:0.9,sill:1.2}
@@ -2004,8 +2022,8 @@ const PRESETS={
     site_features:[
       {type:'canopy',a:'A',b:'B'},
       {type:'deck',x:-2.0,z:3.8,w:8.0,d:3.0,y:0.42},
-      {type:'bench',x:-4.0,z:4.2,w:1.6,d:0.5},
-      {type:'bench',x:-0.5,z:4.2,w:1.6,d:0.5},
+      {type:'bench',x:-4.0,z:4.2,w:1.6,d:0.5,y:0.42},
+      {type:'bench',x:-0.5,z:4.2,w:1.6,d:0.5,y:0.42},
       {type:'planter_box',x:-7.5,z:3.8,w:1.0,d:0.45},
       {type:'planter_box',x:3.0,z:3.8,w:1.0,d:0.45},
       {type:'planter_box',x:-7.5,z:-3.2,w:1.0,d:0.45},
@@ -2020,6 +2038,112 @@ const PRESETS={
       {type:'bike',x:6.5,z:6.2},
       {type:'car',x:-7.5,z:-6.5,col:'red'},
       {type:'sign',x:-2.0,z:-2.8,y:3.3,text:'CREATIVE STUDIO',size:0.68,bg:'#3f8a8a'}
+    ]},
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     🏨 6. HOTEL STAY — コンテナモーテル
+     20ft×4棟（ロビー1＋客室3）を横一列に並べた駐車場型ホテル。
+     L(white): ロビー＋レセプション
+     A/B(sand): スタンダードルーム（ベッド＋デスク＋バス）
+     C(charcoal): プレミアムルーム
+     通し庇＋デッキ通路で全室前面が繋がる。
+  ═══════════════════════════════════════════════════════════════════════════ */
+  hotel:{
+    meta:{name:'HOTEL STAY',time:'evening'},
+    site:{width:32,depth:24},
+    modules:[
+      /* ロビー：フロント窓＋スライドドア、内部にレセプションカウンター */
+      {id:'L',size:'20ft',x:-9.75,z:-1.5,level:0,rot:0,color:'white',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'window',u:0.0,w:2.5,h:1.1,sill:0.88,shape:'strip'},
+            {type:'door',u:0.80,w:1.0,h:2.18,style:'sliding'}
+          ]},
+          back:'wall',left:'cargo',right:'cargo'
+        },
+        interior:{ceiling:2.42,light:true,furniture:[
+          {family:'counter',x:0,z:-0.58,w:4.0,d:0.45},
+          {family:'shelf',x:2.5,z:-0.6,w:0.9,d:0.28},
+          {family:'seating',x:-0.8,z:0.50,n:2},
+          {family:'plant',x:-2.6,z:0.50,s:0.75}
+        ]}},
+      /* 客室A：ドア＋横長窓、内部にベッド・デスク・バス */
+      {id:'A',size:'20ft',x:-3.25,z:-1.5,level:0,rot:0,color:'sand',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'door',u:0.20,w:0.95,h:2.12,style:'single'},
+            {type:'window',u:1.0,w:2.0,h:0.92,sill:0.95}
+          ]},
+          back:{base:'wall',openings:[{type:'window',u:0.5,w:1.0,h:0.65,sill:1.4}]},
+          left:'cargo',right:'cargo'
+        },
+        interior:{ceiling:2.42,light:true,furniture:[
+          {family:'bed',x:-0.5,z:-0.35,w:1.6,d:1.8},
+          {family:'desk',x:2.2,z:-0.55,w:1.2,d:0.55},
+          {family:'shelf',x:2.5,z:0.45,w:0.9,d:0.3},
+          {family:'bath',x:-2.5,z:0.45,w:1.5,d:0.55}
+        ]}},
+      /* 客室B */
+      {id:'B',size:'20ft',x:3.25,z:-1.5,level:0,rot:0,color:'sand',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'door',u:0.20,w:0.95,h:2.12,style:'single'},
+            {type:'window',u:1.0,w:2.0,h:0.92,sill:0.95}
+          ]},
+          back:{base:'wall',openings:[{type:'window',u:0.5,w:1.0,h:0.65,sill:1.4}]},
+          left:'cargo',right:'cargo'
+        },
+        interior:{ceiling:2.42,light:true,furniture:[
+          {family:'bed',x:-0.5,z:-0.35,w:1.6,d:1.8},
+          {family:'desk',x:2.2,z:-0.55,w:1.2,d:0.55},
+          {family:'shelf',x:2.5,z:0.45,w:0.9,d:0.3},
+          {family:'bath',x:-2.5,z:0.45,w:1.5,d:0.55}
+        ]}},
+      /* 客室C（プレミアム：charcoal）*/
+      {id:'C',size:'20ft',x:9.75,z:-1.5,level:0,rot:0,color:'charcoal',
+        faces:{
+          front:{base:'wall',openings:[
+            {type:'door',u:0.20,w:0.95,h:2.12,style:'single'},
+            {type:'window',u:1.0,w:2.0,h:0.92,sill:0.95}
+          ]},
+          back:{base:'wall',openings:[{type:'window',u:0.5,w:1.0,h:0.65,sill:1.4}]},
+          left:'cargo',right:'cargo'
+        },
+        interior:{ceiling:2.42,light:true,furniture:[
+          {family:'bed',x:-0.5,z:-0.35,w:1.6,d:1.8},
+          {family:'desk',x:2.2,z:-0.55,w:1.2,d:0.55},
+          {family:'shelf',x:2.5,z:0.45,w:0.9,d:0.3},
+          {family:'bath',x:-2.5,z:0.45,w:1.5,d:0.55}
+        ]}}
+    ],
+    site_features:[
+      /* 全室前面の通路デッキ＋パーゴラ庇 */
+      {type:'deck',x:0,z:0.8,w:26.0,d:2.4,y:0.42},
+      {type:'pergola',x:0,z:0.8,w:27.5,d:2.6,y:0.42},
+      /* ホテルサイン */
+      {type:'sign',x:-9.75,z:-3.8,y:3.2,text:'HOTEL STAY',size:0.7,bg:'#2c3e50'},
+      /* 駐車場ライト */
+      {type:'lamp_post',x:-13.0,z:6.5,h:4.5},
+      {type:'lamp_post',x:0,z:6.5,h:4.5},
+      {type:'lamp_post',x:13.0,z:6.5,h:4.5},
+      {type:'lamp_post',x:-13.0,z:-4.5,h:4.5},
+      {type:'lamp_post',x:13.0,z:-4.5,h:4.5},
+      /* 駐車中の車 */
+      {type:'car',x:-9.0,z:8.0,col:'white'},
+      {type:'car',x:-3.0,z:8.0,col:'red'},
+      {type:'car',x:3.0,z:8.0,col:'white'},
+      {type:'car',x:9.0,z:8.0,col:'gray'},
+      {type:'car',x:-6.0,z:10.5,col:'white'},
+      {type:'car',x:6.0,z:10.5,col:'white'},
+      /* 通路沿いのプランター */
+      {type:'planter_box',x:-13.0,z:0.8,w:1.2,d:0.5,y:0.42},
+      {type:'planter_box',x:13.0,z:0.8,w:1.2,d:0.5,y:0.42},
+      {type:'planter_box',x:0,z:0.8,w:1.2,d:0.5,y:0.42},
+      /* エントランス周辺の植栽 */
+      {type:'tree_pine',x:-14.0,z:-3.5,s:1.4},
+      {type:'tree_pine',x:14.0,z:-3.5,s:1.2},
+      {type:'tree_bamboo',x:-14.0,z:3.5,s:1.3},
+      {type:'tree_bamboo',x:14.0,z:3.5,s:1.1}
     ]}
 
 };
