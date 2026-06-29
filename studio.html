@@ -1673,18 +1673,18 @@ function genColliders(plan){
   const cols=[], PASS={storefront:1,open:1,link:1,door:1}; walkFloors=[]; walkRamps=[];
   const WB={y0:FOUND,y1:FOUND+H};                          // 壁の高さ帯（基礎上〜天井）
   for(const m of (plan.modules||[])){
-    if((m.level||0)!==0) continue;                          // 1階のみ歩行対象
+    const lv=m.level||0, baseY=FOUND+lv*H;                   // 各階の床高（1階=0.42 / 2階=3.01 …）多層歩行対応
     const long=m.len||SIZE_LEN[m.size]||L20, cx=m.x||0, cz=m.z||0, rot=m.rot||0, t=0.22, rN=((rot%360)+360)%360;
-    if(m.stand){ const hx=(rN%180===0?H/2:W/2), hz=(rN%180===0?W/2:H/2);   // 立てコンテナ＝塊
+    if(m.stand){ if(lv!==0) continue; const hx=(rN%180===0?H/2:W/2), hz=(rN%180===0?W/2:H/2);   // 立てコンテナ＝塊（1階のみ）
       cols.push({minX:cx-hx,maxX:cx+hx,minZ:cz-hz,maxZ:cz+hz,...WB}); continue; }
-    if(rN!==0&&rN!==90&&rN!==180&&rN!==270){                      // 自由角度＝回転footprintのAABBを塊扱い
+    if(rN!==0&&rN!==90&&rN!==180&&rN!==270){ if(lv!==0) continue;   // 自由角度＝回転footprintのAABBを塊扱い（1階のみ）
       const a=rot*Math.PI/180, ex=long/2*Math.abs(Math.cos(a))+W/2*Math.abs(Math.sin(a)), ez=long/2*Math.abs(Math.sin(a))+W/2*Math.abs(Math.cos(a));
       cols.push({minX:cx-ex,maxX:cx+ex,minZ:cz-ez,maxZ:cz+ez,...WB}); walkFloors.push({minX:cx-ex,maxX:cx+ex,minZ:cz-ez,maxZ:cz+ez,y:FOUND}); continue; }
     const r90=(rN===90||rN===270), xr=(r90?W/2:long/2), zr=(r90?long/2:W/2);
     const minX=cx-xr,maxX=cx+xr,minZ=cz-zr,maxZ=cz+zr, F=m.faces||{};
-    walkFloors.push({minX,maxX,minZ,maxZ,y:FOUND});         // 基礎の上の床（中に入ったら一段上がる）
+    walkFloors.push({minX,maxX,minZ,maxZ,y:baseY});         // その階の床（2階以上もstair/bridge経由で歩ける）
     const passable=(face)=>{ const fo=normFace(F,face); if(PASS[fo.base]) return true; return fo.openings.some(o=>o.type==='door'); }; // ドアを含む面は素通り／窓・受け渡しは壁
-    const add=(face,e)=>{ if(!passable(face)){ e.y0=FOUND; e.y1=FOUND+H; cols.push(e); } };
+    const add=(face,e)=>{ if(!passable(face)){ e.y0=baseY; e.y1=baseY+H; cols.push(e); } };
     if(!r90){ add('front',{minX,maxX,minZ:maxZ-t,maxZ}); add('back',{minX,maxX,minZ,maxZ:minZ+t});
       add('right',{minX:maxX-t,maxX,minZ,maxZ}); add('left',{minX,maxX:minX+t,minZ,maxZ}); }
     else { add('front',{minX:maxX-t,maxX,minZ,maxZ}); add('back',{minX,maxX:minX+t,minZ,maxZ});
@@ -1706,8 +1706,14 @@ function genColliders(plan){
     } else if(f.type==='deck' && f.y){ const w=f.w||5,d=f.d||3,x=f.x||0,z=f.z||0;
       walkFloors.push({minX:x-w/2,maxX:x+w/2,minZ:z-d/2,maxZ:z+d/2,y:f.y});
     } else if(f.type==='stair'){ const x0=f.x||0,z0=f.z||0,run=f.d||3,top=f.top||H,dir=f.dir||'+z';
-      const sgn=(dir==='-z'||dir==='-x')?-1:1, ax=(dir==='+x'||dir==='-x')?'x':'z';
-      walkRamps.push({ax,sgn,x0,z0,run,top,hw:(f.w||1.2)/2}); }   // 階段ランプ（上り下り）
+      const sgn=(dir==='-z'||dir==='-x')?-1:1, ax=(dir==='+x'||dir==='-x')?'x':'z', hw=(f.w||1.2)/2;
+      walkRamps.push({ax,sgn,x0,z0,run,top,hw});   // 階段ランプ（上り下り）
+      // ▼ 上端の踊り場床：ランプ頂部から進行方向へ延長し、屋上/デッキへ確実に橋渡し（頂部での落下を防止）
+      const la=run-0.3, lb=run+0.9;
+      if(ax==='x'){ const xa=x0+sgn*la, xb=x0+sgn*lb;
+        walkFloors.push({minX:Math.min(xa,xb),maxX:Math.max(xa,xb),minZ:z0-hw,maxZ:z0+hw,y:top}); }
+      else { const za=z0+sgn*la, zb=z0+sgn*lb;
+        walkFloors.push({minX:x0-hw,maxX:x0+hw,minZ:Math.min(za,zb),maxZ:Math.max(za,zb),y:top}); } }
   }
   return cols;
 }
@@ -2096,7 +2102,8 @@ const PRESETS={
           back:{base:'wall',openings:[
             {type:'window',u:0.5,w:2.8,h:0.9,sill:1.2}
           ]},
-          left:'cargo',right:'cargo'
+          left:'cargo',
+          right:{base:'wall',openings:[{type:'door',u:0.5,w:1.0,h:2.12,style:'sliding'}]}   // 階段が着く面＝2F入口（扉で素通り可）
         },
         interior:{ceiling:2.42,light:true,furniture:[
           {family:'desk',x:-1.8,z:-0.38,w:1.4,d:0.65},
