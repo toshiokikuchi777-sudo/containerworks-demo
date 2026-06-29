@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>CONTAINER DESIGN STUDIO — AI設計エンジン</title>
 <style>
   :root{ --bg:#e7f1f7; --panel:#11161c; --bg2:#1a222b; --line:#2a3542; --txt:#e9eef3; --sub:#9fb0bf; --red:#c0392b; --accent:#4fb6d6; }
@@ -15,6 +15,10 @@
   #walkBtn{position:absolute;left:14px;top:14px;z-index:5;background:var(--red);color:#fff;border:0;border-radius:9px;padding:10px 15px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.28)}
   #walkBtn:hover{filter:brightness(1.08)}
   #walkHint{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;display:none;background:rgba(10,14,18,.8);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;z-index:5;white-space:nowrap}
+  /* ウォークモード用 仮想スティック（モバイルのみ表示） */
+  #joystick{display:none;position:fixed;left:calc(20px + env(safe-area-inset-left,0px));bottom:calc(30px + env(safe-area-inset-bottom,0px));width:124px;height:124px;border-radius:50%;background:rgba(10,14,18,.30);border:1.5px solid rgba(255,255,255,.28);z-index:8;touch-action:none;-webkit-tap-highlight-color:transparent;box-shadow:inset 0 0 24px rgba(0,0,0,.25)}
+  #joystick .thumb{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(255,255,255,.88);box-shadow:0 3px 12px rgba(0,0,0,.45);pointer-events:none}
+  #joystick::after{content:'';position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:rgba(255,255,255,.45)}
   .ipanel{display:none;padding:8px 0;color:var(--txt);}
   #layerTree{border-bottom:1px solid var(--line);overflow-y:auto;max-height:220px;flex-shrink:0}
   .ltHead{padding:8px 14px 4px;font-size:10px;color:var(--sub);letter-spacing:.08em;font-weight:700}
@@ -91,51 +95,76 @@
   @media(max-width:760px){ #rpanel{display:none} }
 
   /* ── モバイルTOPバー ── */
-  #mTopBar{display:none;position:fixed;top:0;left:0;right:0;height:52px;
-    background:var(--panel);border-bottom:1px solid var(--line);z-index:201;
-    align-items:center;padding:0 10px;gap:8px}
-  #mTopBar .mLogo{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--txt);white-space:nowrap;flex-shrink:0}
-  #mTopBar .mPresets{display:flex;gap:5px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0}
+  #mTopBar{display:none;position:fixed;top:0;left:0;right:0;
+    height:calc(52px + env(safe-area-inset-top,0px));
+    padding:env(safe-area-inset-top,0px) calc(10px + env(safe-area-inset-right,0px)) 0 calc(10px + env(safe-area-inset-left,0px));
+    background:rgba(17,22,28,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);z-index:201;align-items:center;gap:8px}
+  #mTopBar .mLogo{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--txt);white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:3px}
+  #mTopBar .mPresets{display:flex;gap:6px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;scroll-snap-type:x proximity;-webkit-mask-image:linear-gradient(90deg,#000 92%,transparent);mask-image:linear-gradient(90deg,#000 92%,transparent)}
   #mTopBar .mPresets::-webkit-scrollbar{display:none}
-  #mToggle{background:none;border:1px solid var(--line);color:var(--txt);border-radius:8px;
-    padding:7px 12px;font-size:17px;line-height:1;cursor:pointer;flex-shrink:0;
-    transition:border-color .15s,color .15s;font-family:inherit}
-  #mToggle.open{border-color:var(--accent);color:var(--accent)}
-  #mOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99;
-    -webkit-tap-highlight-color:transparent;cursor:pointer}
-  #mOverlay.on{display:block}
-  #mHandle{display:none;width:40px;height:4px;background:var(--line);border-radius:2px;
-    margin:10px auto 4px;flex-shrink:0;cursor:pointer}
+  #mTopBar .mPresets .preset-btn{scroll-snap-align:start}
+  #mToggle{background:none;border:1px solid var(--line);color:var(--txt);border-radius:9px;
+    padding:8px 13px;font-size:17px;line-height:1;cursor:pointer;flex-shrink:0;
+    transition:border-color .15s,color .15s,background .15s;font-family:inherit;min-width:44px;min-height:38px}
+  #mToggle.open{border-color:var(--accent);color:var(--accent);background:rgba(79,182,214,.12)}
+  #mOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;
+    -webkit-tap-highlight-color:transparent;cursor:pointer;opacity:0;transition:opacity .3s}
+  #mOverlay.on{display:block;opacity:1}
+  #mHandle{display:none}
+  @media(max-width:380px){ #mTopBar .mLogoTxt{display:none} }
 
   /* ── スマホ：ボトムドロワー ── */
   @media(max-width:640px){
     #mTopBar{display:flex}
-    #mHandle{display:block}
-    #view{padding-top:52px}
+    /* トップバーは fixed オーバーレイ。canvas は全画面のまま（padding は付けない）*/
+    #status{bottom:calc(12px + env(safe-area-inset-bottom,0px));left:calc(12px + env(safe-area-inset-left,0px));font-size:11px;max-width:58%;padding:6px 10px}
+    /* ドロワー本体：1本のスクロール領域として下から せり上がる */
     #lpanel{
       position:fixed!important;bottom:0!important;left:0!important;right:0!important;
-      top:auto!important;width:100%!important;max-width:none!important;height:80vh;
-      flex-direction:column;border-right:none;
-      border-top:1px solid var(--line);border-radius:16px 16px 0 0;
-      transform:translateY(102%);transition:transform .32s cubic-bezier(.4,0,.2,1);
-      z-index:100;box-shadow:0 -10px 40px rgba(0,0,0,.5);overflow:hidden
+      top:auto!important;width:100%!important;max-width:none!important;height:84vh;
+      flex-direction:column;border-right:none;border-top:1px solid var(--line);
+      border-radius:18px 18px 0 0;
+      transform:translateY(104%);transition:transform .34s cubic-bezier(.32,.72,0,1);
+      z-index:100;box-shadow:0 -12px 44px rgba(0,0,0,.55);
+      overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+      padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))
     }
     #lpanel.mOpen{transform:translateY(0)}
     #lpanel header{display:none}
-    #layerTree{max-height:150px}
-    #izone{overflow-y:auto;flex:1}
-    /* rpanelをドロワー内に取り込んだとき */
+    /* 上部の掴みハンドル（スクロールしても固定・タップで閉じる）*/
+    #mHandle{display:block;position:sticky;top:0;z-index:5;width:100%;height:auto;
+      margin:0;padding:11px 0 7px;background:var(--panel);border-radius:18px 18px 0 0;cursor:pointer}
+    #mHandle::before{content:'';display:block;width:44px;height:4px;border-radius:3px;background:#3a4654;margin:0 auto}
+    /* レイヤー／インスペクタ／装飾パネルを自然高で縦に積む（入れ子スクロールを作らない）*/
+    #layerTree{flex:0 0 auto;max-height:132px}
+    #izone{flex:0 0 auto;overflow:visible;padding-bottom:6px}
+    #inspPlaceholder{padding:16px 0}
     #rpanel.inDrawer{display:flex!important;width:100%!important;flex-direction:column;
-      border-left:none;border-top:1px solid var(--line);flex-shrink:0;overflow-y:auto;max-height:55vh}
-    /* ボタン配置を上部バーの下にずらす */
-    #walkBtn{top:62px}
-    #camReset{top:62px}
-    #timeCtrl{top:62px;bottom:auto}
-    /* タッチしやすい大きさに */
-    .preset-btn{padding:8px 10px;font-size:11px}
-    .ttime{padding:10px 11px}
-    /* undo/SSボタンなど小さいボタンも少し大きく */
-    .esm{padding:10px 4px;font-size:11px}
+      border-left:none;border-top:1px solid var(--line);flex:0 0 auto;overflow:visible;max-height:none}
+    #rpanel.inDrawer .body{overflow:visible;flex:0 0 auto;padding-bottom:0}
+    /* ビュー上のフローティングボタン：トップバー直下／下端に安全配置 */
+    #walkBtn{top:calc(62px + env(safe-area-inset-top,0px));left:calc(12px + env(safe-area-inset-left,0px));padding:12px 17px;font-size:14px}
+    #camReset{top:calc(62px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));padding:11px 14px;font-size:13px}
+    #timeCtrl{top:auto!important;bottom:calc(14px + env(safe-area-inset-bottom,0px))!important;
+      right:calc(12px + env(safe-area-inset-right,0px));left:auto;gap:6px}
+    .ttime{padding:10px 11px;font-size:16px}
+    /* タッチターゲットの拡大 */
+    .preset-btn{padding:9px 12px;font-size:11.5px}
+    .esm{padding:11px 4px;font-size:11px}
+    .ipanel .ib button{padding:10px 4px;font-size:12px}
+    .ipanel .ibtnrow button{padding:12px;font-size:13px}
+    .ipanel .sw{width:26px;height:26px}
+    .etool .ebig{padding:13px}
+    #ctaPanel{position:sticky;bottom:0;background:#090e14;z-index:4}
+    /* ウォークモード：スティック表示＋不要UIを隠してすっきり */
+    body.walking #joystick{display:block}
+    body.walking #timeCtrl{display:none!important}
+    body.walking #status{display:none!important}
+    body.walking #camReset{display:none!important}
+    body.walking #mTopBar{display:none!important}
+    body.walking #walkHint{bottom:calc(20px + env(safe-area-inset-bottom,0px));right:calc(14px + env(safe-area-inset-right,0px));left:auto;transform:none;max-width:46%;white-space:normal;text-align:center;font-size:11px;line-height:1.4}
+    body.walking #walkBtn{top:calc(14px + env(safe-area-inset-top,0px))}
   }
   #bridgeBanner{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;background:rgba(27,31,36,.92);color:#fff;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;letter-spacing:.02em;box-shadow:0 4px 16px rgba(0,0,0,.35);display:none}
   body.bridging #view,body.bridging #view canvas{cursor:crosshair}
@@ -153,7 +182,7 @@
 <body>
 <!-- モバイル固定ヘッダー -->
 <div id="mTopBar">
-  <span class="mLogo">📦 CONTAINER</span>
+  <span class="mLogo">📦<span class="mLogoTxt">CONTAINER</span></span>
   <div class="mPresets">
     <button class="preset-btn" data-p="cafe">☕ カフェ</button>
     <button class="preset-btn" data-p="villa">🏕 別荘</button>
@@ -227,6 +256,7 @@
     <button id="walkBtn">🚶 中に入る</button>
     <button id="camReset">⟳ リセット</button>
     <div id="walkHint">WASD / 矢印キー：移動　・　画面ドラッグ：見回す　・　ESC：設計に戻る</div>
+    <div id="joystick"><div class="thumb"></div></div>
     <div id="timeCtrl" style="position:absolute;right:14px;bottom:50px;z-index:5;display:flex;gap:5px">
       <button class="ttime on" data-t="noon" title="昼">☀️</button>
       <button class="ttime" data-t="morning" title="朝">🌅</button>
@@ -1626,6 +1656,7 @@ document.getElementById('fStairRow').addEventListener('click',ev=>{
 /* ============ WALK MODE（アバターで中に入って歩く）============ */
 let walkColliders=[], walkFloors=[], walkRamps=[], walkMode=false, avatar=null, camYaw=Math.PI, camPitch=0.16, _spawn={x:0,z:6}, _moving=0, _walkPhase=0;
 const keys={};
+const _joy={x:0,y:0};   // 仮想スティック入力（x=左右ストレイフ / y=前後, 範囲-1..1）
 function deleteSelected(){ const o=selObj(); if(!o) return; if(selKind==='mod') EP.modules.splice(selIndex,1); else (EP.site_features||[]).splice(selIndex,1); deselect(); editorRebuild(); }
 addEventListener('keydown',e=>{
   keys[e.code]=true;
@@ -1712,24 +1743,43 @@ function enterWalk(){ if(connectPick) exitConnectPick();   // 接続選択中に
   selIndex=-1; if(selBox){scene.remove(selBox);selBox=null;} hideInspector();   // 編集の選択を解除
   computeSpawn(); avatar.position.set(_spawn.x,0,_spawn.z); avatar.position.y=floorAt(avatar.position.x,avatar.position.z,99); avatar.rotation.y=Math.PI; avatar.visible=true;
   camYaw=Math.PI; camPitch=0.16; walkMode=true; controls.enabled=false;
+  document.body.classList.add('walking');
+  _joy.x=0; _joy.y=0;
+  const isMobile=window.innerWidth<=640;
+  document.getElementById('walkHint').textContent=isMobile?'左下のスティックで歩く・画面ドラッグで見回す':'WASD / 矢印キー：移動　・　画面ドラッグ：見回す　・　ESC：設計に戻る';
   document.getElementById('walkBtn').textContent='✕ 設計に戻る'; document.getElementById('walkHint').style.display='block'; }
 function exitWalk(){ walkMode=false; controls.enabled=true; if(avatar)avatar.visible=false;
+  document.body.classList.remove('walking'); _joy.x=0; _joy.y=0;
   document.getElementById('walkBtn').textContent='🚶 中に入る'; document.getElementById('walkHint').style.display='none';
   buildFromPlan(EP,true); }
 document.getElementById('walkBtn').onclick=()=>{ walkMode?exitWalk():enterWalk(); };
 document.getElementById('camReset').onclick=()=>{ if(EP&&building){ const box3=new THREE.Box3().setFromObject(building); const c=box3.getCenter(new THREE.Vector3()),sz=box3.getSize(new THREE.Vector3()); controls.target.set(c.x,Math.max(1.6,sz.y*0.45),c.z); const r=Math.max(sz.x,sz.z,6); camera.position.set(c.x+r*1.1,sz.y*0.9+6,c.z+r*1.25); controls.update(); } else { camera.position.set(16,12,20); controls.target.set(0,1.6,0); controls.update(); } };
 
-// 見回し（ウォーク中のドラッグ）
-let _drag=false,_px=0,_py=0;
-renderer.domElement.addEventListener('pointerdown',e=>{ if(walkMode){_drag=true;_px=e.clientX;_py=e.clientY;} });
-addEventListener('pointermove',e=>{ if(walkMode&&_drag){ camYaw-=(e.clientX-_px)*0.005; camPitch=Math.max(-0.15,Math.min(0.6,camPitch+(e.clientY-_py)*0.003)); _px=e.clientX;_py=e.clientY; } });
-addEventListener('pointerup',()=>_drag=false);
+// 見回し（ウォーク中のドラッグ）— pointerIdを記録し、スティックとの同時操作（移動＋見回し）に対応
+let _drag=false,_px=0,_py=0,_lookId=null;
+renderer.domElement.addEventListener('pointerdown',e=>{ if(walkMode){_drag=true;_lookId=e.pointerId;_px=e.clientX;_py=e.clientY;} });
+addEventListener('pointermove',e=>{ if(walkMode&&_drag&&e.pointerId===_lookId){ camYaw-=(e.clientX-_px)*0.005; camPitch=Math.max(-0.15,Math.min(0.6,camPitch+(e.clientY-_py)*0.003)); _px=e.clientX;_py=e.clientY; } });
+addEventListener('pointerup',e=>{ if(e.pointerId===_lookId){_drag=false;_lookId=null;} });
+addEventListener('pointercancel',e=>{ if(e.pointerId===_lookId){_drag=false;_lookId=null;} });
+
+// 仮想スティック（モバイル移動）
+(function(){
+  const js=document.getElementById('joystick'); if(!js) return;
+  const thumb=js.querySelector('.thumb'); let jid=null, cx=0, cy=0; const R=46;
+  function setThumb(dx,dy){ thumb.style.transform=`translate(${dx}px,${dy}px)`; }
+  js.addEventListener('pointerdown',e=>{ e.preventDefault(); jid=e.pointerId; const r=js.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2; js.setPointerCapture(e.pointerId); move(e); });
+  function move(e){ if(e.pointerId!==jid) return; let dx=e.clientX-cx, dy=e.clientY-cy; const d=Math.hypot(dx,dy); if(d>R){ dx*=R/d; dy*=R/d; } setThumb(dx,dy); _joy.x=dx/R; _joy.y=-dy/R; }
+  js.addEventListener('pointermove',move);
+  function end(e){ if(e.pointerId!==jid) return; jid=null; _joy.x=0; _joy.y=0; setThumb(0,0); }
+  js.addEventListener('pointerup',end); js.addEventListener('pointercancel',end);
+})();
 
 function updateWalk(){
   const sp=0.078; let mx=0,mz=0;
   const f=[Math.sin(camYaw),Math.cos(camYaw)], s=[Math.sin(camYaw+Math.PI/2),Math.cos(camYaw+Math.PI/2)];
   if(keys.KeyW||keys.ArrowUp){mx+=f[0];mz+=f[1];} if(keys.KeyS||keys.ArrowDown){mx-=f[0];mz-=f[1];}
   if(keys.KeyD||keys.ArrowRight){mx+=s[0];mz+=s[1];} if(keys.KeyA||keys.ArrowLeft){mx-=s[0];mz-=s[1];}
+  if(_joy.x||_joy.y){ mx+=f[0]*_joy.y+s[0]*_joy.x; mz+=f[1]*_joy.y+s[1]*_joy.x; }   // 仮想スティック（前後=y / 左右=x）
   const len=Math.hypot(mx,mz); _moving=len>0?1:0;
   const curY=avatar.position.y;
   if(len>0){ mx/=len; mz/=len; const r=0.42;
@@ -2337,22 +2387,24 @@ buildFromPlan({
   if(ov) ov.addEventListener('click', closeDrawer);
   if(handle) handle.addEventListener('click', closeDrawer);
 
-  /* rpanelをドロワー内に組み込む（スマホ時のみ） */
+  /* rpanel（右パネル）をスマホ時はドロワー内へ、PC/横向き時は元の位置へ戻す */
+  const app=document.getElementById('app');
   function setupMobileLayout(){
-    if(window.innerWidth > 640) return;
-    const rp=document.getElementById('rpanel');
-    if(rp && !rp.classList.contains('inDrawer')){
-      rp.classList.add('inDrawer');
-      lp.appendChild(rp);
+    const rp=document.getElementById('rpanel'); if(!rp) return;
+    if(window.innerWidth<=640){
+      if(!rp.classList.contains('inDrawer')){ rp.classList.add('inDrawer'); lp.appendChild(rp); }
+    } else {
+      if(rp.classList.contains('inDrawer')){ rp.classList.remove('inDrawer'); app.appendChild(rp); closeDrawer(); }
     }
   }
   setupMobileLayout();
   window.addEventListener('resize', setupMobileLayout);
+  window.addEventListener('orientationchange', ()=>setTimeout(setupMobileLayout,80));
 
   /* プリセット選択時にドロワーを閉じる（モバイル） */
   document.addEventListener('click', e=>{
-    if(e.target.classList.contains('preset-btn') && window.innerWidth<=640){
-      setTimeout(closeDrawer, 200);
+    if(e.target.closest && e.target.closest('.preset-btn') && window.innerWidth<=640){
+      setTimeout(closeDrawer, 220);
     }
   });
 })();
