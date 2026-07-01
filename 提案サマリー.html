@@ -107,6 +107,13 @@
   .ec p{font-size:14px;color:var(--muted)}
   @media(max-width:680px){.grid2{grid-template-columns:1fr}}
 
+  /* ツール実画面ショット */
+  .shot{display:block;margin-top:32px;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;background:#0d0d10;box-shadow:0 16px 42px rgba(0,0,0,.12);transition:transform .18s,box-shadow .18s}
+  .shot:hover{transform:translateY(-3px);box-shadow:0 24px 54px rgba(0,0,0,.18)}
+  .shot img{display:block;width:100%;height:auto}
+  .shot .cap{display:flex;align-items:center;gap:8px;padding:13px 18px;font-size:13.5px;font-weight:600;color:var(--ink);background:var(--panel);border-top:1px solid var(--line)}
+  .shot .cap .go{margin-left:auto;color:var(--accent);font-weight:700;white-space:nowrap}
+
   /* phases timeline */
   .phases{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:36px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
   .ph{background:var(--panel);padding:24px 20px;border-right:1px solid var(--line)}
@@ -229,6 +236,10 @@
     <div class="step"><div class="n">03</div><h4>AIに相談</h4><p>用途×設置エリアで概算金額を提示。価格不安をその場で解消。</p></div>
     <div class="step"><div class="n">04</div><h4>そのままCV</h4><p>来場予約／正式見積り／資料・CADデータ請求／LINE相談へ。</p></div>
   </div>
+  <a class="shot" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/" target="_blank" rel="noopener">
+    <img src="img/preview-demo.png" alt="歩けるデモの画面：アニメ調のアバターでコンテナ建築の敷地・室内を歩いて体感" loading="lazy">
+    <span class="cap">▶ 歩けるデモ｜アバターで敷地・建物内を歩いて体感<span class="go">開く →</span></span>
+  </a>
   <p class="note">※デモには 9プランの実例ベース展示場・自動ツアー（見るだけモード）・天気切替・GLB書き出しを実装済み。</p>
 </div></section>
 
@@ -245,6 +256,10 @@
     <div class="ec"><h4><span class="accent">◢</span> そのまま中をウォーク</h4><p>作った設計の「中に入る」で一人称ウォーク。設計 → 体感 → 相談が地続きに。</p></div>
     <div class="ec"><h4><span class="accent">◢</span> 設計データを引き継ぐ</h4><p>JSONで設計を保存・適用。御社のCAD/実モデルと接続すれば“実在する組み合わせ”を即提案できる。</p></div>
   </div>
+  <a class="shot" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/studio.html" target="_blank" rel="noopener">
+    <img src="img/preview-studio.png" alt="設計＆見積りスタジオの画面：コンテナを設計すると概算費用がリアルタイム表示される" loading="lazy">
+    <span class="cap">🛠 設計＆見積りスタジオ｜設計すると概算費用がリアルタイム表示<span class="go">開く →</span></span>
+  </a>
   <div style="margin-top:30px"><a class="btn btn-main" href="https://toshiokikuchi777-sudo.github.io/containerworks-demo/studio.html" target="_blank" rel="noopener">🛠 設計＆見積りスタジオを開く</a></div>
   <p class="note">※プリセット・パーツ追加・概算見積り・ウォークは公開版でそのまま動作。AIへ文章で指示して設計を自動生成する機能は、専用バックエンドの接続で有効化します。</p>
 </div></section>
