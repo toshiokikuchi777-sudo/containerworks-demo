@@ -1162,7 +1162,7 @@ document.getElementById('go').onclick=async()=>{
     // ローカル(localhost/ファイル)では別ポートのserver.mjs(8787)へ。本番(独自ドメイン)では同一オリジンの/designへ。
     const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.protocol==='file:')?'http://localhost:8787':'';
     const res=await fetch(API_BASE+'/design',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json','x-vsw-gate':'4e023c09fc9e3c096f0d5a28671d62f8c803241e60902770da5910591a7b6c2d'},
       body:JSON.stringify({use:document.getElementById('use').value,grade,
         site:{width:+document.getElementById('sw').value,depth:+document.getElementById('sd').value},
         notes:document.getElementById('notes').value})
