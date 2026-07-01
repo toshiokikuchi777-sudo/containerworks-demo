@@ -180,6 +180,27 @@
 </style>
 </head>
 <body>
+<!-- 簡易入場ゲート（Vsw）：コードはSHA-256で照合。cw_gate_okで両ページ共通・端末記憶 -->
+<div id="vswGate" style="position:fixed;inset:0;z-index:2147483647;background:#15120d;display:flex;align-items:center;justify-content:center;font-family:-apple-system,'Hiragino Kaku Gothic ProN',system-ui,sans-serif;color:#f3efe8">
+  <div style="width:min(90vw,340px);text-align:center;padding:0 20px">
+    <div style="font-family:'Oswald',system-ui;font-weight:700;color:#e96a52;letter-spacing:.02em;font-size:19px;margin-bottom:4px">Vsw.co.jp</div>
+    <div style="font-size:12.5px;color:#b7b0a4;margin-bottom:20px;letter-spacing:.05em">入場コードを入力してください</div>
+    <input id="vswGatePw" type="password" placeholder="コード" autocomplete="off" autocapitalize="off" spellcheck="false" style="width:100%;padding:14px 16px;border-radius:12px;border:1px solid #3a3428;background:#211c15;color:#fff;font-size:16px;outline:none;text-align:center;letter-spacing:.15em">
+    <button id="vswGateBtn" style="width:100%;margin-top:11px;padding:14px;border:0;border-radius:12px;background:#c0392b;color:#fff;font-weight:700;font-size:15px;cursor:pointer">入 場</button>
+    <div id="vswGateErr" style="height:16px;margin-top:9px;font-size:12px;color:#e96a52"></div>
+  </div>
+</div>
+<script>
+(function(){var KEY='cw_gate_ok',HASH='4e023c09fc9e3c096f0d5a28671d62f8c803241e60902770da5910591a7b6c2d';var g=document.getElementById('vswGate');
+try{if(localStorage.getItem(KEY)==='1'){g.parentNode.removeChild(g);return;}}catch(e){}
+document.documentElement.style.overflow='hidden';
+function done(){try{localStorage.setItem(KEY,'1')}catch(e){}if(g&&g.parentNode)g.parentNode.removeChild(g);document.documentElement.style.overflow='';}
+async function chk(){var i=document.getElementById('vswGatePw'),v=(i.value||'').trim();if(!v)return;try{var b=new TextEncoder().encode(v),d=await crypto.subtle.digest('SHA-256',b),h=Array.from(new Uint8Array(d)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');if(h===HASH){done();}else{document.getElementById('vswGateErr').textContent='コードが違います';i.value='';i.focus();}}catch(e){document.getElementById('vswGateErr').textContent='この環境では判定できません（https/localhostで開いてください）';}}
+document.getElementById('vswGateBtn').addEventListener('click',chk);
+document.getElementById('vswGatePw').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();chk();}});
+setTimeout(function(){var i=document.getElementById('vswGatePw');if(i)i.focus();},60);
+})();
+</script>
 <!-- モバイル固定ヘッダー -->
 <div id="mTopBar">
   <span class="mLogo">📦<span class="mLogoTxt">CONTAINER</span></span>
